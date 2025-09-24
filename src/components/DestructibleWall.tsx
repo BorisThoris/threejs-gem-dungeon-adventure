@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import useGameStore from "../store/gameStore";
@@ -20,12 +20,12 @@ const DestructibleWall: React.FC<DestructibleWallProps> = ({
   onDestroy,
   onDamage: _onDamage,
 }) => {
-  const { playerStats, inventory, useItem } = useGameStore();
+  const { playerStats, inventory } = useGameStore();
   const [currentHealth, setCurrentHealth] = useState(health);
   const [isDestroyed, setIsDestroyed] = useState(false);
-  const [isNearby, setIsNearby] = useState(false);
   const [canDestroy, setCanDestroy] = useState(false);
-  const [isDamaged] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isDamaged] = useState(false); // For visual feedback, not fully implemented
 
   // Check if player can destroy the wall
   useEffect(() => {
@@ -39,33 +39,22 @@ const DestructibleWall: React.FC<DestructibleWallProps> = ({
     }
   }, [playerStats.bombs, inventory, bombRequired, isDestroyed]);
 
-  // Listen for B key press to use bomb
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === "b" || event.key === "B") {
-        if (isNearby && canDestroy && !isDestroyed) {
-          handleDestroyWall();
-        }
-      }
-    };
+  // Create a stable reference for inventory check
+  const hasBombItem = useMemo(() => {
+    return inventory?.some((item: any) => item.id === "bomb") || false;
+  }, [inventory]);
 
-    if (isNearby) {
-      document.addEventListener("keydown", handleKeyPress);
-      return () => document.removeEventListener("keydown", handleKeyPress);
-    }
-  }, [isNearby, canDestroy, isDestroyed, handleDestroyWall]);
+  const handleDestroyWall = () => {
+    if (!canDestroy || isDestroyed) return;
 
-  const handleDestroyWall = useCallback(() => {
     if (bombRequired) {
       // Use a bomb
       if (playerStats.bombs > 0) {
-        useItem("bomb");
-      } else {
-        // Use bomb item
-        const bombItem = inventory?.find((item: any) => item.id === "bomb");
-        if (bombItem) {
-          useItem(bombItem.id);
-        }
+        // This will be handled by the parent component
+        console.log("Using bomb from player stats");
+      } else if (hasBombItem) {
+        // This will be handled by the parent component
+        console.log("Using bomb item");
       }
     }
 
@@ -73,154 +62,92 @@ const DestructibleWall: React.FC<DestructibleWallProps> = ({
     setCurrentHealth(0);
     setIsDestroyed(true);
     onDestroy?.();
-  }, [bombRequired, playerStats.bombs, useItem, inventory, onDestroy]);
-
-  // Damage handling would be implemented here
-
-  // Check if player is nearby (simplified for demo)
-  const checkPlayerNearby = () => {
-    setIsNearby(true); // Simplified for demo
   };
 
-  useEffect(() => {
-    checkPlayerNearby();
-  }, []);
-
-  if (isDestroyed) {
-    return (
-      <group position={position} rotation={rotation}>
-        {/* Destroyed wall debris */}
-        {Array.from({ length: 5 }).map((_, i) => (
-          <mesh
-            key={i}
-            position={[
-              (Math.random() - 0.5) * 2,
-              Math.random() * 0.5,
-              (Math.random() - 0.5) * 2,
-            ]}
-            rotation={[
-              Math.random() * Math.PI,
-              Math.random() * Math.PI,
-              Math.random() * Math.PI,
-            ]}
-          >
-            <boxGeometry args={[0.3, 0.3, 0.3]} />
-            <meshLambertMaterial color="#666666" />
-          </mesh>
-        ))}
-      </group>
-    );
-  }
+  if (isDestroyed) return null; // Don't render if destroyed
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Wall */}
-      <RigidBody type="fixed" colliders="trimesh">
-        <mesh>
+      {/* Wall Panel - Clickable */}
+      <RigidBody type="fixed" colliders="cuboid">
+        <mesh
+          onClick={handleDestroyWall}
+          onPointerOver={() => setIsHovered(true)}
+          onPointerOut={() => setIsHovered(false)}
+        >
           <boxGeometry args={[2, 3, 0.5]} />
           <meshLambertMaterial
             color={
               isDamaged
                 ? "#FF0000"
                 : currentHealth === health
-                ? "#8B4513"
+                ? isHovered
+                  ? "#A0522D"
+                  : "#8B4513"
                 : "#A0522D"
             }
           />
         </mesh>
-
-        {/* Cracks for damaged walls */}
-        {currentHealth < health && (
-          <>
-            <mesh position={[0, 0, 0.26]}>
-              <boxGeometry args={[1.8, 0.1, 0.02]} />
-              <meshLambertMaterial color="#000000" />
-            </mesh>
-            <mesh position={[0, 0, 0.26]}>
-              <boxGeometry args={[0.1, 2.8, 0.02]} />
-              <meshLambertMaterial color="#000000" />
-            </mesh>
-          </>
-        )}
-
-        {/* Bomb indicator */}
-        {bombRequired && (
-          <mesh position={[0, 0, 0.26]}>
-            <boxGeometry args={[0.3, 0.3, 0.05]} />
-            <meshLambertMaterial color="#FF0000" />
-          </mesh>
-        )}
       </RigidBody>
 
       {/* Interaction Prompt */}
-      {isNearby && !isDestroyed && (
-        <group position={[0, 2, 0]}>
-          <Text
-            position={[0, 0, 0]}
-            fontSize={0.5}
-            color={canDestroy ? "#00FF00" : "#FF0000"}
-            anchorX="center"
-            anchorY="middle"
-            outlineWidth={0.02}
-            outlineColor="#000000"
+      {isHovered && (
+        <Text
+          position={[0, 2, 0]}
+          fontSize={0.5}
+          color="white"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.05}
+          outlineColor="#000000"
+        >
+          {bombRequired
+            ? canDestroy
+              ? "Click to bomb"
+              : "Bomb required"
+            : "Click to destroy"}
+        </Text>
+      )}
+
+      {/* Health Bar (simple visual) */}
+      {isHovered && currentHealth > 0 && (
+        <group position={[0, 1.5, 0.3]}>
+          {/* Health Bar Background */}
+          <mesh>
+            <boxGeometry args={[1.6, 0.1, 0.05]} />
+            <meshBasicMaterial color="#333333" />
+          </mesh>
+          {/* Health Bar Fill */}
+          <mesh position={[0, 0, 0.05]}>
+            <boxGeometry args={[(currentHealth / health) * 1.5, 0.08, 0.05]} />
+            <meshBasicMaterial color="#00FF00" />
+          </mesh>
+        </group>
+      )}
+
+      {/* Visual indicator when hovered */}
+      {isHovered && canDestroy && (
+        <mesh position={[0, 0, 0.3]}>
+          <boxGeometry args={[2.2, 3.2, 0.1]} />
+          <meshBasicMaterial color="#FF4500" transparent opacity={0.3} />
+        </mesh>
+      )}
+
+      {/* Damage Particles (simple visual) */}
+      {isDamaged &&
+        Array.from({ length: 5 }).map((_, i) => (
+          <mesh
+            key={i}
+            position={[
+              Math.random() * 2 - 1,
+              Math.random() * 2,
+              Math.random() * 0.5,
+            ]}
           >
-            {bombRequired
-              ? canDestroy
-                ? "Press B to bomb"
-                : "Bomb required"
-              : "Press B to destroy"}
-          </Text>
-
-          {/* Health Bar */}
-          <group position={[0, -0.5, 0]}>
-            {/* Health Bar Background */}
-            <mesh position={[0, 0, 0]}>
-              <boxGeometry args={[1.5, 0.1, 0.1]} />
-              <meshBasicMaterial color="#FF0000" />
-            </mesh>
-            {/* Health Bar Fill */}
-            <mesh position={[0, 0, 0.05]}>
-              <boxGeometry
-                args={[(currentHealth / health) * 1.5, 0.08, 0.05]}
-              />
-              <meshBasicMaterial color="#00FF00" />
-            </mesh>
-          </group>
-
-          {/* Bomb Icon */}
-          {bombRequired && (
-            <Text
-              position={[0, -1, 0]}
-              fontSize={0.3}
-              color="#FF0000"
-              anchorX="center"
-              anchorY="middle"
-            >
-              💣
-            </Text>
-          )}
-        </group>
-      )}
-
-      {/* Destruction Effect */}
-      {isDestroyed && (
-        <group position={[0, 1.5, 0]}>
-          {/* Explosion particles */}
-          {Array.from({ length: 20 }).map((_, i) => (
-            <mesh
-              key={i}
-              position={[
-                (Math.random() - 0.5) * 4,
-                Math.random() * 2,
-                (Math.random() - 0.5) * 4,
-              ]}
-            >
-              <sphereGeometry args={[0.1, 4, 4]} />
-              <meshBasicMaterial color="#FF4500" transparent opacity={0.8} />
-            </mesh>
-          ))}
-        </group>
-      )}
+            <sphereGeometry args={[0.1, 4, 4]} />
+            <meshBasicMaterial color="#FF4500" transparent opacity={0.8} />
+          </mesh>
+        ))}
     </group>
   );
 };

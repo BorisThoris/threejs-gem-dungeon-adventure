@@ -20,7 +20,20 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
+      // React Hooks Rules - CRITICAL
+      'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'error',
+      
+      // TypeScript Rules - STRICT
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': 'error',
+      
+      // General Code Quality
+      'no-empty-pattern': 'error',
+      'no-case-declarations': 'error',
+      
+      // React Refresh
+      'react-refresh/only-export-components': 'error',
     },
   },
 ])

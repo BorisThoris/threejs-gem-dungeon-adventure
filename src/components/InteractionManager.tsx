@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import FirstPersonPuzzle from "./FirstPersonPuzzle";
@@ -43,12 +43,12 @@ const InteractionManager: React.FC<InteractionManagerProps> = ({
   };
 
   // Handle puzzle exit
-  const handlePuzzleExit = () => {
+  const handlePuzzleExit = useCallback(() => {
     setActiveInteraction(null);
     setInteractionRoom(null);
     setPuzzleComplete(false);
     setGamePhase("exploration");
-  };
+  }, [setGamePhase]);
 
   // Auto-exit puzzle after completion
   useEffect(() => {
@@ -58,7 +58,7 @@ const InteractionManager: React.FC<InteractionManagerProps> = ({
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [puzzleComplete]);
+  }, [puzzleComplete, handlePuzzleExit]);
 
   // Render active interaction
   const renderActiveInteraction = () => {

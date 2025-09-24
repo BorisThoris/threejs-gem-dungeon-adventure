@@ -16,7 +16,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
   onShowCredits,
 }) => {
   const { hasSaveData, getSaveInfo, deleteSave } = useSaveSystem();
-  const {} = useSettings();
+  useSettings();
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const saveInfo = getSaveInfo();

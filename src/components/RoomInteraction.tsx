@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Text } from "@react-three/drei";
 import useGameStore from "../store/gameStore";
 import type { Room } from "../types/map";
@@ -6,59 +6,62 @@ import type { Room } from "../types/map";
 interface RoomInteractionProps {
   room: Room;
   playerPosition: [number, number, number];
-  onInteraction: (interactionType: string, roomId: string) => void;
+  onInteraction: (type: string, roomId: string) => void;
 }
 
 const RoomInteraction: React.FC<RoomInteractionProps> = ({
   room,
-  playerPosition,
+  playerPosition: _playerPosition,
   onInteraction,
 }) => {
-  const {} = useGameStore();
+  useGameStore();
   const [isNearby, setIsNearby] = useState(false);
   const [interactionPrompt, setInteractionPrompt] = useState<string | null>(
     null
   );
+  const [isHovered, setIsHovered] = useState(false);
 
   // Check if player is close enough to interact
   useEffect(() => {
     const distance = Math.sqrt(
-      Math.pow(playerPosition[0] - (room.position as any)[0], 2) +
-        Math.pow(playerPosition[2] - (room.position as any)[2], 2)
+      Math.pow(_playerPosition[0] - (room.position as any)[0], 2) +
+        Math.pow(_playerPosition[2] - (room.position as any)[2], 2)
     );
 
-    const isClose = distance < 3;
-    setIsNearby(isClose);
+    // Define a proximity threshold
+    const proximityThreshold = 5; // Adjust as needed
 
-    if (isClose) {
-      // Determine what interaction is available
+    if (distance < proximityThreshold) {
+      setIsNearby(true);
+      // Set interaction prompt based on room type
       if (room.type === "puzzle" && (room as any).puzzle) {
-        setInteractionPrompt("Press E to solve puzzle");
+        setInteractionPrompt("Click to solve puzzle");
       } else if (
         room.type === "treasure" &&
         room.specialProperties?.isOpened === false
       ) {
-        setInteractionPrompt("Press E to open chest");
+        setInteractionPrompt("Click to open chest");
       } else if (room.type === "shop") {
-        setInteractionPrompt("Press E to browse shop");
+        setInteractionPrompt("Click to browse shop");
       } else if (room.type === "library") {
-        setInteractionPrompt("Press E to read books");
+        setInteractionPrompt("Click to read books");
       } else if (room.type === "devil-room" || room.type === "angel-room") {
-        setInteractionPrompt("Press E to interact with altar");
+        setInteractionPrompt("Click to interact with altar");
       } else if (room.type === "boss") {
-        setInteractionPrompt("Press E to start boss fight");
+        setInteractionPrompt("Click to challenge boss");
       } else if (room.type === "secret") {
-        setInteractionPrompt("Press E to discover secret");
+        setInteractionPrompt("Click to discover secret");
       } else {
         setInteractionPrompt(null);
       }
     } else {
+      setIsNearby(false);
       setInteractionPrompt(null);
     }
-  }, [playerPosition, room]);
+  }, [_playerPosition, room]);
 
   // Handle interaction based on room type
-  const handleInteraction = () => {
+  const handleInteraction = useCallback(() => {
     if (!isNearby) return;
 
     switch (room.type) {
@@ -85,21 +88,7 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
         onInteraction("secret", room.id);
         break;
     }
-  };
-
-  // Listen for E key press
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === "e" || event.key === "E") {
-        handleInteraction();
-      }
-    };
-
-    if (isNearby) {
-      document.addEventListener("keydown", handleKeyPress);
-      return () => document.removeEventListener("keydown", handleKeyPress);
-    }
-  }, [isNearby, room]);
+  }, [isNearby, room.type, room.id, onInteraction]);
 
   if (!isNearby || !interactionPrompt) return null;
 
@@ -111,26 +100,33 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
         (room.position as any)[2],
       ]}
     >
-      {/* Interaction Prompt */}
+      {/* Interaction Prompt - Clickable */}
+      <mesh
+        onClick={handleInteraction}
+        onPointerOver={() => setIsHovered(true)}
+        onPointerOut={() => setIsHovered(false)}
+      >
+        <boxGeometry args={[4, 1, 0.1]} />
+        <meshBasicMaterial
+          color={isHovered ? "#00FF00" : "#000000"}
+          transparent
+          opacity={isHovered ? 0.8 : 0.5}
+        />
+      </mesh>
+
       <Text
-        position={[0, 0, 0]}
-        fontSize={0.8}
-        color="#FFFFFF"
+        position={[0, 0, 0.1]}
+        fontSize={0.5}
+        color="white"
         anchorX="center"
         anchorY="middle"
-        outlineWidth={0.02}
+        outlineWidth={0.05}
         outlineColor="#000000"
       >
         {interactionPrompt}
       </Text>
 
-      {/* Interaction Icon */}
-      <mesh position={[0, -1, 0]}>
-        <boxGeometry args={[0.5, 0.1, 0.5]} />
-        <meshBasicMaterial color="#00FF00" transparent opacity={0.7} />
-      </mesh>
-
-      {/* Pulsing Effect */}
+      {/* Visual indicator (e.g., pulsing circle) */}
       <mesh position={[0, -1, 0]}>
         <boxGeometry args={[0.6, 0.05, 0.6]} />
         <meshBasicMaterial

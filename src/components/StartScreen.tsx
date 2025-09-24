@@ -6,7 +6,10 @@ import Controller from "ecctrl";
 import MapContainer from "./MapContainer";
 import MapUI from "./MapUI";
 import GameUI from "./GameUI";
+import Cursor from "./Cursor";
+import PauseMenu from "./PauseMenu";
 import useGameStore from "../store/gameStore";
+import type { Item } from "../types/map";
 
 // Keyboard controls mapping
 const keyboardMap = [
@@ -75,7 +78,39 @@ const GhostScene: React.FC = () => {
 };
 
 const StartScreen: React.FC = () => {
-  const { playerStats, inventory, useItem } = useGameStore();
+  const { playerStats, inventory, useItem: consumeItem } = useGameStore();
+  const [isPaused, setIsPaused] = React.useState(false);
+
+  // Create a wrapper that matches the expected signature
+  const handleItemUse = (item: Item) => {
+    // consumeItem is a Zustand store function, not a React Hook
+    consumeItem(item.id);
+  };
+
+  // Handle pause/unpause
+  const handlePause = () => {
+    setIsPaused(true);
+  };
+
+  const handleUnpause = () => {
+    setIsPaused(false);
+  };
+
+  // Listen for X key to pause/unpause
+  React.useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === "x" || event.key === "X") {
+        if (isPaused) {
+          handleUnpause();
+        } else {
+          handlePause();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [isPaused]);
 
   return (
     <div
@@ -89,38 +124,46 @@ const StartScreen: React.FC = () => {
         position: "fixed",
         top: 0,
         left: 0,
+        cursor: "none", // Hide default cursor
       }}
     >
-      <Canvas
-        shadows
-        onPointerDown={(e) => (e.target as HTMLElement).requestPointerLock()}
-        style={{
-          width: "100%",
-          height: "100%",
-          background: "transparent",
-          display: "block",
-        }}
-        gl={{
-          antialias: true,
-          alpha: true,
-        }}
-        dpr={[1, 2]}
-      >
-        <GhostScene />
-      </Canvas>
+      {!isPaused && (
+        <Canvas
+          shadows
+          onPointerDown={(e) => (e.target as HTMLElement).requestPointerLock()}
+          style={{
+            width: "100%",
+            height: "100%",
+            background: "transparent",
+            display: "block",
+            cursor: "none", // Hide the default cursor since we have our own
+          }}
+          gl={{
+            antialias: true,
+            alpha: true,
+          }}
+          dpr={[1, 2]}
+        >
+          <GhostScene />
+        </Canvas>
+      )}
 
       {/* Game UI Overlay */}
       <GameUI
         playerStats={playerStats}
         inventory={inventory}
         currentRoom="Start Room"
-        onItemUse={(item) => {
-          useItem(item.id);
-        }}
+        onItemUse={handleItemUse}
       />
 
       {/* Map UI Overlay */}
       <MapUI />
+
+      {/* Cursor - Outside Canvas so it's always visible */}
+      {!isPaused && <Cursor />}
+
+      {/* Pause Menu */}
+      <PauseMenu isVisible={isPaused} onUnpause={handleUnpause} />
     </div>
   );
 };

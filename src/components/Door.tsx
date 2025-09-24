@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import useGameStore from "../store/gameStore";
@@ -7,7 +7,7 @@ interface DoorProps {
   position: [number, number, number];
   rotation?: [number, number, number];
   keyRequired?: boolean;
-  keyId?: string;
+  keyId?: string; // Specific key ID if needed
   isLocked?: boolean;
   onOpen?: () => void;
   onClose?: () => void;
@@ -22,10 +22,10 @@ const Door: React.FC<DoorProps> = ({
   onOpen,
   onClose: _onClose,
 }) => {
-  const { playerStats, inventory, useItem } = useGameStore();
+  const { playerStats, inventory } = useGameStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [isNearby, setIsNearby] = useState(false);
   const [canOpen, setCanOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Check if player can open the door
   useEffect(() => {
@@ -39,52 +39,30 @@ const Door: React.FC<DoorProps> = ({
     }
   }, [playerStats.keys, inventory, keyRequired, keyId, isLocked]);
 
-  // Listen for E key press to open door
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === "e" || event.key === "E") {
-        if (isNearby && canOpen && !isOpen) {
-          handleOpenDoor();
-        }
-      }
-    };
+  // Create a stable reference for inventory check
+  const hasKeyItem = useMemo(() => {
+    return inventory?.some((item: any) => item.id === keyId) || false;
+  }, [inventory, keyId]);
 
-    if (isNearby) {
-      document.addEventListener("keydown", handleKeyPress);
-      return () => document.removeEventListener("keydown", handleKeyPress);
-    }
-  }, [isNearby, canOpen, isOpen]);
+  const handleOpenDoor = () => {
+    if (!canOpen || isOpen) return;
 
-  const handleOpenDoor = useCallback(() => {
     if (keyRequired && keyId) {
       // Use a key
       if (playerStats.keys > 0) {
-        useItem("key");
-      } else {
-        // Use specific key item
-        const keyItem = inventory?.find((item: any) => item.id === keyId);
-        if (keyItem) {
-          useItem(keyItem.id);
-        }
+        // This will be handled by the parent component
+        console.log("Using key from player stats");
+      } else if (hasKeyItem) {
+        // This will be handled by the parent component
+        console.log("Using key item:", keyId);
       }
     }
 
     setIsOpen(true);
     onOpen?.();
-  }, [keyRequired, keyId, playerStats.keys, useItem, inventory, onOpen]);
-
-  // Door closing would be implemented here
-
-  // Check if player is nearby (simplified for demo)
-  const checkPlayerNearby = () => {
-    // This would normally check actual player position
-    // For now, we'll use a simple distance check
-    setIsNearby(true); // Simplified for demo
   };
 
-  useEffect(() => {
-    checkPlayerNearby();
-  }, []);
+  if (isOpen) return null; // Don't render if open
 
   return (
     <group position={position} rotation={rotation}>
@@ -94,100 +72,62 @@ const Door: React.FC<DoorProps> = ({
           <boxGeometry args={[0.2, 3, 0.2]} />
           <meshLambertMaterial color="#8B4513" />
         </mesh>
-        <mesh position={[0, 0.1, 0]}>
-          <boxGeometry args={[0.2, 0.2, 0.2]} />
-          <meshLambertMaterial color="#8B4513" />
-        </mesh>
       </RigidBody>
 
-      {/* Door Panel */}
+      {/* Door Panel - Clickable */}
       <RigidBody
-        type={isOpen ? "dynamic" : "fixed"}
-        colliders={isOpen ? "hull" : "trimesh"}
+        type="fixed"
+        colliders="trimesh"
         position={isOpen ? [1, 0, 0] : [0, 0, 0]}
         rotation={isOpen ? [0, -Math.PI / 2, 0] : [0, 0, 0]}
       >
-        <mesh>
+        <mesh
+          onClick={handleOpenDoor}
+          onPointerOver={() => setIsHovered(true)}
+          onPointerOut={() => setIsHovered(false)}
+        >
           <boxGeometry args={[2, 3, 0.1]} />
           <meshLambertMaterial
-            color={isLocked ? "#666666" : canOpen ? "#8B4513" : "#4B0000"}
+            color={
+              isLocked
+                ? "#666666"
+                : canOpen
+                ? isHovered
+                  ? "#A0522D"
+                  : "#8B4513"
+                : "#4B0000"
+            }
           />
         </mesh>
-
-        {/* Door Handle */}
-        <mesh position={[0.8, 0, 0.1]}>
-          <sphereGeometry args={[0.1, 8, 8]} />
-          <meshLambertMaterial color="#FFD700" />
-        </mesh>
-
-        {/* Lock Indicator */}
-        {isLocked && (
-          <mesh position={[0, 0, 0.1]}>
-            <boxGeometry args={[0.3, 0.3, 0.05]} />
-            <meshLambertMaterial color="#FF0000" />
-          </mesh>
-        )}
-
-        {/* Keyhole */}
-        {keyRequired && (
-          <mesh position={[0, 0, 0.1]}>
-            <cylinderGeometry args={[0.05, 0.05, 0.1, 8]} />
-            <meshLambertMaterial color="#000000" />
-          </mesh>
-        )}
       </RigidBody>
 
       {/* Interaction Prompt */}
-      {isNearby && !isOpen && (
-        <group position={[0, 2, 0]}>
-          <Text
-            position={[0, 0, 0]}
-            fontSize={0.5}
-            color={canOpen ? "#00FF00" : "#FF0000"}
-            anchorX="center"
-            anchorY="middle"
-            outlineWidth={0.02}
-            outlineColor="#000000"
-          >
-            {isLocked
-              ? "DOOR LOCKED"
-              : keyRequired
-              ? canOpen
-                ? "Press E to unlock"
-                : "Key required"
-              : "Press E to open"}
-          </Text>
-
-          {/* Key Icon */}
-          {keyRequired && (
-            <Text
-              position={[0, -0.5, 0]}
-              fontSize={0.3}
-              color="#FFD700"
-              anchorX="center"
-              anchorY="middle"
-            >
-              🗝️
-            </Text>
-          )}
-        </group>
+      {isHovered && (
+        <Text
+          position={[0, 2, 0]}
+          fontSize={0.5}
+          color="white"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.05}
+          outlineColor="#000000"
+        >
+          {isLocked
+            ? "DOOR LOCKED"
+            : keyRequired
+            ? canOpen
+              ? "Click to unlock"
+              : "Key required"
+            : "Click to open"}
+        </Text>
       )}
 
-      {/* Open Door Indicator */}
-      {isOpen && (
-        <group position={[0, 2, 0]}>
-          <Text
-            position={[0, 0, 0]}
-            fontSize={0.5}
-            color="#00FF00"
-            anchorX="center"
-            anchorY="middle"
-            outlineWidth={0.02}
-            outlineColor="#000000"
-          >
-            DOOR OPEN
-          </Text>
-        </group>
+      {/* Visual indicator when hovered */}
+      {isHovered && canOpen && (
+        <mesh position={[0, 0, 0.1]}>
+          <boxGeometry args={[2.2, 3.2, 0.05]} />
+          <meshBasicMaterial color="#00FF00" transparent opacity={0.3} />
+        </mesh>
       )}
     </group>
   );
