@@ -1,5 +1,6 @@
 import React from "react";
 import { Text } from "@react-three/drei";
+import { RigidBody } from "@react-three/rapier";
 
 interface StartRoomProps {
   onJourneyBegin?: () => void;
@@ -8,11 +9,13 @@ interface StartRoomProps {
 const StartRoom: React.FC<StartRoomProps> = ({ onJourneyBegin }) => {
   return (
     <group>
-      {/* Start Floor */}
-      <mesh position={[0, -0.5, 0]} receiveShadow>
-        <boxGeometry args={[8, 1, 8]} />
-        <meshStandardMaterial color="#4CAF50" />
-      </mesh>
+      {/* Start Floor with Collision */}
+      <RigidBody type="fixed" colliders="cuboid">
+        <mesh position={[0, -0.5, 0]} receiveShadow>
+          <boxGeometry args={[8, 1, 8]} />
+          <meshStandardMaterial color="#4CAF50" />
+        </mesh>
+      </RigidBody>
 
       {/* Start Platform */}
       <group position={[0, 0, 0]}>

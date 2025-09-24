@@ -26,7 +26,7 @@ import StartRoom from "./rooms/StartRoom";
 import EndRoom from "./rooms/EndRoom";
 import EnemyRoom from "./rooms/EnemyRoom";
 import RoomInteraction from "./RoomInteraction";
-import Door from "./Door";
+// import Door from "./Door"; // DISABLED FOR NOW
 import DestructibleWall from "./DestructibleWall";
 import RoomDecorator from "./roomElements/RoomDecorator";
 
@@ -51,42 +51,42 @@ const Room: React.FC<RoomProps> = ({
 }) => {
   const roomSize = 8;
 
-  // Compute door placement based on relative position of connected room
-  const getDoorPosition = (self: RoomType, target: RoomType) => {
-    const dx = target.position.x - self.position.x;
-    const dz = target.position.z - self.position.z;
+  // Compute door placement based on relative position of connected room - DISABLED FOR NOW
+  // const getDoorPosition = (self: RoomType, target: RoomType) => {
+  //   const dx = target.position.x - self.position.x;
+  //   const dz = target.position.z - self.position.z;
 
-    // East / West
-    if (Math.abs(dx) > Math.abs(dz)) {
-      if (dx > 0) {
-        // East (right wall)
-        return {
-          position: [roomSize / 2, 1.5, 0] as [number, number, number],
-          rotation: [0, Math.PI / 2, 0] as [number, number, number],
-        };
-      } else {
-        // West (left wall)
-        return {
-          position: [-roomSize / 2, 1.5, 0] as [number, number, number],
-          rotation: [0, -Math.PI / 2, 0] as [number, number, number],
-        };
-      }
-    }
+  //   // East / West
+  //   if (Math.abs(dx) > Math.abs(dz)) {
+  //     if (dx > 0) {
+  //       // East (right wall)
+  //       return {
+  //         position: [roomSize / 2, 1.5, 0] as [number, number, number],
+  //         rotation: [0, Math.PI / 2, 0] as [number, number, number],
+  //       };
+  //     } else {
+  //       // West (left wall)
+  //       return {
+  //         position: [-roomSize / 2, 1.5, 0] as [number, number, number],
+  //         rotation: [0, -Math.PI / 2, 0] as [number, number, number],
+  //       };
+  //     }
+  //   }
 
-    // North / South (z axis)
-    if (dz > 0) {
-      // South (front wall)
-      return {
-        position: [0, 1.5, roomSize / 2] as [number, number, number],
-        rotation: [0, 0, 0] as [number, number, number],
-      };
-    }
-    // North (back wall)
-    return {
-      position: [0, 1.5, -roomSize / 2] as [number, number, number],
-      rotation: [0, Math.PI, 0] as [number, number, number],
-    };
-  };
+  //   // North / South (z axis)
+  //   if (dz > 0) {
+  //     // South (front wall)
+  //     return {
+  //       position: [0, 1.5, roomSize / 2] as [number, number, number],
+  //       rotation: [0, 0, 0] as [number, number, number],
+  //     };
+  //   }
+  //   // North (back wall)
+  //   return {
+  //     position: [0, 1.5, -roomSize / 2] as [number, number, number],
+  //     rotation: [0, Math.PI, 0] as [number, number, number],
+  //   };
+  // };
 
   const getRoomColor = (type: string): string => {
     switch (type) {
@@ -606,8 +606,8 @@ const Room: React.FC<RoomProps> = ({
           />
         )}
 
-        {/* Doors */}
-        {room.connections && room.connections.length > 0 && (
+        {/* Doors - DISABLED FOR NOW */}
+        {/* {room.connections && room.connections.length > 0 && (
           <>
             {room.connections.map((connectionId) => {
               const target = connectedRooms.find((r) => r.id === connectionId);
@@ -624,7 +624,7 @@ const Room: React.FC<RoomProps> = ({
               );
             })}
           </>
-        )}
+        )} */}
 
         {/* Destructible Walls */}
         {Math.random() > 0.8 && ( // 20% chance of having destructible walls

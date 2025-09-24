@@ -1,28 +1,22 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
-import { Gltf, Environment, KeyboardControls } from "@react-three/drei";
-import Controller from "ecctrl";
+import { Environment } from "@react-three/drei";
+import { BasicFirstPersonPlayer } from "./BasicFirstPersonPlayer";
+import { SafeSpawnArea } from "./SafeSpawnArea";
 import MapContainer from "./MapContainer";
 import MapUI from "./MapUI";
-import GameUI from "./GameUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
 import BuffManager from "./BuffManager";
 import EventDrivenActionCards from "./EventDrivenActionCards";
 import GameStateDebugger from "./GameStateDebugger";
 import useGameStore from "../store/gameStore";
-import type { Item } from "../types/map";
+import useMapStore from "../store/mapStore";
+import { domUIManager } from "../utils/domUIManager";
+import { uiEvents, UI_EVENTS } from "../utils/uiEvents";
 
-// Keyboard controls mapping
-const keyboardMap = [
-  { name: "forward", keys: ["ArrowUp", "KeyW"] },
-  { name: "backward", keys: ["ArrowDown", "KeyS"] },
-  { name: "leftward", keys: ["ArrowLeft", "KeyA"] },
-  { name: "rightward", keys: ["ArrowRight", "KeyD"] },
-  { name: "jump", keys: ["Space"] },
-  { name: "run", keys: ["Shift"] },
-];
+// First-person controls handled by FirstPersonPlayer component
 
 // Ground Plane Component
 const Ground: React.FC = () => {
@@ -72,19 +66,11 @@ const GhostScene: React.FC = () => {
 
       {/* Physics World */}
       <Physics timeStep="vary">
-        {/* Keyboard Controls */}
-        <KeyboardControls map={keyboardMap}>
-          {/* Ghost Character with Controller */}
-          <Controller maxVelLimit={5}>
-            <Gltf
-              castShadow
-              receiveShadow
-              scale={0.315}
-              position={[0, -0.55, 0]}
-              src="/ghost_w_tophat-transformed.glb"
-            />
-          </Controller>
-        </KeyboardControls>
+        {/* Safe Spawn Area */}
+        <SafeSpawnArea position={[0, 0, 0]} size={8} />
+
+        {/* Basic First Person Player */}
+        <BasicFirstPersonPlayer />
 
         {/* Generated Map - Centered by algorithm */}
         <MapContainer centerMap={false} />
@@ -101,13 +87,44 @@ const GhostScene: React.FC = () => {
 
 const StartScreen: React.FC = () => {
   const { playerStats, inventory, useItem: consumeItem } = useGameStore();
+  const { generateMap, currentMap } = useMapStore();
   const [isPaused, setIsPaused] = React.useState(false);
 
-  // Create a wrapper that matches the expected signature
-  const handleItemUse = (item: Item) => {
-    // consumeItem is a Zustand store function, not a React Hook
-    consumeItem(item.id);
-  };
+  // Initialize DOM UI manager
+  React.useEffect(() => {
+    domUIManager.init();
+
+    // Listen for item use events from DOM UI
+    const handleItemUse = (event: CustomEvent) => {
+      consumeItem(event.detail.id);
+    };
+
+    window.addEventListener("itemUse", handleItemUse as EventListener);
+
+    return () => {
+      window.removeEventListener("itemUse", handleItemUse as EventListener);
+      domUIManager.destroy();
+    };
+  }, [consumeItem]);
+
+  // Generate map on component mount
+  React.useEffect(() => {
+    if (!currentMap) {
+      generateMap();
+    }
+  }, [currentMap, generateMap]);
+
+  // Update UI when stats change (throttled)
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      uiEvents.emit(UI_EVENTS.PLAYER_STATS_UPDATE, playerStats);
+      uiEvents.emit(UI_EVENTS.INVENTORY_UPDATE, inventory);
+    }, 100); // Throttle updates
+
+    return () => clearTimeout(timeoutId);
+  }, [playerStats, inventory]);
+
+  // Item use is now handled by DOM UI manager
 
   // Handle pause/unpause
   const handlePause = () => {
@@ -152,7 +169,6 @@ const StartScreen: React.FC = () => {
       {!isPaused && (
         <Canvas
           shadows
-          onPointerDown={(e) => (e.target as HTMLElement).requestPointerLock()}
           style={{
             width: "100%",
             height: "100%",
@@ -167,6 +183,11 @@ const StartScreen: React.FC = () => {
             stencil: false,
             depth: true,
           }}
+          camera={{
+            fov: 95,
+            position: [0, 5, 0],
+            rotation: [0, -Math.PI / 2, 0], // Look straight ahead
+          }}
           dpr={[1, 2]}
           performance={{ min: 0.5 }}
           frameloop="demand"
@@ -174,14 +195,6 @@ const StartScreen: React.FC = () => {
           <GhostScene />
         </Canvas>
       )}
-
-      {/* Game UI Overlay */}
-      <GameUI
-        playerStats={playerStats}
-        inventory={inventory}
-        currentRoom="Start Room"
-        onItemUse={handleItemUse}
-      />
 
       {/* Buff Manager - Background system */}
       <BuffManager />
@@ -200,6 +213,8 @@ const StartScreen: React.FC = () => {
 
       {/* Debug Info (Development Only) */}
       <GameStateDebugger />
+
+      {/* UI is now handled by DOM UI Manager - no React re-renders */}
     </div>
   );
 };
