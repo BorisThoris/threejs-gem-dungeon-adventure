@@ -9,7 +9,8 @@ import GameUI from "./GameUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
 import BuffManager from "./BuffManager";
-import GlobalActionCards from "./GlobalActionCards";
+import EventDrivenActionCards from "./EventDrivenActionCards";
+import GameStateDebugger from "./GameStateDebugger";
 import useGameStore from "../store/gameStore";
 import type { Item } from "../types/map";
 
@@ -162,8 +163,13 @@ const StartScreen: React.FC = () => {
           gl={{
             antialias: true,
             alpha: true,
+            powerPreference: "high-performance",
+            stencil: false,
+            depth: true,
           }}
           dpr={[1, 2]}
+          performance={{ min: 0.5 }}
+          frameloop="demand"
         >
           <GhostScene />
         </Canvas>
@@ -180,8 +186,8 @@ const StartScreen: React.FC = () => {
       {/* Buff Manager - Background system */}
       <BuffManager />
 
-      {/* Global Action Cards */}
-      <GlobalActionCards />
+      {/* Event-Driven Action Cards */}
+      <EventDrivenActionCards />
 
       {/* Map UI Overlay */}
       <MapUI />
@@ -191,6 +197,9 @@ const StartScreen: React.FC = () => {
 
       {/* Pause Menu */}
       <PauseMenu isVisible={isPaused} onUnpause={handleUnpause} />
+
+      {/* Debug Info (Development Only) */}
+      <GameStateDebugger />
     </div>
   );
 };

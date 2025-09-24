@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import useGameStore from "../store/gameStore";
 import type { ActionCard } from "../components/RoomActionCards";
 
@@ -51,6 +51,15 @@ export const useRoomActions = ({
 }: UseRoomActionsProps) => {
   const { playerStats, addPoints, addExperience, upgradeDefense, upgradeStrength, addBuff } = useGameStore();
   const [isVisible, setIsVisible] = useState(false);
+  const lastUpdateTime = useRef(0);
+
+  // Throttle state updates to prevent excessive re-renders
+  const throttledSetVisible = useCallback((visible: boolean) => {
+    const now = Date.now();
+    if (now - lastUpdateTime.current < 50) return; // Throttle to 20fps max
+    lastUpdateTime.current = now;
+    setIsVisible(visible);
+  }, []);
 
   const getRoomCards = useCallback((): ActionCard[] => {
     const baseCards: ActionCard[] = [];
@@ -766,20 +775,23 @@ export const useRoomActions = ({
     addExperience,
   ]);
 
+  // Memoize cards to prevent unnecessary recalculations
+  const cards = useMemo(() => getRoomCards(), [getRoomCards]);
+
   const showCards = useCallback(() => {
-    setIsVisible(true);
-  }, []);
+    throttledSetVisible(true);
+  }, [throttledSetVisible]);
 
   const hideCards = useCallback(() => {
-    setIsVisible(false);
-  }, []);
+    throttledSetVisible(false);
+  }, [throttledSetVisible]);
 
   const toggleCards = useCallback(() => {
-    setIsVisible(prev => !prev);
-  }, []);
+    throttledSetVisible(!isVisible);
+  }, [throttledSetVisible, isVisible]);
 
   return {
-    cards: getRoomCards(),
+    cards,
     isVisible,
     showCards,
     hideCards,

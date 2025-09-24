@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import useMapStore from "../store/mapStore";
 import useGameStore from "../store/gameStore";
 import RoomActionCards from "./RoomActionCards";
@@ -8,14 +8,15 @@ const GlobalActionCards: React.FC = () => {
   const { currentMap, currentRoomId } = useMapStore();
   const { gamePhase } = useGameStore();
   const [showCards, setShowCards] = useState(false);
+  const lastRoomId = React.useRef<string | null>(null);
 
-  // Get current room
-  const currentRoom = currentMap?.rooms.find(
-    (room) => room.id === currentRoomId
-  );
+  // Memoize current room to prevent unnecessary re-calculations
+  const currentRoom = useMemo(() => {
+    return currentMap?.rooms.find((room) => room.id === currentRoomId);
+  }, [currentMap, currentRoomId]);
 
-  // Map room types to action card room types
-  const getRoomTypeForActions = (roomType: string) => {
+  // Memoize room type mapping to prevent re-creation on every render
+  const getRoomTypeForActions = useCallback((roomType: string) => {
     switch (roomType) {
       case "boss":
         return "boss";
@@ -72,11 +73,25 @@ const GlobalActionCards: React.FC = () => {
       default:
         return null;
     }
-  };
+  }, []);
 
-  const actionRoomType = currentRoom
-    ? getRoomTypeForActions(currentRoom.type)
-    : null;
+  // Memoize action room type to prevent unnecessary recalculations
+  const actionRoomType = useMemo(() => {
+    return currentRoom ? getRoomTypeForActions(currentRoom.type) : null;
+  }, [currentRoom, getRoomTypeForActions]);
+
+  // Memoize callbacks to prevent unnecessary re-renders
+  const callbacks = useMemo(
+    () => ({
+      onPuzzleStart: () => console.log("Puzzle started!"),
+      onShopOpen: () => console.log("Shop opened!"),
+      onChallengeStart: () => console.log("Challenge started!"),
+      onTreasureOpen: () => console.log("Treasure opened!"),
+      onArenaFight: () => console.log("Arena fight started!"),
+      onBossFight: () => console.log("Boss fight started!"),
+    }),
+    []
+  );
 
   const {
     cards,
@@ -85,27 +100,40 @@ const GlobalActionCards: React.FC = () => {
     hideCards,
   } = useRoomActions({
     roomType: actionRoomType || "meditation", // fallback to meditation
-    onPuzzleStart: () => console.log("Puzzle started!"),
-    onShopOpen: () => console.log("Shop opened!"),
-    onChallengeStart: () => console.log("Challenge started!"),
-    onTreasureOpen: () => console.log("Treasure opened!"),
-    onArenaFight: () => console.log("Arena fight started!"),
-    onBossFight: () => console.log("Boss fight started!"),
+    ...callbacks,
   });
 
-  // Show cards when entering a room with actions
+  // Optimized effect with proper dependency management
   useEffect(() => {
-    if (currentRoom && actionRoomType && gamePhase === "exploration") {
-      // Small delay to ensure smooth transition
-      const timer = setTimeout(() => {
-        showActionCards();
-      }, 500);
+    // Only update if room actually changed
+    if (currentRoomId !== lastRoomId.current) {
+      lastRoomId.current = currentRoomId;
 
-      return () => clearTimeout(timer);
-    } else {
-      hideCards();
+      if (currentRoom && actionRoomType && gamePhase === "exploration") {
+        // Use requestAnimationFrame for smoother transitions
+        const frameId = requestAnimationFrame(() => {
+          const timer = setTimeout(() => {
+            showActionCards();
+          }, 300); // Reduced delay for better responsiveness
+
+          return () => clearTimeout(timer);
+        });
+
+        return () => {
+          cancelAnimationFrame(frameId);
+        };
+      } else {
+        hideCards();
+      }
     }
-  }, [currentRoom, actionRoomType, gamePhase, showActionCards, hideCards]);
+  }, [
+    currentRoomId,
+    currentRoom,
+    actionRoomType,
+    gamePhase,
+    showActionCards,
+    hideCards,
+  ]);
 
   // Don't show cards if no room or no action room type
   if (!currentRoom || !actionRoomType) {
