@@ -1,5 +1,6 @@
 // Direct DOM manipulation to avoid React re-renders
 import { uiEvents, UI_EVENTS } from './uiEvents';
+import { refBasedPlayerState } from './refBasedPlayerState';
 
 class DOMUIManager {
   private mouseLookIndicator: HTMLElement | null = null;
@@ -94,8 +95,9 @@ class DOMUIManager {
       document.body.style.cursor = 'default';
     });
 
-    uiEvents.on(UI_EVENTS.PLAYER_STATS_UPDATE, (stats) => {
-      this.updatePlayerStats(stats);
+    // Subscribe to ref-based player state changes
+    refBasedPlayerState.subscribe(() => {
+      this.updatePlayerStats(refBasedPlayerState.getStats());
     });
 
     uiEvents.on(UI_EVENTS.INVENTORY_UPDATE, (inventory) => {

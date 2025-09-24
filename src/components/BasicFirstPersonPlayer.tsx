@@ -8,6 +8,7 @@ import { Vector3 } from "three";
 import useGameStore from "../store/gameStore";
 import { useMouseLook } from "../hooks/useMouseLook";
 import useMapStore from "../store/mapStore";
+import { refBasedGameState } from "../utils/refBasedGameState";
 
 interface ArmsRef {
   switchAnimation: (toMagic: boolean) => void;
@@ -71,6 +72,9 @@ export function BasicFirstPersonPlayer() {
 
   // Simple movement control
   useFrame(() => {
+    // Update ref-based game state (no React re-renders)
+    refBasedGameState.update();
+
     if (!ref.current) return;
 
     const { forward, backward, left, right, dash } = {

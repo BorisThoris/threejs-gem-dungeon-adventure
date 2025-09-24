@@ -86,7 +86,7 @@ const GhostScene: React.FC = () => {
 };
 
 const StartScreen: React.FC = () => {
-  const { playerStats, inventory, useItem: consumeItem } = useGameStore();
+  const { inventory, useItem: consumeItem } = useGameStore();
   const { generateMap, currentMap } = useMapStore();
   const [isPaused, setIsPaused] = React.useState(false);
 
@@ -114,15 +114,16 @@ const StartScreen: React.FC = () => {
     }
   }, [currentMap, generateMap]);
 
-  // Update UI when stats change (throttled)
+  // Update UI when inventory changes (throttled)
   React.useEffect(() => {
     const timeoutId = setTimeout(() => {
-      uiEvents.emit(UI_EVENTS.PLAYER_STATS_UPDATE, playerStats);
       uiEvents.emit(UI_EVENTS.INVENTORY_UPDATE, inventory);
     }, 100); // Throttle updates
 
     return () => clearTimeout(timeoutId);
-  }, [playerStats, inventory]);
+  }, [inventory]);
+
+  // Player stats are now handled by ref-based state (no React re-renders)
 
   // Item use is now handled by DOM UI manager
 

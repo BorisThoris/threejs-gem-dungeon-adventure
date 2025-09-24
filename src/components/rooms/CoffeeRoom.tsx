@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useRef, useEffect } from "react";
 import { Text } from "@react-three/drei";
-import useGameStore from "../../store/gameStore";
+import { refBasedPlayerState } from "../../utils/refBasedPlayerState";
+import { refBasedGameState } from "../../utils/refBasedGameState";
+import { coffeeRoomUI } from "../../utils/coffeeRoomUI";
 import {
   Candle,
   Table,
@@ -13,29 +15,42 @@ interface CoffeeRoomProps {
 }
 
 const CoffeeRoom: React.FC<CoffeeRoomProps> = ({ onRewardClaim }) => {
-  const { addBuff, addPoints, addExperience } = useGameStore();
-  const [coffeesDrunk, setCoffeesDrunk] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  // Use refs instead of React state to prevent re-renders
+  const coffeesDrunk = useRef(0);
+  const isAnimating = useRef(false);
 
   const maxCoffees = 3; // Maximum coffees per room visit
 
+  // Initialize ref-based UI
+  useEffect(() => {
+    coffeeRoomUI.init();
+    return () => {
+      coffeeRoomUI.destroy();
+    };
+  }, []);
+
   const handleDrinkCoffee = () => {
-    if (coffeesDrunk >= maxCoffees) return;
+    if (coffeesDrunk.current >= maxCoffees) return;
 
-    setIsAnimating(true);
-    setCoffeesDrunk((prev) => prev + 1);
+    isAnimating.current = true;
+    coffeesDrunk.current += 1;
 
-    // Apply speed boost (30 seconds per coffee)
-    addBuff("speedBoost", 30);
-    addPoints(20); // Reward points
-    addExperience(15); // Reward experience
+    // Update ref-based UI
+    coffeeRoomUI.setCoffeesDrunk(coffeesDrunk.current);
+    coffeeRoomUI.setAnimating(true);
+
+    // Apply speed boost using ref-based system (30 seconds per coffee)
+    refBasedGameState.addBuff("speedBoost", "speed", 0.2, 30000); // 30 seconds in milliseconds
+    refBasedPlayerState.addPoints(20); // Reward points
+    refBasedPlayerState.addExperience(15); // Reward experience
 
     // Call reward callback
     onRewardClaim?.();
 
     // Stop animation after 1 second
     setTimeout(() => {
-      setIsAnimating(false);
+      isAnimating.current = false;
+      coffeeRoomUI.setAnimating(false);
     }, 1000);
   };
 
@@ -82,7 +97,7 @@ const CoffeeRoom: React.FC<CoffeeRoomProps> = ({ onRewardClaim }) => {
           onPointerOver={(e) => {
             e.stopPropagation();
             document.body.style.cursor =
-              coffeesDrunk >= maxCoffees ? "not-allowed" : "pointer";
+              coffeesDrunk.current >= maxCoffees ? "not-allowed" : "pointer";
           }}
           onPointerOut={() => {
             document.body.style.cursor = "default";
@@ -90,7 +105,7 @@ const CoffeeRoom: React.FC<CoffeeRoomProps> = ({ onRewardClaim }) => {
         >
           <boxGeometry args={[6.2, 1.2, 1.2]} />
           <meshStandardMaterial
-            color={coffeesDrunk >= maxCoffees ? "#666666" : "#4a4a4a"}
+            color={coffeesDrunk.current >= maxCoffees ? "#666666" : "#4a4a4a"}
             transparent
             opacity={0.3}
           />
@@ -110,63 +125,7 @@ const CoffeeRoom: React.FC<CoffeeRoomProps> = ({ onRewardClaim }) => {
         ☕ COFFEE ROOM ☕
       </Text>
 
-      {/* Instructions */}
-      <Text
-        position={[0, 2.2, 0]}
-        fontSize={0.4}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.03}
-        outlineColor="#000000"
-      >
-        {coffeesDrunk >= maxCoffees
-          ? "No more coffee!"
-          : "Click to drink coffee!"}
-      </Text>
-
-      {/* Coffee Counter */}
-      <Text
-        position={[0, 1.8, 0]}
-        fontSize={0.3}
-        color="#00ff00"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        {coffeesDrunk}/{maxCoffees} Coffees Drunk
-      </Text>
-
-      {/* Speed Boost Info */}
-      <Text
-        position={[0, 1.5, 0]}
-        fontSize={0.3}
-        color="#FFD700"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        +30s Speed Boost per Coffee
-      </Text>
-
-      {/* Animation Effect */}
-      {isAnimating && (
-        <group position={[0, 2.5, 0]}>
-          <Text
-            position={[0, 0, 0]}
-            fontSize={0.6}
-            color="#FFD700"
-            anchorX="center"
-            anchorY="middle"
-            outlineWidth={0.05}
-            outlineColor="#000000"
-          >
-            ☕ SLURP! ☕
-          </Text>
-        </group>
-      )}
+      {/* UI is now handled by ref-based system - no React re-renders! */}
 
       {/* Decorative Elements */}
       {/* Tables and Chairs */}
