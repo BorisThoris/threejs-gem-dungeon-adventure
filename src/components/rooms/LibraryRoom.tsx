@@ -3,6 +3,9 @@ import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import type { Item } from "../../types/map";
 import ItemSprite from "../ItemSprite";
+import PuzzleRouter from "../PuzzleRouter";
+import RoomActionCards from "../RoomActionCards";
+import { useRoomActions } from "../../hooks/useRoomActions";
 
 interface LibraryRoomProps {
   books: Item[];
@@ -17,13 +20,21 @@ const LibraryRoom: React.FC<LibraryRoomProps> = ({
 }) => {
   const [selectedBook, setSelectedBook] = useState<Item | null>(null);
   const [isReading, setIsReading] = useState(false);
+  const [showPuzzle, setShowPuzzle] = useState(false);
+  const [puzzleCompleted, setPuzzleCompleted] = useState(false);
+
+  const { cards, isVisible, showCards, hideCards } = useRoomActions({
+    roomType: "library",
+    onPuzzleStart: () => setShowPuzzle(true),
+  });
 
   // Create simple bookshelf models instead of loading VOX
 
-  const handleBookRead = (book: Item) => {
-    setSelectedBook(book);
+  const handlePuzzleComplete = () => {
+    setPuzzleCompleted(true);
+    setSelectedBook(books[0]); // Use first book as example
     setIsReading(true);
-    onBookRead(book);
+    onBookRead(books[0]);
     onKnowledgeGain(50); // Gain knowledge from reading
 
     // Stop reading after 2 seconds
@@ -111,7 +122,6 @@ const LibraryRoom: React.FC<LibraryRoomProps> = ({
               ] as [number, number, number]
             }
             scale={0.6}
-            onClick={() => handleBookRead(book)}
           />
 
           {/* Book Glow */}
@@ -199,6 +209,29 @@ const LibraryRoom: React.FC<LibraryRoomProps> = ({
         color="#FFD700"
         intensity={0.3}
         distance={8}
+      />
+
+      {/* Puzzle Overlay */}
+      <PuzzleRouter
+        isVisible={showPuzzle}
+        onClose={() => setShowPuzzle(false)}
+        puzzleType="number"
+        difficulty="hard"
+        roomTitle="📚 Library Study Challenge"
+        roomSubtitle="Test your memory with numbers to gain knowledge!"
+        onComplete={handlePuzzleComplete}
+      />
+
+      {/* Action Cards */}
+      <RoomActionCards
+        cards={cards}
+        isVisible={isVisible}
+        onCardClick={(card) => {
+          if (card.id === "study") {
+            setShowPuzzle(true);
+            hideCards();
+          }
+        }}
       />
     </group>
   );

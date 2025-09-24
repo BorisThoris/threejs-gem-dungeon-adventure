@@ -1,32 +1,58 @@
 import React, { useState } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
-import PuzzleGrid from "../PuzzleGrid";
-import type { Puzzle, Item } from "../../types/map";
+import PuzzleRouter from "../PuzzleRouter";
+import RoomActionCards from "../RoomActionCards";
+import { useRoomActions } from "../../hooks/useRoomActions";
+import type { Puzzle } from "../../types/map";
+import type { PuzzleType } from "../PuzzleRouter";
 
 interface PuzzleRoomProps {
   puzzle: Puzzle;
   onPuzzleComplete: () => void;
-  onTileClick: (tile: { id: string; pairId?: string | null }) => void;
-  reward?: Item;
-  onRewardClaim: (item: Item) => void;
 }
 
 const PuzzleRoom: React.FC<PuzzleRoomProps> = ({
   puzzle,
   onPuzzleComplete,
-  onTileClick,
-  reward,
-  onRewardClaim: _onRewardClaim,
 }) => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [showReward, setShowReward] = useState(false);
+  const [showPuzzle, setShowPuzzle] = useState(false);
 
-  // Create simple table model instead of loading VOX
+  const { cards, isVisible, showCards, hideCards } = useRoomActions({
+    roomType: "puzzle",
+    onPuzzleStart: () => setShowPuzzle(true),
+  });
+
+  // Map puzzle type to our puzzle types
+  const getPuzzleType = (): PuzzleType => {
+    switch (puzzle.type) {
+      case "memory-pairs":
+        return "memory";
+      case "sequence":
+        return "sequence";
+      case "number":
+        return "number";
+      default:
+        return "memory";
+    }
+  };
+
+  // Get difficulty based on puzzle difficulty
+  const getDifficulty = (): "easy" | "medium" | "hard" => {
+    if (typeof puzzle.difficulty === "number") {
+      if (puzzle.difficulty <= 2) return "easy";
+      if (puzzle.difficulty <= 4) return "medium";
+      return "hard";
+    }
+    return "medium";
+  };
 
   const handlePuzzleComplete = () => {
     setIsCompleted(true);
     setShowReward(true);
+    setShowPuzzle(false);
     onPuzzleComplete();
   };
 
@@ -55,13 +81,29 @@ const PuzzleRoom: React.FC<PuzzleRoomProps> = ({
         </group>
       </RigidBody>
 
-      {/* Puzzle Area */}
+      {/* Puzzle Table */}
       <group position={[0, 0, 0]}>
-        <PuzzleGrid
-          puzzle={puzzle}
-          onTileClick={onTileClick}
-          onComplete={handlePuzzleComplete}
-        />
+        <mesh position={[0, 0.5, 0]}>
+          <boxGeometry args={[3.5, 0.2, 3.5]} />
+          <meshStandardMaterial
+            color={isCompleted ? "#4CAF50" : "#8B4513"}
+            emissive={isCompleted ? "#4CAF50" : "#000000"}
+            emissiveIntensity={isCompleted ? 0.2 : 0}
+          />
+        </mesh>
+
+        {/* Puzzle Icon */}
+        <Text
+          position={[0, 0.6, 0]}
+          fontSize={0.8}
+          color={isCompleted ? "#00ff00" : "#ffffff"}
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.02}
+          outlineColor="#000000"
+        >
+          {isCompleted ? "✓ COMPLETED" : "🧩 PUZZLE"}
+        </Text>
       </group>
 
       {/* Room Decoration - Puzzle Symbols */}
@@ -153,7 +195,7 @@ const PuzzleRoom: React.FC<PuzzleRoomProps> = ({
       </Text>
 
       {/* Reward Display */}
-      {showReward && reward && (
+      {showReward && (
         <group position={[0, 1.5, 0]}>
           <mesh>
             <boxGeometry args={[1, 1, 1]} />
@@ -172,13 +214,43 @@ const PuzzleRoom: React.FC<PuzzleRoomProps> = ({
         </group>
       )}
 
-      {/* Instructions - Simple colored cube */}
-      {!isCompleted && (
-        <mesh position={[0, -2, 0]}>
-          <boxGeometry args={[2, 0.2, 0.1]} />
-          <meshBasicMaterial color="#FFFFFF" />
-        </mesh>
-      )}
+      {/* Instructions */}
+      <Text
+        position={[0, -2, 0]}
+        fontSize={0.4}
+        color={isCompleted ? "#00ff00" : "#ffffff"}
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.02}
+        outlineColor="#000000"
+      >
+        {isCompleted
+          ? "Puzzle completed! Use action cards to replay."
+          : "Use action cards below to solve the puzzle!"}
+      </Text>
+
+      {/* Puzzle Overlay */}
+      <PuzzleRouter
+        isVisible={showPuzzle}
+        onClose={() => setShowPuzzle(false)}
+        puzzleType={getPuzzleType()}
+        difficulty={getDifficulty()}
+        roomTitle="🧩 Puzzle Room"
+        roomSubtitle="Test your memory and concentration!"
+        onComplete={handlePuzzleComplete}
+      />
+
+      {/* Action Cards */}
+      <RoomActionCards
+        cards={cards}
+        isVisible={isVisible}
+        onCardClick={(card) => {
+          if (card.id === "solve_puzzle") {
+            setShowPuzzle(true);
+            hideCards();
+          }
+        }}
+      />
     </group>
   );
 };

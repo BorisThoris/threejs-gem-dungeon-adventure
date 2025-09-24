@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 import useGameStore from "../../store/gameStore";
+import PuzzleRouter from "../PuzzleRouter";
+import RoomActionCards from "../RoomActionCards";
+import { useRoomActions } from "../../hooks/useRoomActions";
 
 interface BenchPressRoomProps {
   onRewardClaim?: () => void;
@@ -10,10 +13,16 @@ const BenchPressRoom: React.FC<BenchPressRoomProps> = ({ onRewardClaim }) => {
   const { upgradeStrength, addPoints, addExperience, addBuff } = useGameStore();
   const [hasLifted, setHasLifted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showPuzzle, setShowPuzzle] = useState(false);
+  const [puzzleCompleted, setPuzzleCompleted] = useState(false);
 
-  const handleLift = () => {
-    if (hasLifted) return;
+  const { cards, isVisible, showCards, hideCards } = useRoomActions({
+    roomType: "benchpress",
+    onPuzzleStart: () => setShowPuzzle(true),
+  });
 
+  const handlePuzzleComplete = () => {
+    setPuzzleCompleted(true);
     setHasLifted(true);
     setIsAnimating(true);
 
@@ -67,21 +76,10 @@ const BenchPressRoom: React.FC<BenchPressRoomProps> = ({ onRewardClaim }) => {
           <meshStandardMaterial color="#777777" />
         </mesh>
 
-        {/* Interactive barbell */}
+        {/* Barbell */}
         <group position={[0, 1.4, -0.1]}>
           {/* Bar */}
-          <mesh
-            onClick={handleLift}
-            onPointerOver={(e) => {
-              e.stopPropagation();
-              document.body.style.cursor = hasLifted
-                ? "not-allowed"
-                : "pointer";
-            }}
-            onPointerOut={() => {
-              document.body.style.cursor = "default";
-            }}
-          >
+          <mesh>
             <cylinderGeometry args={[0.05, 0.05, 2.2, 12]} />
             <meshStandardMaterial color={hasLifted ? "#777777" : "#CCCCCC"} />
           </mesh>
@@ -118,7 +116,11 @@ const BenchPressRoom: React.FC<BenchPressRoomProps> = ({ onRewardClaim }) => {
         outlineWidth={0.03}
         outlineColor="#000000"
       >
-        {hasLifted ? "Already Lifted!" : "Click the bar to bench!"}
+        {hasLifted
+          ? "Already Lifted!"
+          : puzzleCompleted
+          ? "Strength Training Complete!"
+          : "Use action cards below to train!"}
       </Text>
 
       {/* Reward info */}
@@ -150,6 +152,29 @@ const BenchPressRoom: React.FC<BenchPressRoomProps> = ({ onRewardClaim }) => {
           </Text>
         </group>
       )}
+
+      {/* Puzzle Overlay */}
+      <PuzzleRouter
+        isVisible={showPuzzle}
+        onClose={() => setShowPuzzle(false)}
+        puzzleType="sequence"
+        difficulty="medium"
+        roomTitle="💪 Strength Training Challenge"
+        roomSubtitle="Build mental and physical strength through sequence memory!"
+        onComplete={handlePuzzleComplete}
+      />
+
+      {/* Action Cards */}
+      <RoomActionCards
+        cards={cards}
+        isVisible={isVisible}
+        onCardClick={(card) => {
+          if (card.id === "lift") {
+            setShowPuzzle(true);
+            hideCards();
+          }
+        }}
+      />
     </group>
   );
 };

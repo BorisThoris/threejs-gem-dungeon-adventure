@@ -1,140 +1,145 @@
-import React, { useState, useRef } from "react";
-import { RigidBody } from "@react-three/rapier";
+import React, { useState } from "react";
 import { Text } from "@react-three/drei";
-import type { Item } from "../../types/map";
-import ItemSprite from "../ItemSprite";
-import { Group } from "three";
+import RoomActionCards from "../RoomActionCards";
+import { useRoomActions } from "../../hooks/useRoomActions";
 
 interface TreasureRoomProps {
-  items: Item[];
-  onItemPickup: (item: Item) => void;
-  isOpened: boolean;
-  onOpen: () => void;
+  onTreasureOpen?: () => void;
 }
 
-const TreasureRoom: React.FC<TreasureRoomProps> = ({
-  items,
-  onItemPickup,
-  isOpened,
-  onOpen,
-}) => {
-  const [hovered, setHovered] = useState(false);
+const TreasureRoom: React.FC<TreasureRoomProps> = ({ onTreasureOpen }) => {
+  const [treasureOpened, setTreasureOpened] = useState(false);
 
-  // Create simple chest model instead of loading VOX
-  const chestRef = useRef<Group>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  const handleChestOpen = () => {
-    if (!isOpened && !isAnimating) {
-      setIsAnimating(true);
-      onOpen();
-
-      // Add opening animation effect
-      setTimeout(() => {
-        setIsAnimating(false);
-        // Spawn treasure items with animation
-        items.forEach((_item, index) => {
-          setTimeout(() => {
-            // Item spawn effect could go here
-          }, index * 200);
-        });
-      }, 1000);
-    }
-  };
+  const { cards, isVisible, showCards, hideCards } = useRoomActions({
+    roomType: "treasure",
+    onTreasureOpen: () => {
+      setTreasureOpened(true);
+      onTreasureOpen?.();
+    },
+  });
 
   return (
     <group>
-      {/* Treasure Chest - Simple 3D model */}
-      <RigidBody type="fixed" colliders="trimesh">
-        <group
-          ref={chestRef}
-          position={[0, 0, 0]}
-          onClick={handleChestOpen}
-          onPointerOver={() => setHovered(true)}
-          onPointerOut={() => setHovered(false)}
-        >
-          {/* Chest Base */}
-          <mesh position={[0, 0.3, 0]} castShadow receiveShadow>
-            <boxGeometry args={[2, 0.6, 1.2]} />
-            <meshLambertMaterial color="#8B4513" />
-          </mesh>
-          {/* Chest Lid */}
-          <mesh
-            position={[0, 0.6, 0]}
-            rotation={[isOpened ? -Math.PI / 3 : 0, 0, 0]}
-            castShadow
-            receiveShadow
-          >
-            <boxGeometry args={[2.1, 0.2, 1.3]} />
-            <meshLambertMaterial color="#DAA520" />
-          </mesh>
-          {/* Chest Lock */}
-          {!isOpened && (
-            <mesh position={[0, 0.4, 0.6]}>
-              <boxGeometry args={[0.3, 0.3, 0.2]} />
-              <meshLambertMaterial color="#FFD700" />
-            </mesh>
-          )}
-        </group>
-      </RigidBody>
-
-      {/* Treasure Glow Effect */}
-      {isOpened && (
-        <mesh position={[0, 1, 0]}>
-          <sphereGeometry args={[0.5, 8, 8]} />
-          <meshBasicMaterial color="#FFD700" transparent opacity={0.3} />
-        </mesh>
-      )}
-
-      {/* Treasure Items */}
-      {isOpened &&
-        items.map((item, index) => (
-          <ItemSprite
-            key={item.id}
-            item={item}
-            position={
-              [
-                ((index % 3) - 1) * 1.5,
-                1.5,
-                Math.floor(index / 3) * 1.5 - 0.5,
-              ] as [number, number, number]
-            }
-            scale={0.8}
-            onClick={() => onItemPickup(item)}
-            isHovered={hovered}
-          />
-        ))}
-
-      {/* Room Label - Large visible sign */}
-      <mesh position={[0, 3, 0]}>
-        <boxGeometry args={[4, 0.5, 0.2]} />
-        <meshBasicMaterial color="#FFD700" />
+      {/* Treasure Floor */}
+      <mesh position={[0, -0.5, 0]} receiveShadow>
+        <boxGeometry args={[8, 1, 8]} />
+        <meshStandardMaterial color="#2F4F4F" />
       </mesh>
 
-      {/* Room Title Text */}
+      {/* Treasure Chest */}
+      <group position={[0, 0, 0]}>
+        <mesh position={[0, 0.3, 0]} castShadow>
+          <boxGeometry args={[2, 0.6, 1.5]} />
+          <meshStandardMaterial color="#8B4513" />
+        </mesh>
+
+        {/* Chest Lid */}
+        <mesh
+          position={[0, 0.6, 0]}
+          castShadow
+          rotation={treasureOpened ? [0, 0, Math.PI * 0.3] : [0, 0, 0]}
+        >
+          <boxGeometry args={[2, 0.1, 1.5]} />
+          <meshStandardMaterial color="#654321" />
+        </mesh>
+
+        {/* Chest */}
+        <mesh position={[0, 0.3, 0]}>
+          <boxGeometry args={[2.2, 0.8, 1.7]} />
+          <meshStandardMaterial
+            color={treasureOpened ? "#4CAF50" : "#8B4513"}
+            emissive={treasureOpened ? "#4CAF50" : "#000000"}
+            emissiveIntensity={treasureOpened ? 0.2 : 0}
+            transparent
+            opacity={0.3}
+          />
+        </mesh>
+      </group>
+
+      {/* Treasure Glow */}
+      {treasureOpened && (
+        <pointLight
+          position={[0, 1, 0]}
+          color="#FFD700"
+          intensity={1}
+          distance={5}
+        />
+      )}
+
+      {/* Treasure Pile */}
+      <group position={[0, 0.1, 0]}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <mesh
+            key={i}
+            position={[
+              (Math.random() - 0.5) * 3,
+              0.1,
+              (Math.random() - 0.5) * 3,
+            ]}
+            castShadow
+          >
+            <boxGeometry args={[0.2, 0.2, 0.2]} />
+            <meshStandardMaterial
+              color="#FFD700"
+              emissive="#FFD700"
+              emissiveIntensity={0.3}
+            />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Room Title */}
       <Text
-        position={[0, 3, 0.15]}
+        position={[0, 3, 0]}
         fontSize={0.8}
-        color="#000000"
+        color="white"
         anchorX="center"
         anchorY="middle"
+        outlineWidth={0.05}
+        outlineColor="#000000"
       >
-        TREASURE ROOM
+        💎 TREASURE ROOM 💎
       </Text>
 
-      {/* Treasure Indicator - Large golden pyramid */}
-      <mesh position={[0, 4, 0]}>
-        <coneGeometry args={[1.5, 2, 8]} />
-        <meshBasicMaterial color="#FFD700" />
-      </mesh>
+      {/* Instructions */}
+      <Text
+        position={[0, 2.2, 0]}
+        fontSize={0.4}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.03}
+        outlineColor="#000000"
+      >
+        {treasureOpened
+          ? "Treasure claimed!"
+          : "Use action cards below to open it!"}
+      </Text>
 
-      {/* Interaction Hint - Simple colored cube */}
-      {!isOpened && (
-        <mesh position={[0, -1.5, 0]}>
-          <boxGeometry args={[1, 0.2, 0.1]} />
-          <meshBasicMaterial color="#FFFFFF" />
-        </mesh>
-      )}
+      {/* Treasure Info */}
+      <Text
+        position={[0, 1.8, 0]}
+        fontSize={0.3}
+        color="#00ff00"
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.02}
+        outlineColor="#000000"
+      >
+        {treasureOpened ? "Rich rewards await!" : "Valuable treasures inside!"}
+      </Text>
+
+      {/* Action Cards */}
+      <RoomActionCards
+        cards={cards}
+        isVisible={isVisible}
+        onCardClick={(card) => {
+          if (card.id === "open_chest") {
+            setTreasureOpened(true);
+            hideCards();
+          }
+        }}
+      />
     </group>
   );
 };

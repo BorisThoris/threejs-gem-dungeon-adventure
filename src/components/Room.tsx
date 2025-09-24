@@ -21,6 +21,10 @@ import LibraryUpgradeRoom from "./rooms/LibraryUpgradeRoom";
 import MeditationRoom from "./rooms/MeditationRoom";
 import PortalRoom from "./rooms/PortalRoom";
 import ArenaRoom from "./rooms/ArenaRoom";
+import BossRoom from "./rooms/BossRoom";
+import StartRoom from "./rooms/StartRoom";
+import EndRoom from "./rooms/EndRoom";
+import EnemyRoom from "./rooms/EnemyRoom";
 import RoomInteraction from "./RoomInteraction";
 import Door from "./Door";
 import DestructibleWall from "./DestructibleWall";
@@ -460,13 +464,7 @@ const Room: React.FC<RoomProps> = ({
         {/* Specialized Room Types */}
         {room.type === RoomTypeValues.TREASURE && (
           <TreasureRoom
-            items={(room as any).items || []}
-            onItemPickup={(item) => {
-              console.log(`Picked up treasure: ${item.name}`);
-              // Handle treasure pickup
-            }}
-            isOpened={(room as any).isOpened || false}
-            onOpen={() => {
+            onTreasureOpen={() => {
               console.log("Opened treasure chest!");
               // Handle chest opening
             }}
@@ -475,12 +473,10 @@ const Room: React.FC<RoomProps> = ({
 
         {room.type === RoomTypeValues.SHOP && (
           <ShopRoom
-            items={(room as any).items || []}
-            onItemPurchase={(item) => {
-              console.log(`Purchased: ${item.name} for ${item.cost} points`);
-              // Handle item purchase
+            onShopOpen={() => {
+              console.log("Shop opened!");
+              // Handle shop opening
             }}
-            playerPoints={100} // Get from game store
           />
         )}
 
@@ -490,15 +486,6 @@ const Room: React.FC<RoomProps> = ({
             onPuzzleComplete={() => {
               console.log("Puzzle completed!");
               // Handle puzzle completion
-            }}
-            onTileClick={(tile) => {
-              console.log(`Clicked tile: ${tile.id}`);
-              // Handle puzzle tile click
-            }}
-            reward={(room as any).reward}
-            onRewardClaim={(item) => {
-              console.log(`Claimed reward: ${item.name}`);
-              // Handle reward claim
             }}
           />
         )}
@@ -592,8 +579,46 @@ const Room: React.FC<RoomProps> = ({
           />
         )}
 
+        {room.type === RoomTypeValues.BOSS && (
+          <BossRoom
+            onBossFight={() => {
+              console.log("Boss fight started!");
+              onInteraction?.("boss", room.id);
+            }}
+          />
+        )}
+
+        {room.type === RoomTypeValues.START && (
+          <StartRoom
+            onJourneyBegin={() => {
+              console.log("Journey begun!");
+              onInteraction?.("start", room.id);
+            }}
+          />
+        )}
+
+        {room.type === RoomTypeValues.END && (
+          <EndRoom
+            onVictory={() => {
+              console.log("Victory achieved!");
+              onInteraction?.("end", room.id);
+            }}
+          />
+        )}
+
+        {room.type === RoomTypeValues.ENEMY && (
+          <EnemyRoom
+            onCombatStart={() => {
+              console.log("Combat started!");
+              onInteraction?.("enemy", room.id);
+            }}
+          />
+        )}
+
         {/* Fallback for other room types */}
         {![
+          RoomTypeValues.START,
+          RoomTypeValues.END,
           RoomTypeValues.TREASURE,
           RoomTypeValues.SHOP,
           RoomTypeValues.PUZZLE,
@@ -606,9 +631,11 @@ const Room: React.FC<RoomProps> = ({
           RoomTypeValues.COFFEE,
           RoomTypeValues.LIBRARY_UPGRADE,
           RoomTypeValues.MEDITATION,
+          RoomTypeValues.PORTAL,
+          RoomTypeValues.ARENA,
           RoomTypeValues.BOSS,
+          RoomTypeValues.ENEMY,
           RoomTypeValues.TRAP,
-          RoomTypeValues.END,
         ].includes(room.type as any) && (
           <>
             {/* Items in room */}

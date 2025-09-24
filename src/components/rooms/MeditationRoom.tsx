@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 import useGameStore from "../../store/gameStore";
 import { Candle, Crystal, PotionBottle } from "../roomElements/RoomElements";
+import PuzzleRouter from "../PuzzleRouter";
+import RoomActionCards from "../RoomActionCards";
+import { useRoomActions } from "../../hooks/useRoomActions";
 
 interface MeditationRoomProps {
   onRewardClaim?: () => void;
@@ -11,10 +14,21 @@ const MeditationRoom: React.FC<MeditationRoomProps> = ({ onRewardClaim }) => {
   const { upgradeDefense, addPoints, addExperience, addBuff } = useGameStore();
   const [isMeditating, setIsMeditating] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showPuzzle, setShowPuzzle] = useState(false);
+  const [puzzleCompleted, setPuzzleCompleted] = useState(false);
 
-  const handleMeditate = () => {
-    if (isMeditating) return;
+  const {
+    cards,
+    isVisible,
+    showCards: showActionCards,
+    hideCards,
+  } = useRoomActions({
+    roomType: "meditation",
+    onPuzzleStart: () => setShowPuzzle(true),
+  });
 
+  const handlePuzzleComplete = () => {
+    setPuzzleCompleted(true);
     setIsAnimating(true);
     setIsMeditating(true);
 
@@ -49,20 +63,8 @@ const MeditationRoom: React.FC<MeditationRoomProps> = ({ onRewardClaim }) => {
           <meshStandardMaterial color="#8B0000" />
         </mesh>
 
-        {/* Clickable Meditation Area */}
-        <mesh
-          position={[0, 0.1, 0]}
-          onClick={handleMeditate}
-          onPointerOver={(e) => {
-            e.stopPropagation();
-            document.body.style.cursor = isMeditating
-              ? "not-allowed"
-              : "pointer";
-          }}
-          onPointerOut={() => {
-            document.body.style.cursor = "default";
-          }}
-        >
+        {/* Meditation Area */}
+        <mesh position={[0, 0.1, 0]}>
           <cylinderGeometry args={[1.2, 1.2, 0.3]} />
           <meshStandardMaterial
             color={isMeditating ? "#666666" : "#4a4a4a"}
@@ -129,7 +131,11 @@ const MeditationRoom: React.FC<MeditationRoomProps> = ({ onRewardClaim }) => {
         outlineWidth={0.03}
         outlineColor="#000000"
       >
-        {isMeditating ? "Already Meditated!" : "Click to meditate!"}
+        {isMeditating
+          ? "Already Meditated!"
+          : puzzleCompleted
+          ? "Meditation Complete!"
+          : "Use action cards below to meditate!"}
       </Text>
 
       {/* Defense Info */}
@@ -237,6 +243,29 @@ const MeditationRoom: React.FC<MeditationRoomProps> = ({ onRewardClaim }) => {
       {/* Meditation potions */}
       <PotionBottle position={[-0.8, 0.4, -0.8]} color="#00ff00" />
       <PotionBottle position={[0.8, 0.4, 0.8]} color="#00ff00" />
+
+      {/* Puzzle Overlay */}
+      <PuzzleRouter
+        isVisible={showPuzzle}
+        onClose={() => setShowPuzzle(false)}
+        puzzleType="memory"
+        difficulty="easy"
+        roomTitle="🧘 Meditation Challenge"
+        roomSubtitle="Focus your mind and find inner peace through memory!"
+        onComplete={handlePuzzleComplete}
+      />
+
+      {/* Action Cards */}
+      <RoomActionCards
+        cards={cards}
+        isVisible={isVisible}
+        onCardClick={(card) => {
+          if (card.id === "meditate") {
+            setShowPuzzle(true);
+            hideCards();
+          }
+        }}
+      />
     </group>
   );
 };

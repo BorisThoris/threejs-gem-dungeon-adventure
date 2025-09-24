@@ -9,6 +9,7 @@ import GameUI from "./GameUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
 import BuffManager from "./BuffManager";
+import GlobalActionCards from "./GlobalActionCards";
 import useGameStore from "../store/gameStore";
 import type { Item } from "../types/map";
 
@@ -178,6 +179,9 @@ const StartScreen: React.FC = () => {
 
       {/* Buff Manager - Background system */}
       <BuffManager />
+
+      {/* Global Action Cards */}
+      <GlobalActionCards />
 
       {/* Map UI Overlay */}
       <MapUI />
