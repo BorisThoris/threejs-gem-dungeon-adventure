@@ -11,6 +11,19 @@ interface PlayerStats {
   experience: number;
   streak: number;
   maxStreak: number;
+  // Character upgrades
+  size: number;
+  speed: number;
+  strength: number;
+  defense: number;
+  luck: number;
+  // Temporary buffs
+  buffs: {
+    speedBoost: number;
+    strengthBoost: number;
+    defenseBoost: number;
+    luckBoost: number;
+  };
 }
 
 interface GameUIProps {
@@ -96,6 +109,60 @@ const GameUI: React.FC<GameUIProps> = ({
             <div>💣 Bombs: {playerStats.bombs}</div>
           </div>
         </div>
+
+        {/* Character Stats */}
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            marginBottom: "10px",
+            fontSize: "12px",
+          }}
+        >
+          <div>
+            <div>💪 Size: {playerStats.size.toFixed(1)}x</div>
+            <div>🏃 Speed: {playerStats.speed.toFixed(1)}x</div>
+            <div>⚔️ Strength: {playerStats.strength.toFixed(1)}x</div>
+          </div>
+          <div>
+            <div>🛡️ Defense: {playerStats.defense.toFixed(1)}</div>
+            <div>🍀 Luck: {playerStats.luck.toFixed(1)}</div>
+          </div>
+        </div>
+
+        {/* Active Buffs */}
+        {(playerStats.buffs.speedBoost > 0 ||
+          playerStats.buffs.strengthBoost > 0 ||
+          playerStats.buffs.defenseBoost > 0 ||
+          playerStats.buffs.luckBoost > 0) && (
+          <div style={{ marginBottom: "10px", fontSize: "12px" }}>
+            <div style={{ color: "#FFD700", marginBottom: "5px" }}>
+              ✨ Active Buffs:
+            </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {playerStats.buffs.speedBoost > 0 && (
+                <div style={{ color: "#00ff00" }}>
+                  ☕ Speed Boost: {playerStats.buffs.speedBoost}s
+                </div>
+              )}
+              {playerStats.buffs.strengthBoost > 0 && (
+                <div style={{ color: "#ff8000" }}>
+                  💪 Strength Boost: {playerStats.buffs.strengthBoost}s
+                </div>
+              )}
+              {playerStats.buffs.defenseBoost > 0 && (
+                <div style={{ color: "#0080ff" }}>
+                  🛡️ Defense Boost: {playerStats.buffs.defenseBoost}s
+                </div>
+              )}
+              {playerStats.buffs.luckBoost > 0 && (
+                <div style={{ color: "#8000ff" }}>
+                  🍀 Luck Boost: {playerStats.buffs.luckBoost}s
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {currentRoom && (
           <div style={{ fontSize: "12px", color: "#ccc" }}>

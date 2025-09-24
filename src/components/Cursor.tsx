@@ -9,20 +9,18 @@ const Cursor: React.FC = () => {
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      // Only update cursor position if pointer is not locked
-      if (!isPointerLocked) {
-        // Constrain mouse position to window boundaries
-        const constrainedX = Math.max(
-          0,
-          Math.min(event.clientX, window.innerWidth)
-        );
-        const constrainedY = Math.max(
-          0,
-          Math.min(event.clientY, window.innerHeight)
-        );
+      // Always update cursor position based on mouse movement
+      // Constrain mouse position to window boundaries
+      const constrainedX = Math.max(
+        0,
+        Math.min(event.clientX, window.innerWidth)
+      );
+      const constrainedY = Math.max(
+        0,
+        Math.min(event.clientY, window.innerHeight)
+      );
 
-        setMousePosition({ x: constrainedX, y: constrainedY });
-      }
+      setMousePosition({ x: constrainedX, y: constrainedY });
     };
 
     const handleResize = () => {
@@ -50,7 +48,17 @@ const Cursor: React.FC = () => {
     };
 
     const handlePointerLockChange = () => {
-      setIsPointerLocked(!!document.pointerLockElement);
+      const locked = !!document.pointerLockElement;
+      setIsPointerLocked(locked);
+
+      // When pointer lock changes, update cursor position
+      if (locked) {
+        // When locked, cursor should be at center (where we're looking)
+        setMousePosition({
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2,
+        });
+      }
     };
 
     // Add event listeners
@@ -69,8 +77,7 @@ const Cursor: React.FC = () => {
     };
   }, [mousePosition.x, mousePosition.y, isPointerLocked]);
 
-  // Don't render cursor when pointer is locked
-  if (isPointerLocked) return null;
+  // Always render cursor, but adjust its behavior based on pointer lock state
 
   return (
     <div
@@ -79,16 +86,19 @@ const Cursor: React.FC = () => {
         top: mousePosition.y,
         left: mousePosition.x,
         transform: "translate(-50%, -50%)",
-        width: "24px",
-        height: "24px",
-        border: "3px solid #ffffff",
+        width: isPointerLocked ? "20px" : "24px",
+        height: isPointerLocked ? "20px" : "24px",
+        border: isPointerLocked ? "2px solid #00ff00" : "3px solid #ffffff",
         borderRadius: "50%",
-        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        backgroundColor: isPointerLocked
+          ? "rgba(0, 255, 0, 0.3)"
+          : "rgba(255, 255, 255, 0.2)",
         pointerEvents: "none",
         zIndex: 1000,
         transition: "all 0.1s ease",
-        boxShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
-        animation: "pulse 2s infinite",
+        boxShadow: isPointerLocked
+          ? "0 0 15px rgba(0, 255, 0, 0.8)"
+          : "0 0 10px rgba(255, 255, 255, 0.5)",
       }}
     />
   );

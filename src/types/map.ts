@@ -33,7 +33,12 @@ export const RoomType = {
   LIBRARY: 'library',
   CURSED_ROOM: 'cursed-room',
   DEVIL_ROOM: 'devil-room',
-  ANGEL_ROOM: 'angel-room'
+  ANGEL_ROOM: 'angel-room',
+  // Upgrade rooms
+  BENCH_PRESS: 'bench-press',
+  COFFEE: 'coffee',
+  LIBRARY_UPGRADE: 'library-upgrade',
+  MEDITATION: 'meditation'
 } as const;
 
 export type RoomType = typeof RoomType[keyof typeof RoomType];

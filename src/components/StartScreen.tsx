@@ -8,6 +8,7 @@ import MapUI from "./MapUI";
 import GameUI from "./GameUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
+import BuffManager from "./BuffManager";
 import useGameStore from "../store/gameStore";
 import type { Item } from "../types/map";
 
@@ -155,6 +156,9 @@ const StartScreen: React.FC = () => {
         currentRoom="Start Room"
         onItemUse={handleItemUse}
       />
+
+      {/* Buff Manager - Background system */}
+      <BuffManager />
 
       {/* Map UI Overlay */}
       <MapUI />

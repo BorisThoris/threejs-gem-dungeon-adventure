@@ -9,9 +9,14 @@ import ShopRoom from "./rooms/ShopRoom";
 import PuzzleRoom from "./rooms/PuzzleRoom";
 import SpecialRoom from "./rooms/SpecialRoom";
 import LibraryRoom from "./rooms/LibraryRoom";
+import BenchPressRoom from "./rooms/BenchPressRoom";
+import CoffeeRoom from "./rooms/CoffeeRoom";
+import LibraryUpgradeRoom from "./rooms/LibraryUpgradeRoom";
+import MeditationRoom from "./rooms/MeditationRoom";
 import RoomInteraction from "./RoomInteraction";
 import Door from "./Door";
 import DestructibleWall from "./DestructibleWall";
+import RoomDecorator from "./roomElements/RoomDecorator";
 
 interface RoomProps {
   room: RoomType;
@@ -32,12 +37,13 @@ const Room: React.FC<RoomProps> = ({
   playerPosition = [0, 0, 0],
   onInteraction,
 }) => {
+  const roomSize = 8;
+
   const getDoorPosition = (
     _room: RoomType,
     _connection: string,
     index: number
   ) => {
-    const roomSize = 8;
     const positions = [
       {
         position: [roomSize / 2, 1.5, 0] as [number, number, number],
@@ -380,6 +386,9 @@ const Room: React.FC<RoomProps> = ({
           </mesh>
         )}
 
+      {/* Room Decorations - Add elements to all room types */}
+      <RoomDecorator roomType={room.type} roomSize={roomSize} />
+
       {/* Enhanced Room Features - Always render all specialized rooms */}
       <>
         {/* Specialized Room Types */}
@@ -460,6 +469,43 @@ const Room: React.FC<RoomProps> = ({
           />
         )}
 
+        {/* Upgrade Rooms */}
+        {room.type === RoomTypeValues.BENCH_PRESS && (
+          <BenchPressRoom
+            onRewardClaim={() => {
+              console.log("Bench press workout completed!");
+              onInteraction?.("upgrade", room.id);
+            }}
+          />
+        )}
+
+        {room.type === RoomTypeValues.COFFEE && (
+          <CoffeeRoom
+            onRewardClaim={() => {
+              console.log("Coffee consumed!");
+              onInteraction?.("upgrade", room.id);
+            }}
+          />
+        )}
+
+        {room.type === RoomTypeValues.LIBRARY_UPGRADE && (
+          <LibraryUpgradeRoom
+            onRewardClaim={() => {
+              console.log("Books read for upgrade!");
+              onInteraction?.("upgrade", room.id);
+            }}
+          />
+        )}
+
+        {room.type === RoomTypeValues.MEDITATION && (
+          <MeditationRoom
+            onRewardClaim={() => {
+              console.log("Meditation completed!");
+              onInteraction?.("upgrade", room.id);
+            }}
+          />
+        )}
+
         {/* Fallback for other room types */}
         {![
           RoomTypeValues.TREASURE,
@@ -470,6 +516,13 @@ const Room: React.FC<RoomProps> = ({
           RoomTypeValues.CURSED_ROOM,
           RoomTypeValues.SECRET,
           RoomTypeValues.LIBRARY,
+          RoomTypeValues.BENCH_PRESS,
+          RoomTypeValues.COFFEE,
+          RoomTypeValues.LIBRARY_UPGRADE,
+          RoomTypeValues.MEDITATION,
+          RoomTypeValues.BOSS,
+          RoomTypeValues.TRAP,
+          RoomTypeValues.END,
         ].includes(room.type as any) && (
           <>
             {/* Items in room */}

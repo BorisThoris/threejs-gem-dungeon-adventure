@@ -14,6 +14,19 @@ interface PlayerStats {
   maxStreak: number;
   currentFloor: number;
   roomsCompleted: number;
+  // Character upgrades
+  size: number; // Character scale multiplier
+  speed: number; // Movement speed multiplier
+  strength: number; // Damage multiplier
+  defense: number; // Damage reduction
+  luck: number; // Better item drops
+  // Temporary buffs
+  buffs: {
+    speedBoost: number; // Coffee effect duration
+    strengthBoost: number; // Protein shake duration
+    defenseBoost: number; // Armor duration
+    luckBoost: number; // Lucky charm duration
+  };
 }
 
 interface GameState {
@@ -43,6 +56,17 @@ interface GameActions {
   addBomb: () => void;
   useBomb: () => boolean;
   updateStreak: (increment: boolean) => void;
+  
+  // Character upgrades
+  upgradeSize: (amount: number) => void;
+  upgradeSpeed: (amount: number) => void;
+  upgradeStrength: (amount: number) => void;
+  upgradeDefense: (amount: number) => void;
+  upgradeLuck: (amount: number) => void;
+  
+  // Temporary buffs
+  addBuff: (buffType: keyof PlayerStats['buffs'], duration: number) => void;
+  updateBuffs: () => void;
   
   // Inventory
   addItem: (item: Item) => void;
@@ -84,6 +108,19 @@ const initialStats: PlayerStats = {
   maxStreak: 0,
   currentFloor: 1,
   roomsCompleted: 0,
+  // Character upgrades
+  size: 1.0,
+  speed: 1.0,
+  strength: 1.0,
+  defense: 0,
+  luck: 0,
+  // Temporary buffs
+  buffs: {
+    speedBoost: 0,
+    strengthBoost: 0,
+    defenseBoost: 0,
+    luckBoost: 0,
+  },
 };
 
 // Demo items for testing
@@ -248,6 +285,89 @@ const useGameStore = create<GameState & GameActions>((set, get) => ({
           maxStreak: Math.max(state.playerStats.maxStreak, newStreak)
         }
       };
+    });
+  },
+
+  // Character upgrades
+  upgradeSize: (amount) => {
+    set((state) => ({
+      playerStats: {
+        ...state.playerStats,
+        size: Math.max(0.5, state.playerStats.size + amount),
+        maxLives: Math.max(3, state.playerStats.maxLives + Math.floor(amount * 2)) // Size increases max health
+      }
+    }));
+  },
+
+  upgradeSpeed: (amount) => {
+    set((state) => ({
+      playerStats: {
+        ...state.playerStats,
+        speed: Math.max(0.5, state.playerStats.speed + amount)
+      }
+    }));
+  },
+
+  upgradeStrength: (amount) => {
+    set((state) => ({
+      playerStats: {
+        ...state.playerStats,
+        strength: Math.max(0.5, state.playerStats.strength + amount)
+      }
+    }));
+  },
+
+  upgradeDefense: (amount) => {
+    set((state) => ({
+      playerStats: {
+        ...state.playerStats,
+        defense: Math.max(0, state.playerStats.defense + amount)
+      }
+    }));
+  },
+
+  upgradeLuck: (amount) => {
+    set((state) => ({
+      playerStats: {
+        ...state.playerStats,
+        luck: Math.max(0, state.playerStats.luck + amount)
+      }
+    }));
+  },
+
+  // Temporary buffs
+  addBuff: (buffType, duration) => {
+    set((state) => ({
+      playerStats: {
+        ...state.playerStats,
+        buffs: {
+          ...state.playerStats.buffs,
+          [buffType]: Math.max(state.playerStats.buffs[buffType], duration)
+        }
+      }
+    }));
+  },
+
+  updateBuffs: () => {
+    set((state) => {
+      const newBuffs = { ...state.playerStats.buffs };
+      let hasChanges = false;
+
+      // Decrease all buff durations by 1 second
+      Object.keys(newBuffs).forEach(key => {
+        const buffKey = key as keyof PlayerStats['buffs'];
+        if (newBuffs[buffKey] > 0) {
+          newBuffs[buffKey] = Math.max(0, newBuffs[buffKey] - 1);
+          hasChanges = true;
+        }
+      });
+
+      return hasChanges ? {
+        playerStats: {
+          ...state.playerStats,
+          buffs: newBuffs
+        }
+      } : state;
     });
   },
 

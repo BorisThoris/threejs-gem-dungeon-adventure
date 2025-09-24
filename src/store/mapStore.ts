@@ -99,18 +99,27 @@ function generateProceduralMap(config: MapConfig): GameMap {
   // Generate room patterns like BoI
   generateBoIPattern(grid, rooms, startX, startZ, roomSize, gridSize, specialRoomChance);
   
+  // Ensure we have at least one END room
+  ensureEndRoomExists(rooms, grid, startX, startZ, roomSize, gridSize);
+  
   // Ensure connectivity
   ensureConnectivity(rooms);
   
   // Debug: Log room positions
   console.log('Generated rooms:', rooms.map(r => ({ id: r.id, pos: r.position, connections: r.connections.length })));
   
+  // Find the end room (should be guaranteed to exist)
+  const endRoom = rooms.find(room => room.type === RoomType.END);
+  if (!endRoom) {
+    throw new Error('Failed to generate end room');
+  }
+  
   // Create the map
   const map: GameMap = {
     id: `map_${Date.now()}`,
     rooms,
     startRoomId: startRoom.id,
-    endRoomId: rooms[rooms.length - 1].id,
+    endRoomId: endRoom.id,
     config,
     generatedAt: Date.now(),
   };
@@ -543,7 +552,14 @@ function getRandomSpecialRoom(): string {
     RoomType.MEMORY_CHAMBER,
     RoomType.CURSED_ROOM,
     RoomType.DEVIL_ROOM,
-    RoomType.ANGEL_ROOM
+    RoomType.ANGEL_ROOM,
+    RoomType.BOSS,
+    RoomType.TRAP,
+    // Upgrade rooms
+    RoomType.BENCH_PRESS,
+    RoomType.COFFEE,
+    RoomType.LIBRARY_UPGRADE,
+    RoomType.MEDITATION
   ];
   return specialTypes[Math.floor(Math.random() * specialTypes.length)];
 }
@@ -582,6 +598,41 @@ function getDemoItemsForRoomType(roomType: string): any[] {
       return [
         { id: 'secret-key', name: 'Master Key', icon: '🗝️', rarity: 'rare' }
       ];
+    case RoomType.BENCH_PRESS:
+      return [
+        { id: 'protein-shake', name: 'Protein Shake', icon: '🥤', rarity: 'common' },
+        { id: 'weight-plate', name: 'Weight Plate', icon: '🏋️', rarity: 'uncommon' }
+      ];
+    case RoomType.COFFEE:
+      return [
+        { id: 'coffee-bean', name: 'Coffee Bean', icon: '☕', rarity: 'common' },
+        { id: 'espresso', name: 'Espresso', icon: '☕', rarity: 'uncommon' }
+      ];
+    case RoomType.LIBRARY_UPGRADE:
+      return [
+        { id: 'wisdom-scroll', name: 'Wisdom Scroll', icon: '📜', rarity: 'common' },
+        { id: 'intelligence-tome', name: 'Intelligence Tome', icon: '📚', rarity: 'rare' }
+      ];
+    case RoomType.MEDITATION:
+      return [
+        { id: 'incense', name: 'Incense', icon: '🕯️', rarity: 'common' },
+        { id: 'zen-crystal', name: 'Zen Crystal', icon: '🔮', rarity: 'uncommon' }
+      ];
+    case RoomType.BOSS:
+      return [
+        { id: 'boss-trophy', name: 'Boss Trophy', icon: '🏆', rarity: 'legendary' },
+        { id: 'boss-key', name: 'Boss Key', icon: '🗝️', rarity: 'epic' }
+      ];
+    case RoomType.TRAP:
+      return [
+        { id: 'trap-disarm', name: 'Trap Disarm Kit', icon: '🔧', rarity: 'common' },
+        { id: 'trap-spring', name: 'Spring Trap', icon: '⚡', rarity: 'uncommon' }
+      ];
+    case RoomType.END:
+      return [
+        { id: 'exit-key', name: 'Exit Key', icon: '🗝️', rarity: 'legendary' },
+        { id: 'victory-crown', name: 'Victory Crown', icon: '👑', rarity: 'legendary' }
+      ];
     default:
       return [];
   }
@@ -604,12 +655,118 @@ function getSpecialPropertiesForRoomType(roomType: string): any {
       return { cursed: true, risk: 'lose_life' };
     case RoomType.SECRET:
       return { hidden: true, bonusRewards: true };
+    case RoomType.BENCH_PRESS:
+      return { hasEquipment: true, strengthBonus: 1.1, sizeBonus: 1.1 };
+    case RoomType.COFFEE:
+      return { hasCoffee: true, speedBonus: 1.2, maxUses: 3 };
+    case RoomType.LIBRARY_UPGRADE:
+      return { hasBooks: true, luckBonus: 1.1, maxBooks: 5 };
+    case RoomType.MEDITATION:
+      return { hasCushion: true, defenseBonus: 1.15, zenMode: true };
+    case RoomType.BOSS:
+      return { hasBoss: true, highReward: true, requiresCombat: true };
+    case RoomType.TRAP:
+      return { hasTrap: true, risk: 'damage', requiresSkill: true };
+    case RoomType.END:
+      return { isExit: true, victory: true, finalRoom: true };
     default:
       return {};
   }
 }
 
 // Clean, simple BoI-style map generation
+
+// Ensure at least one END room exists
+function ensureEndRoomExists(
+  rooms: Room[], 
+  grid: (Room | null)[][], 
+  startX: number, 
+  startZ: number, 
+  roomSize: number, 
+  gridSize: number
+): void {
+  // Check if we already have an END room
+  const hasEndRoom = rooms.some(room => room.type === RoomType.END);
+  
+  if (hasEndRoom) {
+    return; // Already has an end room
+  }
+  
+  // Find a suitable position for the end room
+  // Look for empty spots at the edges of the grid
+  let endX = -1;
+  let endZ = -1;
+  
+  // Try to find an empty spot at the edges
+  for (let x = 0; x < gridSize; x++) {
+    for (let z = 0; z < gridSize; z++) {
+      if (!grid[x][z] && (x === 0 || x === gridSize - 1 || z === 0 || z === gridSize - 1)) {
+        endX = x;
+        endZ = z;
+        break;
+      }
+    }
+    if (endX !== -1) break;
+  }
+  
+  // If no edge spot found, find any empty spot
+  if (endX === -1) {
+    for (let x = 0; x < gridSize; x++) {
+      for (let z = 0; z < gridSize; z++) {
+        if (!grid[x][z]) {
+          endX = x;
+          endZ = z;
+          break;
+        }
+      }
+      if (endX !== -1) break;
+    }
+  }
+  
+  // If still no spot found, place it at the end of the rooms array
+  if (endX === -1) {
+    endX = startX;
+    endZ = startZ + 3; // Place it 3 units away from start
+  }
+  
+  // Calculate position relative to center
+  const relativeX = (endX - startX) * roomSize;
+  const relativeZ = (endZ - startZ) * roomSize;
+  
+  // Create the end room
+  const endRoom: Room = {
+    id: `room_end_${Date.now()}`,
+    position: { x: relativeX, z: relativeZ },
+    type: RoomType.END,
+    connections: [],
+    size: roomSize,
+    isVisited: false,
+    isCurrent: false,
+    // Add demo items for end room
+    items: getDemoItemsForRoomType(RoomType.END),
+    specialProperties: getSpecialPropertiesForRoomType(RoomType.END),
+  };
+  
+  rooms.push(endRoom);
+  grid[endX][endZ] = endRoom;
+  
+  // Connect the end room to the nearest existing room
+  const nearestRoom = rooms
+    .filter(room => room.id !== endRoom.id)
+    .reduce((nearest, current) => {
+      const endDist = Math.abs(endRoom.position.x - current.position.x) + Math.abs(endRoom.position.z - current.position.z);
+      const nearestDist = Math.abs(endRoom.position.x - nearest.position.x) + Math.abs(endRoom.position.z - nearest.position.z);
+      return endDist < nearestDist ? current : nearest;
+    });
+  
+  // Create bidirectional connection
+  if (!endRoom.connections.includes(nearestRoom.id)) {
+    endRoom.connections.push(nearestRoom.id);
+  }
+  if (!nearestRoom.connections.includes(endRoom.id)) {
+    nearestRoom.connections.push(endRoom.id);
+  }
+}
 
 function ensureConnectivity(rooms: Room[]): void {
   const visited = new Set<string>();
