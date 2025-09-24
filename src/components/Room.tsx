@@ -1,5 +1,11 @@
 import React from "react";
 import { RigidBody } from "@react-three/rapier";
+import {
+  CircleGeometry,
+  ConeGeometry,
+  CylinderGeometry,
+  OctahedronGeometry,
+} from "three";
 import type { Room as RoomType, Item } from "../types/map";
 import { RoomType as RoomTypeValues } from "../types/map";
 import ItemSprite from "./ItemSprite";
@@ -13,6 +19,8 @@ import BenchPressRoom from "./rooms/BenchPressRoom";
 import CoffeeRoom from "./rooms/CoffeeRoom";
 import LibraryUpgradeRoom from "./rooms/LibraryUpgradeRoom";
 import MeditationRoom from "./rooms/MeditationRoom";
+import PortalRoom from "./rooms/PortalRoom";
+import ArenaRoom from "./rooms/ArenaRoom";
 import RoomInteraction from "./RoomInteraction";
 import Door from "./Door";
 import DestructibleWall from "./DestructibleWall";
@@ -39,30 +47,41 @@ const Room: React.FC<RoomProps> = ({
 }) => {
   const roomSize = 8;
 
-  const getDoorPosition = (
-    _room: RoomType,
-    _connection: string,
-    index: number
-  ) => {
-    const positions = [
-      {
-        position: [roomSize / 2, 1.5, 0] as [number, number, number],
-        rotation: [0, Math.PI / 2, 0] as [number, number, number],
-      }, // Right
-      {
-        position: [-roomSize / 2, 1.5, 0] as [number, number, number],
-        rotation: [0, -Math.PI / 2, 0] as [number, number, number],
-      }, // Left
-      {
+  // Compute door placement based on relative position of connected room
+  const getDoorPosition = (self: RoomType, target: RoomType) => {
+    const dx = target.position.x - self.position.x;
+    const dz = target.position.z - self.position.z;
+
+    // East / West
+    if (Math.abs(dx) > Math.abs(dz)) {
+      if (dx > 0) {
+        // East (right wall)
+        return {
+          position: [roomSize / 2, 1.5, 0] as [number, number, number],
+          rotation: [0, Math.PI / 2, 0] as [number, number, number],
+        };
+      } else {
+        // West (left wall)
+        return {
+          position: [-roomSize / 2, 1.5, 0] as [number, number, number],
+          rotation: [0, -Math.PI / 2, 0] as [number, number, number],
+        };
+      }
+    }
+
+    // North / South (z axis)
+    if (dz > 0) {
+      // South (front wall)
+      return {
         position: [0, 1.5, roomSize / 2] as [number, number, number],
         rotation: [0, 0, 0] as [number, number, number],
-      }, // Front
-      {
-        position: [0, 1.5, -roomSize / 2] as [number, number, number],
-        rotation: [0, Math.PI, 0] as [number, number, number],
-      }, // Back
-    ];
-    return positions[index % positions.length];
+      };
+    }
+    // North (back wall)
+    return {
+      position: [0, 1.5, -roomSize / 2] as [number, number, number],
+      rotation: [0, Math.PI, 0] as [number, number, number],
+    };
   };
 
   const getRoomColor = (type: string): string => {
@@ -153,15 +172,51 @@ const Room: React.FC<RoomProps> = ({
       room.position.z === connectedRoom.position.z
   );
 
+  // Get room shape geometry
+  const getRoomGeometry = () => {
+    const width = room.width || room.size;
+    const height = room.height || room.size;
+
+    switch (room.shape) {
+      case "circle":
+        return <primitive object={new CircleGeometry(width / 2, 32)} />;
+      case "triangle":
+        return <primitive object={new ConeGeometry(width / 2, height, 3)} />;
+      case "hexagon":
+        return (
+          <primitive
+            object={new CylinderGeometry(width / 2, width / 2, 0.1, 6)}
+          />
+        );
+      case "octagon":
+        return (
+          <primitive
+            object={new CylinderGeometry(width / 2, width / 2, 0.1, 8)}
+          />
+        );
+      case "diamond":
+        return <primitive object={new OctahedronGeometry(width / 2)} />;
+      case "star":
+        return <boxGeometry args={[width, 0.1, height]} />; // Fallback to box for star
+      case "cross":
+        return <boxGeometry args={[width, 0.1, height]} />;
+      default:
+        return <planeGeometry args={[width, height]} />;
+    }
+  };
+
   return (
-    <group position={[room.position.x, 0, room.position.z]} scale={scale}>
-      {/* Physical Floor with Collision */}
+    <group
+      position={[room.position.x, 0, room.position.z]}
+      scale={scale}
+      rotation={[0, room.rotation || 0, 0]}
+    >
+      {/* Physical Floor with Collision - always full square for reliable physics */}
       <RigidBody type="fixed" colliders="trimesh">
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
           position={[0, -roomHeight / 2, 0]}
           receiveShadow
-          onClick={onClick}
         >
           <planeGeometry args={[room.size, room.size]} />
           <meshLambertMaterial
@@ -171,6 +226,17 @@ const Room: React.FC<RoomProps> = ({
           />
         </mesh>
       </RigidBody>
+
+      {/* Visual Floor Overlay - shaped for variety */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -roomHeight / 2 + 0.01, 0]}
+        receiveShadow
+        onClick={onClick}
+      >
+        {getRoomGeometry()}
+        <meshLambertMaterial color={roomColor} transparent opacity={opacity} />
+      </mesh>
 
       {/* North Wall - Split into segments if there's a door */}
       {hasNorthConnection ? (
@@ -506,6 +572,26 @@ const Room: React.FC<RoomProps> = ({
           />
         )}
 
+        {/* New Advanced Room Types */}
+        {room.type === RoomTypeValues.PORTAL && (
+          <PortalRoom
+            onRewardClaim={() => {
+              console.log("Portal activated!");
+              onInteraction?.("portal", room.id);
+            }}
+            portalDestination={room.portalDestination}
+          />
+        )}
+
+        {room.type === RoomTypeValues.ARENA && (
+          <ArenaRoom
+            onRewardClaim={() => {
+              console.log("Arena battle completed!");
+              onInteraction?.("combat", room.id);
+            }}
+          />
+        )}
+
         {/* Fallback for other room types */}
         {![
           RoomTypeValues.TREASURE,
@@ -589,14 +675,16 @@ const Room: React.FC<RoomProps> = ({
         {/* Doors */}
         {room.connections && room.connections.length > 0 && (
           <>
-            {room.connections.map((connection, index) => {
-              const doorPosition = getDoorPosition(room, connection, index);
+            {room.connections.map((connectionId) => {
+              const target = connectedRooms.find((r) => r.id === connectionId);
+              if (!target) return null;
+              const doorPosition = getDoorPosition(room, target);
               return (
                 <Door
-                  key={`door-${connection}`}
+                  key={`door-${connectionId}`}
                   position={doorPosition.position}
                   rotation={doorPosition.rotation}
-                  keyRequired={Math.random() > 0.7} // 30% chance of requiring key
+                  keyRequired={Math.random() > 0.7}
                   keyId="master-key"
                 />
               );

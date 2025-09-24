@@ -12,8 +12,29 @@ export interface Room {
   isVisited: boolean;
   isCurrent: boolean;
   // Enhanced room properties
-  items?: any[]; // Demo items for special rooms
-  specialProperties?: { [key: string]: any }; // Special room properties
+  items?: Item[]; // Demo items for special rooms
+  specialProperties?: Record<string, unknown>; // Special room properties
+  // New advanced properties
+  shape?: 'square' | 'circle' | 'triangle' | 'hexagon' | 'octagon' | 'diamond' | 'star' | 'cross' | 'spiral';
+  width?: number; // For non-square rooms
+  height?: number; // For non-square rooms
+  rotation?: number; // Room rotation in radians
+  isPortal?: boolean; // Portal room flag
+  portalDestination?: string; // Where portal leads
+  isMultiTile?: boolean; // Multi-tile room flag
+  tilePositions?: Position[]; // Positions of all tiles for multi-tile rooms
+  theme?: string; // Room theme/atmosphere
+  difficulty?: number; // Room difficulty (1-10)
+  level?: number; // Required level to enter
+  isLocked?: boolean; // Requires key/item to enter
+  requiredItem?: string; // Required item ID
+  timeLimit?: number; // Time limit in seconds
+  maxOccupants?: number; // Max players/NPCs
+  ambientSound?: string; // Ambient sound file
+  lighting?: 'bright' | 'dim' | 'dark' | 'mystical' | 'neon' | 'fire' | 'candle';
+  temperature?: 'hot' | 'warm' | 'neutral' | 'cool' | 'cold' | 'freezing';
+  humidity?: 'dry' | 'normal' | 'humid' | 'wet';
+  airQuality?: 'fresh' | 'stale' | 'toxic' | 'magical' | 'ethereal';
 }
 
 export const RoomType = {
@@ -38,7 +59,84 @@ export const RoomType = {
   BENCH_PRESS: 'bench-press',
   COFFEE: 'coffee',
   LIBRARY_UPGRADE: 'library-upgrade',
-  MEDITATION: 'meditation'
+  MEDITATION: 'meditation',
+  // New advanced room types
+  PORTAL: 'portal',
+  ARENA: 'arena',
+  LABORATORY: 'laboratory',
+  OBSERVATORY: 'observatory',
+  VAULT: 'vault',
+  SHRINE: 'shrine',
+  GARDEN: 'garden',
+  WORKSHOP: 'workshop',
+  THRONE_ROOM: 'throne-room',
+  DUNGEON: 'dungeon',
+  CRYPT: 'crypt',
+  SANCTUARY: 'sanctuary',
+  FORGE: 'forge',
+  ALCHEMY: 'alchemy',
+  MUSEUM: 'museum',
+  THEATER: 'theater',
+  BALLROOM: 'ballroom',
+  KITCHEN: 'kitchen',
+  BEDROOM: 'bedroom',
+  BATHROOM: 'bathroom',
+  CLOSET: 'closet',
+  ATTIC: 'attic',
+  BASEMENT: 'basement',
+  TOWER: 'tower',
+  BRIDGE: 'bridge',
+  GATEHOUSE: 'gatehouse',
+  BARRACKS: 'barracks',
+  STABLE: 'stable',
+  ARMORY: 'armory',
+  TREASURY: 'treasury',
+  COURTROOM: 'courtroom',
+  CHAPEL: 'chapel',
+  TEMPLE: 'temple',
+  MONASTERY: 'monastery',
+  CATHEDRAL: 'cathedral',
+  MOSQUE: 'mosque',
+  SYNAGOGUE: 'synagogue',
+  PAGODA: 'pagoda',
+  ZIGGURAT: 'ziggurat',
+  PYRAMID: 'pyramid',
+  COLOSSEUM: 'colosseum',
+  AMPHITHEATER: 'amphitheater',
+  AQUEDUCT: 'aqueduct',
+  SEWER: 'sewer',
+  TUNNEL: 'tunnel',
+  CAVE: 'cave',
+  GROTTO: 'grotto',
+  UNDERGROUND: 'underground',
+  SUBTERRANEAN: 'subterranean',
+  ABYSS: 'abyss',
+  VOID: 'void',
+  NEXUS: 'nexus',
+  CROSSROADS: 'crossroads',
+  INTERSECTION: 'intersection',
+  ROTUNDA: 'rotunda',
+  PAVILION: 'pavilion',
+  GAZEBOS: 'gazebo',
+  PERGOLA: 'pergola',
+  VERANDA: 'veranda',
+  BALCONY: 'balcony',
+  TERRACE: 'terrace',
+  PATIO: 'patio',
+  COURTYARD: 'courtyard',
+  PLAZA: 'plaza',
+  SQUARE: 'square',
+  CIRCLE: 'circle',
+  TRIANGLE: 'triangle',
+  HEXAGON: 'hexagon',
+  OCTAGON: 'octagon',
+  PENTAGON: 'pentagon',
+  DIAMOND: 'diamond',
+  STAR: 'star',
+  CROSS: 'cross',
+  SPIRAL: 'spiral',
+  MAZE: 'maze',
+  LABYRINTH: 'labyrinth'
 } as const;
 
 export type RoomType = typeof RoomType[keyof typeof RoomType];

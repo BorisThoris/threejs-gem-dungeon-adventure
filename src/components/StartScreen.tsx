@@ -34,6 +34,22 @@ const Ground: React.FC = () => {
   );
 };
 
+// Safety Floor - very large invisible catch plane to prevent falling
+const SafetyFloor: React.FC = () => {
+  return (
+    <RigidBody type="fixed" colliders="trimesh">
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -10, 0]}
+        visible={false}
+      >
+        <planeGeometry args={[2000, 2000]} />
+        <meshBasicMaterial color="#000000" transparent opacity={0} />
+      </mesh>
+    </RigidBody>
+  );
+};
+
 // Main Scene Component
 const GhostScene: React.FC = () => {
   return (
@@ -73,6 +89,9 @@ const GhostScene: React.FC = () => {
 
         {/* Ground */}
         <Ground />
+
+        {/* Safety catch floor (invisible) */}
+        <SafetyFloor />
       </Physics>
     </>
   );

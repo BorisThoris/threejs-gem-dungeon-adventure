@@ -103,9 +103,9 @@ const DestructibleWall: React.FC<DestructibleWallProps> = ({
         >
           {bombRequired
             ? canDestroy
-              ? "Click to bomb"
-              : "Bomb required"
-            : "Click to destroy"}
+              ? "💣 Click to bomb"
+              : "💣 Bomb required"
+            : "Cracked wall - click to break"}
         </Text>
       )}
 
@@ -126,11 +126,34 @@ const DestructibleWall: React.FC<DestructibleWallProps> = ({
       )}
 
       {/* Visual indicator when hovered */}
-      {isHovered && canDestroy && (
+      {isHovered && (
         <mesh position={[0, 0, 0.3]}>
-          <boxGeometry args={[2.2, 3.2, 0.1]} />
-          <meshBasicMaterial color="#FF4500" transparent opacity={0.3} />
+          <boxGeometry args={[2.3, 3.3, 0.1]} />
+          <meshBasicMaterial
+            color={bombRequired ? "#FF4500" : "#FFD700"}
+            transparent
+            opacity={0.25}
+          />
         </mesh>
+      )}
+
+      {/* Bomb icon tag for bomb-required walls */}
+      {bombRequired && !isDestroyed && (
+        <group position={[0, 2.6, 0.3]}>
+          <mesh>
+            <boxGeometry args={[0.8, 0.3, 0.05]} />
+            <meshBasicMaterial color="#FF4500" />
+          </mesh>
+          <Text
+            position={[0, 0, 0.06]}
+            fontSize={0.25}
+            color="#FFFFFF"
+            anchorX="center"
+            anchorY="middle"
+          >
+            💣
+          </Text>
+        </group>
       )}
 
       {/* Damage Particles (simple visual) */}
