@@ -1,22 +1,21 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 import useGameStore from "../../store/gameStore";
-import PuzzleRouter from "../PuzzleRouter";
+import OptimizedPuzzleRouter from "../OptimizedPuzzleRouter";
 import RoomActionCards from "../RoomActionCards";
 import { useRoomActions } from "../../hooks/useRoomActions";
 
-interface BenchPressRoomProps {
-  onRewardClaim?: () => void;
-}
+// All interactions handled through card system
+type BenchPressRoomProps = Record<string, never>;
 
-const BenchPressRoom: React.FC<BenchPressRoomProps> = ({ onRewardClaim }) => {
+const BenchPressRoom: React.FC<BenchPressRoomProps> = () => {
   const { upgradeStrength, addPoints, addExperience, addBuff } = useGameStore();
   const [hasLifted, setHasLifted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showPuzzle, setShowPuzzle] = useState(false);
   const [puzzleCompleted, setPuzzleCompleted] = useState(false);
 
-  const { cards, isVisible, showCards, hideCards } = useRoomActions({
+  const { cards, isVisible, hideCards } = useRoomActions({
     roomType: "benchpress",
     onPuzzleStart: () => setShowPuzzle(true),
   });
@@ -32,7 +31,7 @@ const BenchPressRoom: React.FC<BenchPressRoomProps> = ({ onRewardClaim }) => {
     addPoints(40);
     addExperience(30);
 
-    onRewardClaim?.();
+    // Reward handled through card system
 
     setTimeout(() => setIsAnimating(false), 2000);
   };
@@ -153,15 +152,13 @@ const BenchPressRoom: React.FC<BenchPressRoomProps> = ({ onRewardClaim }) => {
         </group>
       )}
 
-      {/* Puzzle Overlay */}
-      <PuzzleRouter
+      {/* Optimized Puzzle Overlay */}
+      <OptimizedPuzzleRouter
         isVisible={showPuzzle}
-        onClose={() => setShowPuzzle(false)}
-        puzzleType="sequence"
-        difficulty="medium"
-        roomTitle="💪 Strength Training Challenge"
-        roomSubtitle="Build mental and physical strength through sequence memory!"
         onComplete={handlePuzzleComplete}
+        onExit={() => setShowPuzzle(false)}
+        puzzleType="number"
+        difficulty="medium"
       />
 
       {/* Action Cards */}

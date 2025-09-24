@@ -3,21 +3,15 @@ import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import type { Item } from "../../types/map";
 import ItemSprite from "../ItemSprite";
-import PuzzleRouter from "../PuzzleRouter";
+import OptimizedPuzzleRouter from "../OptimizedPuzzleRouter";
 import RoomActionCards from "../RoomActionCards";
 import { useRoomActions } from "../../hooks/useRoomActions";
 
 interface LibraryRoomProps {
   books: Item[];
-  onBookRead: (book: Item) => void;
-  onKnowledgeGain: (amount: number) => void;
 }
 
-const LibraryRoom: React.FC<LibraryRoomProps> = ({
-  books,
-  onBookRead,
-  onKnowledgeGain,
-}) => {
+const LibraryRoom: React.FC<LibraryRoomProps> = ({ books }) => {
   const [selectedBook, setSelectedBook] = useState<Item | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [showPuzzle, setShowPuzzle] = useState(false);
@@ -34,8 +28,7 @@ const LibraryRoom: React.FC<LibraryRoomProps> = ({
     setPuzzleCompleted(true);
     setSelectedBook(books[0]); // Use first book as example
     setIsReading(true);
-    onBookRead(books[0]);
-    onKnowledgeGain(50); // Gain knowledge from reading
+    // Book reading handled through card system
 
     // Stop reading after 2 seconds
     setTimeout(() => {
@@ -211,15 +204,13 @@ const LibraryRoom: React.FC<LibraryRoomProps> = ({
         distance={8}
       />
 
-      {/* Puzzle Overlay */}
-      <PuzzleRouter
+      {/* Optimized Puzzle Overlay */}
+      <OptimizedPuzzleRouter
         isVisible={showPuzzle}
-        onClose={() => setShowPuzzle(false)}
+        onComplete={handlePuzzleComplete}
+        onExit={() => setShowPuzzle(false)}
         puzzleType="number"
         difficulty="hard"
-        roomTitle="📚 Library Study Challenge"
-        roomSubtitle="Test your memory with numbers to gain knowledge!"
-        onComplete={handlePuzzleComplete}
       />
 
       {/* Action Cards */}

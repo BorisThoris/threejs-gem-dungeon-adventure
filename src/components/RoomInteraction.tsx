@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Text } from "@react-three/drei";
-import useGameStore from "../store/gameStore";
+import React, { useState, useEffect } from "react";
 import RoomActionCards from "./RoomActionCards";
 import { useRoomActions } from "../hooks/useRoomActions";
 import type { Room } from "../types/map";
@@ -16,12 +14,8 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
   playerPosition: _playerPosition,
   onInteraction,
 }) => {
-  useGameStore();
+  // Game store functions handled through card system
   const [isNearby, setIsNearby] = useState(false);
-  const [interactionPrompt, setInteractionPrompt] = useState<string | null>(
-    null
-  );
-  const [isHovered, setIsHovered] = useState(false);
 
   // Map room types to action card room types
   const getRoomTypeForActions = (roomType: string) => {
@@ -48,7 +42,7 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
   };
 
   const actionRoomType = getRoomTypeForActions(room.type);
-  const { cards, isVisible, showCards, hideCards } = useRoomActions({
+  const { cards, isVisible, hideCards } = useRoomActions({
     roomType: actionRoomType || "meditation", // fallback to meditation
     onPuzzleStart: () => onInteraction("puzzle", room.id),
     onShopOpen: () => onInteraction("shop", room.id),
@@ -61,8 +55,16 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
   // Check if player is close enough to interact
   useEffect(() => {
     const distance = Math.sqrt(
-      Math.pow(_playerPosition[0] - (room.position as any)[0], 2) +
-        Math.pow(_playerPosition[2] - (room.position as any)[2], 2)
+      Math.pow(
+        _playerPosition[0] -
+          (room.position as unknown as [number, number, number])[0],
+        2
+      ) +
+        Math.pow(
+          _playerPosition[2] -
+            (room.position as unknown as [number, number, number])[2],
+          2
+        )
     );
 
     // Define a proximity threshold
@@ -70,85 +72,26 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
 
     if (distance < proximityThreshold) {
       setIsNearby(true);
-      // Set interaction prompt based on room type
-      if (room.type === "puzzle" && (room as any).puzzle) {
-        setInteractionPrompt("Click to see puzzle options");
-      } else if (
-        room.type === "treasure" &&
-        room.specialProperties?.isOpened === false
-      ) {
-        setInteractionPrompt("Click to see treasure options");
-      } else if (room.type === "shop") {
-        setInteractionPrompt("Click to see shop options");
-      } else if (room.type === "library") {
-        setInteractionPrompt("Click to see study options");
-      } else if (room.type === "meditation") {
-        setInteractionPrompt("Click to see meditation options");
-      } else if (room.type === "bench-press") {
-        setInteractionPrompt("Click to see training options");
-      } else if (room.type === "devil-room" || room.type === "angel-room") {
-        setInteractionPrompt("Click to interact with altar");
-      } else if (room.type === "boss") {
-        setInteractionPrompt("Click to see boss options");
-      } else if (room.type === "challenge") {
-        setInteractionPrompt("Click to see challenge options");
-      } else if (room.type === "secret") {
-        setInteractionPrompt("Click to discover secret");
-      } else {
-        setInteractionPrompt(null);
-      }
     } else {
       setIsNearby(false);
-      setInteractionPrompt(null);
     }
   }, [_playerPosition, room]);
 
-  // Handle interaction - show action cards instead of direct interaction
-  const handleInteraction = useCallback(() => {
-    if (!isNearby || !actionRoomType) return;
+  // All interactions now go through the card system automatically
+  // No more direct clickable interactions - cards handle everything
 
-    // Show action cards for rooms that support them
-    showCards();
-  }, [isNearby, actionRoomType, showCards]);
-
-  if (!isNearby || !interactionPrompt) return null;
+  if (!isNearby || !actionRoomType) return null;
 
   return (
     <>
       <group
         position={[
-          (room.position as any)[0],
-          (room.position as any)[1] + 3,
-          (room.position as any)[2],
+          (room.position as unknown as [number, number, number])[0],
+          (room.position as unknown as [number, number, number])[1] + 3,
+          (room.position as unknown as [number, number, number])[2],
         ]}
       >
-        {/* Interaction Prompt - Clickable */}
-        <mesh
-          onClick={handleInteraction}
-          onPointerOver={() => setIsHovered(true)}
-          onPointerOut={() => setIsHovered(false)}
-        >
-          <boxGeometry args={[4, 1, 0.1]} />
-          <meshBasicMaterial
-            color={isHovered ? "#00FF00" : "#000000"}
-            transparent
-            opacity={isHovered ? 0.8 : 0.5}
-          />
-        </mesh>
-
-        <Text
-          position={[0, 0, 0.1]}
-          fontSize={0.5}
-          color="white"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.05}
-          outlineColor="#000000"
-        >
-          {interactionPrompt}
-        </Text>
-
-        {/* Visual indicator (e.g., pulsing circle) */}
+        {/* Visual indicator only - no longer clickable */}
         <mesh position={[0, -1, 0]}>
           <boxGeometry args={[0.6, 0.05, 0.6]} />
           <meshBasicMaterial
@@ -159,13 +102,15 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
         </mesh>
       </group>
 
-      {/* Action Cards - Only show if room supports them */}
+      {/* Action Cards - Automatically shown when near room */}
       {actionRoomType && (
         <RoomActionCards
           cards={cards}
           isVisible={isVisible}
           onCardClick={(card) => {
             console.log(`Card clicked: ${card.id} in room ${room.id}`);
+            // Handle the actual interaction through the card
+            onInteraction(card.id, room.id);
             hideCards();
           }}
         />

@@ -2,27 +2,21 @@ import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 import useGameStore from "../../store/gameStore";
 import { Candle, Crystal, PotionBottle } from "../roomElements/RoomElements";
-import PuzzleRouter from "../PuzzleRouter";
+import OptimizedPuzzleRouter from "../OptimizedPuzzleRouter";
 import RoomActionCards from "../RoomActionCards";
 import { useRoomActions } from "../../hooks/useRoomActions";
 
-interface MeditationRoomProps {
-  onRewardClaim?: () => void;
-}
+// All interactions handled through card system
+type MeditationRoomProps = Record<string, never>;
 
-const MeditationRoom: React.FC<MeditationRoomProps> = ({ onRewardClaim }) => {
+const MeditationRoom: React.FC<MeditationRoomProps> = () => {
   const { upgradeDefense, addPoints, addExperience, addBuff } = useGameStore();
   const [isMeditating, setIsMeditating] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showPuzzle, setShowPuzzle] = useState(false);
   const [puzzleCompleted, setPuzzleCompleted] = useState(false);
 
-  const {
-    cards,
-    isVisible,
-    showCards: showActionCards,
-    hideCards,
-  } = useRoomActions({
+  const { cards, isVisible, hideCards } = useRoomActions({
     roomType: "meditation",
     onPuzzleStart: () => setShowPuzzle(true),
   });
@@ -38,8 +32,7 @@ const MeditationRoom: React.FC<MeditationRoomProps> = ({ onRewardClaim }) => {
     addPoints(40); // Reward points
     addExperience(30); // Reward experience
 
-    // Call reward callback
-    onRewardClaim?.();
+    // Reward handled through card system
 
     // Stop animation after 3 seconds
     setTimeout(() => {
@@ -244,15 +237,13 @@ const MeditationRoom: React.FC<MeditationRoomProps> = ({ onRewardClaim }) => {
       <PotionBottle position={[-0.8, 0.4, -0.8]} color="#00ff00" />
       <PotionBottle position={[0.8, 0.4, 0.8]} color="#00ff00" />
 
-      {/* Puzzle Overlay */}
-      <PuzzleRouter
+      {/* Optimized Puzzle Overlay */}
+      <OptimizedPuzzleRouter
         isVisible={showPuzzle}
-        onClose={() => setShowPuzzle(false)}
-        puzzleType="memory"
-        difficulty="easy"
-        roomTitle="🧘 Meditation Challenge"
-        roomSubtitle="Focus your mind and find inner peace through memory!"
         onComplete={handlePuzzleComplete}
+        onExit={() => setShowPuzzle(false)}
+        puzzleType="number"
+        difficulty="easy"
       />
 
       {/* Action Cards */}

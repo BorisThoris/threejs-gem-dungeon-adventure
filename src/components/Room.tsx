@@ -462,30 +462,16 @@ const Room: React.FC<RoomProps> = ({
       {/* Enhanced Room Features - Always render all specialized rooms */}
       <>
         {/* Specialized Room Types */}
-        {room.type === RoomTypeValues.TREASURE && (
-          <TreasureRoom
-            onTreasureOpen={() => {
-              console.log("Opened treasure chest!");
-              // Handle chest opening
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.TREASURE && <TreasureRoom />}
 
-        {room.type === RoomTypeValues.SHOP && (
-          <ShopRoom
-            onShopOpen={() => {
-              console.log("Shop opened!");
-              // Handle shop opening
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.SHOP && <ShopRoom />}
 
         {room.type === RoomTypeValues.PUZZLE && (room as any).puzzle && (
           <PuzzleRoom
             puzzle={(room as any).puzzle}
             onPuzzleComplete={() => {
               console.log("Puzzle completed!");
-              // Handle puzzle completion
+              // Handle puzzle completion through card system
             }}
           />
         )}
@@ -499,121 +485,42 @@ const Room: React.FC<RoomProps> = ({
             items={(room as any).items || []}
             onItemInteraction={(item) => {
               console.log(`Interacted with special item: ${item.name}`);
-              // Handle special item interaction
+              // Handle special item interaction through card system
             }}
             onRoomEnter={() => {
               console.log(`Entered ${room.type}`);
-              // Handle special room entry
+              // Handle special room entry through card system
             }}
           />
         )}
 
         {room.type === RoomTypeValues.LIBRARY && (
-          <LibraryRoom
-            books={(room as any).books || []}
-            onBookRead={(book) => {
-              console.log(`Read book: ${book.name}`);
-              // Handle book reading
-            }}
-            onKnowledgeGain={(amount) => {
-              console.log(`Gained ${amount} knowledge`);
-              // Handle knowledge gain
-            }}
-          />
+          <LibraryRoom books={(room as any).books || []} />
         )}
 
-        {/* Upgrade Rooms */}
-        {room.type === RoomTypeValues.BENCH_PRESS && (
-          <BenchPressRoom
-            onRewardClaim={() => {
-              console.log("Bench press workout completed!");
-              onInteraction?.("upgrade", room.id);
-            }}
-          />
-        )}
+        {/* Upgrade Rooms - All interactions through card system */}
+        {room.type === RoomTypeValues.BENCH_PRESS && <BenchPressRoom />}
 
-        {room.type === RoomTypeValues.COFFEE && (
-          <CoffeeRoom
-            onRewardClaim={() => {
-              console.log("Coffee consumed!");
-              onInteraction?.("upgrade", room.id);
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.COFFEE && <CoffeeRoom />}
 
-        {room.type === RoomTypeValues.LIBRARY_UPGRADE && (
-          <LibraryUpgradeRoom
-            onRewardClaim={() => {
-              console.log("Books read for upgrade!");
-              onInteraction?.("upgrade", room.id);
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.LIBRARY_UPGRADE && <LibraryUpgradeRoom />}
 
-        {room.type === RoomTypeValues.MEDITATION && (
-          <MeditationRoom
-            onRewardClaim={() => {
-              console.log("Meditation completed!");
-              onInteraction?.("upgrade", room.id);
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.MEDITATION && <MeditationRoom />}
 
-        {/* New Advanced Room Types */}
+        {/* New Advanced Room Types - All interactions through card system */}
         {room.type === RoomTypeValues.PORTAL && (
-          <PortalRoom
-            onRewardClaim={() => {
-              console.log("Portal activated!");
-              onInteraction?.("portal", room.id);
-            }}
-            portalDestination={room.portalDestination}
-          />
+          <PortalRoom portalDestination={room.portalDestination} />
         )}
 
-        {room.type === RoomTypeValues.ARENA && (
-          <ArenaRoom
-            onRewardClaim={() => {
-              console.log("Arena battle completed!");
-              onInteraction?.("combat", room.id);
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.ARENA && <ArenaRoom />}
 
-        {room.type === RoomTypeValues.BOSS && (
-          <BossRoom
-            onBossFight={() => {
-              console.log("Boss fight started!");
-              onInteraction?.("boss", room.id);
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.BOSS && <BossRoom />}
 
-        {room.type === RoomTypeValues.START && (
-          <StartRoom
-            onJourneyBegin={() => {
-              console.log("Journey begun!");
-              onInteraction?.("start", room.id);
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.START && <StartRoom />}
 
-        {room.type === RoomTypeValues.END && (
-          <EndRoom
-            onVictory={() => {
-              console.log("Victory achieved!");
-              onInteraction?.("end", room.id);
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.END && <EndRoom />}
 
-        {room.type === RoomTypeValues.ENEMY && (
-          <EnemyRoom
-            onCombatStart={() => {
-              console.log("Combat started!");
-              onInteraction?.("enemy", room.id);
-            }}
-          />
-        )}
+        {room.type === RoomTypeValues.ENEMY && <EnemyRoom />}
 
         {/* Fallback for other room types */}
         {![
