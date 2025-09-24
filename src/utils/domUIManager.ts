@@ -82,12 +82,16 @@ class DOMUIManager {
       if (this.mouseLookIndicator) {
         this.mouseLookIndicator.style.display = 'block';
       }
+      // Hide cursor when mouse look is active
+      document.body.style.cursor = 'none';
     });
 
     uiEvents.on(UI_EVENTS.MOUSE_LOOK_END, () => {
       if (this.mouseLookIndicator) {
         this.mouseLookIndicator.style.display = 'none';
       }
+      // Show cursor when mouse look is inactive
+      document.body.style.cursor = 'default';
     });
 
     uiEvents.on(UI_EVENTS.PLAYER_STATS_UPDATE, (stats) => {

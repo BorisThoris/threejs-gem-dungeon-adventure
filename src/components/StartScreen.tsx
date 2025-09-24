@@ -174,7 +174,7 @@ const StartScreen: React.FC = () => {
             height: "100%",
             background: "transparent",
             display: "block",
-            cursor: "none", // Hide the default cursor since we have our own
+            cursor: "default", // Show default cursor in free hand mode
           }}
           gl={{
             antialias: true,

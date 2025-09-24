@@ -6,6 +6,7 @@ const Cursor: React.FC = () => {
     y: window.innerHeight / 2,
   });
   const [isPointerLocked, setIsPointerLocked] = useState(false);
+  const [isMouseLookActive, setIsMouseLookActive] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -50,6 +51,7 @@ const Cursor: React.FC = () => {
     const handlePointerLockChange = () => {
       const locked = !!document.pointerLockElement;
       setIsPointerLocked(locked);
+      setIsMouseLookActive(locked);
 
       // When pointer lock changes, update cursor position
       if (locked) {
@@ -77,7 +79,10 @@ const Cursor: React.FC = () => {
     };
   }, [mousePosition.x, mousePosition.y, isPointerLocked]);
 
-  // Always render cursor, but adjust its behavior based on pointer lock state
+  // Only render custom cursor when mouse look is active
+  if (!isMouseLookActive) {
+    return null; // Use default cursor when not in mouse look mode
+  }
 
   return (
     <div
