@@ -1,12 +1,14 @@
 // Direct DOM manipulation to avoid React re-renders
 import { uiEvents, UI_EVENTS } from './uiEvents';
 import { refBasedPlayerState } from './refBasedPlayerState';
+import { refBasedGameState } from './refBasedGameState';
 
 class DOMUIManager {
   private mouseLookIndicator: HTMLElement | null = null;
   private gameUI: HTMLElement | null = null;
   private instructions: HTMLElement | null = null;
   private isInitialized = false;
+  private updateInterval: NodeJS.Timeout | null = null;
 
   init() {
     if (this.isInitialized) return;
@@ -75,6 +77,12 @@ class DOMUIManager {
 
     // Listen to UI events
     this.setupEventListeners();
+    
+    // Start periodic updates for buffs and stats
+    this.updateInterval = setInterval(() => {
+      this.updatePlayerStats(refBasedPlayerState.getStats());
+    }, 1000); // Update every second
+    
     this.isInitialized = true;
   }
 
@@ -112,16 +120,35 @@ class DOMUIManager {
   private updatePlayerStats(stats: any) {
     if (!this.gameUI) return;
 
+    // Get active buffs from ref-based state
+    const activeBuffs = refBasedGameState.getActiveBuffs();
+    const buffsHTML = activeBuffs.length > 0 
+      ? activeBuffs.map(buff => {
+          const timeLeft = Math.max(0, buff.duration - (performance.now() - buff.startTime));
+          const secondsLeft = Math.ceil(timeLeft / 1000);
+          return `<div style="color: #FFD700; font-size: 10px;">${buff.type}: +${buff.value} (${secondsLeft}s)</div>`;
+        }).join('')
+      : '<div style="color: #666; font-size: 10px;">No active buffs</div>';
+
     this.gameUI.innerHTML = `
       <h3 style="margin: 0 0 10px 0; color: #00ff00;">Player Stats</h3>
-      <div>Health: ${stats.health}</div>
-      <div>Mana: ${stats.mana}</div>
-      <div>Points: ${stats.points}</div>
-      <div>Experience: ${stats.experience}</div>
-      <div>Strength: ${stats.strength}</div>
-      <div>Defense: ${stats.defense}</div>
-      <div>Intelligence: ${stats.intelligence}</div>
-      <h4 style="margin: 15px 0 5px 0; color: #00ff00;">Inventory</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 10px;">
+        <div>Health: ${Math.ceil(stats.health)}/${stats.maxHealth}</div>
+        <div>Mana: ${Math.ceil(stats.mana)}/${stats.maxMana}</div>
+        <div>Level: ${stats.level}</div>
+        <div>XP: ${stats.experience}</div>
+        <div>Points: ${stats.points}</div>
+        <div>Lives: ${stats.lives}</div>
+        <div>Str: ${stats.strength.toFixed(1)}</div>
+        <div>Def: ${stats.defense.toFixed(1)}</div>
+        <div>Int: ${stats.intelligence.toFixed(1)}</div>
+        <div>Speed: ${stats.speed.toFixed(1)}</div>
+      </div>
+      <h4 style="margin: 15px 0 5px 0; color: #00ff00;">Active Buffs</h4>
+      <div id="buffs-list" style="max-height: 60px; overflow-y: auto; margin-bottom: 10px;">
+        ${buffsHTML}
+      </div>
+      <h4 style="margin: 10px 0 5px 0; color: #00ff00;">Inventory</h4>
       <div id="inventory-list" style="max-height: 100px; overflow-y: auto;"></div>
       <div style="margin-top: 10px; font-size: 10px; color: #888;">
         Room: <span id="current-room">Unknown</span>
@@ -155,6 +182,10 @@ class DOMUIManager {
   }
 
   destroy() {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
+    }
     if (this.mouseLookIndicator) {
       this.mouseLookIndicator.remove();
       this.mouseLookIndicator = null;

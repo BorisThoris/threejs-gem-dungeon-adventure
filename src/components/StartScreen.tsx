@@ -8,9 +8,7 @@ import MapContainer from "./MapContainer";
 import MapUI from "./MapUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
-import BuffManager from "./BuffManager";
 import EventDrivenActionCards from "./EventDrivenActionCards";
-import GameStateDebugger from "./GameStateDebugger";
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
@@ -197,9 +195,6 @@ const StartScreen: React.FC = () => {
         </Canvas>
       )}
 
-      {/* Buff Manager - Background system */}
-      <BuffManager />
-
       {/* Event-Driven Action Cards */}
       <EventDrivenActionCards />
 
@@ -211,9 +206,6 @@ const StartScreen: React.FC = () => {
 
       {/* Pause Menu */}
       <PauseMenu isVisible={isPaused} onUnpause={handleUnpause} />
-
-      {/* Debug Info (Development Only) */}
-      <GameStateDebugger />
 
       {/* UI is now handled by DOM UI Manager - no React re-renders */}
     </div>
