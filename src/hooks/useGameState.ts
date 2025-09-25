@@ -37,6 +37,8 @@ export const useGameState = () => {
       gameState.current.currentRoomId = roomId;
       
       // Emit event for UI components to listen to
+      // Note: Other components emit room objects, so we need to be consistent
+      // For now, we'll emit the roomId as a string, but RoomManager should handle both cases
       gameEvents.emit(GAME_EVENTS.ROOM_ENTER, roomId);
     }
   }, []);

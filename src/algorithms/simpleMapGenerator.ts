@@ -6,6 +6,17 @@ export interface SimpleMapConfig extends MapConfig {
   usePortals: boolean;
   shapeChance: number;
   portalChance: number;
+  useLiminalSpaces?: boolean;
+  corridorChance?: number;
+  useMultiTileRooms?: boolean;
+  multiTileChance?: number;
+  multiTileMaxSegments?: number;
+  // Advanced generation
+  roomTypeWeights?: Record<string, number>;
+  hubChance?: number; // chance to spawn a hub/atrium (plus/block)
+  corridorRunChance?: number; // chance to extend corridors in a line
+  culDeSacChance?: number; // chance to add a side-room off a corridor
+  useThemes?: boolean;
 }
 
 export const defaultSimpleConfig: SimpleMapConfig = {
@@ -20,6 +31,33 @@ export const defaultSimpleConfig: SimpleMapConfig = {
   usePortals: true,
   shapeChance: 0.3,
   portalChance: 0.1,
+  useLiminalSpaces: true,
+  corridorChance: 0.5,
+  useMultiTileRooms: true,
+  multiTileChance: 0.35,
+  multiTileMaxSegments: 4,
+  roomTypeWeights: {
+    normal: 1.0,
+    treasure: 0.3,
+    shop: 0.25,
+    puzzle: 0.4,
+    secret: 0.2,
+    library: 0.25,
+    'bench-press': 0.15,
+    coffee: 0.2,
+    'library-upgrade': 0.15,
+    meditation: 0.2,
+    portal: 0.15,
+    arena: 0.12,
+    boss: 0.1,
+    trap: 0.2,
+    corridor: 0.6,
+    colosseum: 0.05,
+  },
+  hubChance: 0.15,
+  corridorRunChance: 0.4,
+  culDeSacChance: 0.35,
+  useThemes: true,
 };
 
 export class SimpleMapGenerator {
@@ -44,6 +82,9 @@ export class SimpleMapGenerator {
     this.generateRooms();
     this.addShapedRooms();
     this.addPortals();
+    if ((this.config.useThemes ?? true)) {
+      this.assignThemes();
+    }
     this.ensureConnectivity();
     
     const endRoom = this.rooms.find(room => room.type === RoomType.END) || this.createEndRoom();
@@ -81,6 +122,8 @@ export class SimpleMapGenerator {
     
     this.rooms.push(startRoom);
     this.grid[this.startX][this.startZ] = startRoom;
+    
+    console.log('SimpleMapGenerator: Created start room with ID:', startRoom.id);
   }
 
   private generateRooms(): void {
@@ -110,13 +153,143 @@ export class SimpleMapGenerator {
           newZ >= 0 && newZ < this.gridSize && 
           !this.grid[newX][newZ]) {
         
-        const roomType = this.getRandomRoomType();
-        const newRoom = this.createRoomAt(newX, newZ, roomType);
-        
-        // Connect to source room
-        this.connectRooms(sourceRoom, newRoom);
+        // Optionally insert a corridor (liminal space) between rooms
+        const useCorridor = this.config.useLiminalSpaces && Math.random() < (this.config.corridorChance ?? 0.5);
+        if (useCorridor) {
+          const corridor = this.createRoomAt(newX, newZ, RoomType.CORRIDOR);
+          this.connectRooms(sourceRoom, corridor);
+          console.log(`SimpleMapGenerator: Inserted corridor ${corridor.id} from ${sourceRoom.id}`);
+
+          // Attempt to place the target room one tile beyond the corridor
+          const targetX = newX + direction.dx;
+          const targetZ = newZ + direction.dz;
+          if (
+            targetX >= 0 && targetX < this.gridSize &&
+            targetZ >= 0 && targetZ < this.gridSize &&
+            !this.grid[targetX][targetZ]
+          ) {
+            const targetType = this.getRandomRoomType();
+            const targetRoom = this.createRoomAt(targetX, targetZ, targetType);
+            this.connectRooms(corridor, targetRoom);
+            console.log(`SimpleMapGenerator: Corridor ${corridor.id} to target ${targetRoom.id}`);
+
+            // Corridor run extension
+            if (Math.random() < (this.config.corridorRunChance ?? 0.4)) {
+              const runLen = 1 + Math.floor(Math.random() * 3); // +1..+3
+              let lastX = targetX;
+              let lastZ = targetZ;
+              for (let r = 0; r < runLen; r++) {
+                const nx = lastX + direction.dx;
+                const nz = lastZ + direction.dz;
+                if (nx < 0 || nx >= this.gridSize || nz < 0 || nz >= this.gridSize || this.grid[nx][nz]) break;
+                const seg = this.createRoomAt(nx, nz, RoomType.CORRIDOR);
+                this.connectRooms(this.grid[lastX][lastZ] as Room, seg);
+                // Optional cul-de-sac side room
+                if (Math.random() < (this.config.culDeSacChance ?? 0.35)) {
+                  const side = Math.random() < 0.5 ? { dx: direction.dz, dz: -direction.dx } : { dx: -direction.dz, dz: direction.dx };
+                  const sx = nx + side.dx;
+                  const sz = nz + side.dz;
+                  if (sx >= 0 && sx < this.gridSize && sz >= 0 && sz < this.gridSize && !this.grid[sx][sz]) {
+                    const sideType = this.getRandomRoomType();
+                    const sideRoom = this.createRoomAt(sx, sz, sideType);
+                    this.connectRooms(seg, sideRoom);
+                  }
+                }
+                lastX = nx;
+                lastZ = nz;
+              }
+            }
+          }
+        } else {
+          // Optionally create a multi-tile room occupying multiple cells
+          const useMulti = this.config.useMultiTileRooms && Math.random() < (this.config.multiTileChance ?? 0.35);
+          if (useMulti) {
+            // Prefer hub/atrium occasionally
+            const pattern = Math.random() < (this.config.hubChance ?? 0.15) ? (Math.random() < 0.5 ? 'plus' : 'block') : this.pickMultiTilePattern();
+            const tiles = this.computePatternTiles(newX, newZ, direction, pattern);
+            // Validate all tiles are in-bounds and empty
+            const valid = tiles.every(({ x, z }) => x >= 0 && x < this.gridSize && z >= 0 && z < this.gridSize && !this.grid[x][z]);
+            if (valid) {
+              const roomType = this.getRandomRoomType();
+              const baseRoom = this.createRoomAt(newX, newZ, roomType);
+              baseRoom.isMultiTile = true;
+              baseRoom.tilePositions = tiles.map(({ x, z }) => ({
+                x: (x - this.startX) * this.config.roomSize,
+                z: (z - this.startZ) * this.config.roomSize,
+              }));
+              // Mark additional tiles in grid to reference the same room
+              tiles.forEach(({ x, z }) => {
+                this.grid[x][z] = baseRoom;
+              });
+              this.connectRooms(sourceRoom, baseRoom);
+              console.log(`SimpleMapGenerator: Created multi-tile room ${baseRoom.id} with ${tiles.length} segments`);
+            } else {
+              const roomType = this.getRandomRoomType();
+              const newRoom = this.createRoomAt(newX, newZ, roomType);
+              this.connectRooms(sourceRoom, newRoom);
+              console.log(`SimpleMapGenerator: Connected ${sourceRoom.id} to ${newRoom.id}`);
+            }
+          } else {
+            const roomType = this.getRandomRoomType();
+            const newRoom = this.createRoomAt(newX, newZ, roomType);
+            // Connect to source room
+            this.connectRooms(sourceRoom, newRoom);
+            console.log(`SimpleMapGenerator: Connected ${sourceRoom.id} to ${newRoom.id}`);
+          }
+        }
       }
     }
+  }
+
+  private pickMultiTilePattern(): 'line' | 'L' | 'T' | 'plus' | 'block' {
+    const patterns: Array<'line' | 'L' | 'T' | 'plus' | 'block'> = ['line', 'L', 'T', 'plus', 'block'];
+    return patterns[Math.floor(Math.random() * patterns.length)];
+  }
+
+  private computePatternTiles(
+    startX: number,
+    startZ: number,
+    dir: { dx: number; dz: number },
+    pattern: 'line' | 'L' | 'T' | 'plus' | 'block'
+  ): Array<{ x: number; z: number }> {
+    const tiles: Array<{ x: number; z: number }> = [{ x: startX, z: startZ }];
+    const maxSeg = Math.max(2, Math.min(this.config.multiTileMaxSegments ?? 4, 6));
+
+    if (pattern === 'line') {
+      const len = 1 + Math.floor(Math.random() * (maxSeg - 1));
+      for (let i = 1; i <= len; i++) tiles.push({ x: startX + dir.dx * i, z: startZ + dir.dz * i });
+      return tiles;
+    }
+
+    const perp = { dx: dir.dz, dz: dir.dx }; // simple perpendicular (swap)
+
+    if (pattern === 'L') {
+      tiles.push({ x: startX + dir.dx, z: startZ + dir.dz });
+      tiles.push({ x: startX + dir.dx + perp.dx, z: startZ + dir.dz + perp.dz });
+      return tiles;
+    }
+
+    if (pattern === 'T') {
+      tiles.push({ x: startX + perp.dx, z: startZ + perp.dz });
+      tiles.push({ x: startX, z: startZ });
+      tiles.push({ x: startX - perp.dx, z: startZ - perp.dz });
+      tiles.push({ x: startX + dir.dx, z: startZ + dir.dz });
+      return tiles;
+    }
+
+    if (pattern === 'plus') {
+      tiles.push({ x: startX + 1, z: startZ });
+      tiles.push({ x: startX - 1, z: startZ });
+      tiles.push({ x: startX, z: startZ + 1 });
+      tiles.push({ x: startX, z: startZ - 1 });
+      return tiles;
+    }
+
+    // block (2x2)
+    tiles.push({ x: startX + 1, z: startZ });
+    tiles.push({ x: startX, z: startZ + 1 });
+    tiles.push({ x: startX + 1, z: startZ + 1 });
+    return tiles;
   }
 
   private addShapedRooms(): void {
@@ -187,8 +360,12 @@ export class SimpleMapGenerator {
       }
     }
     
+    console.log(`SimpleMapGenerator: Visited ${visited.size} rooms during connectivity check`);
+    
     // Connect unvisited rooms
     const unvisited = this.rooms.filter(r => !visited.has(r.id));
+    console.log(`SimpleMapGenerator: Found ${unvisited.length} unvisited rooms`);
+    
     for (const room of unvisited) {
       const closestRoom = this.rooms
         .filter(r => visited.has(r.id))
@@ -200,12 +377,18 @@ export class SimpleMapGenerator {
       
       if (!room.connections.includes(closestRoom.id)) {
         room.connections.push(closestRoom.id);
+        console.log(`SimpleMapGenerator: Connected unvisited room ${room.id} to ${closestRoom.id}`);
       }
       if (!closestRoom.connections.includes(room.id)) {
         closestRoom.connections.push(room.id);
+        console.log(`SimpleMapGenerator: Connected ${closestRoom.id} to unvisited room ${room.id}`);
       }
       visited.add(room.id);
     }
+    
+    // Final connectivity check
+    const startRoom = this.rooms[0];
+    console.log(`SimpleMapGenerator: Final start room connections:`, startRoom.connections);
   }
 
   private getGridPosition(position: Position): Position {
@@ -217,7 +400,12 @@ export class SimpleMapGenerator {
 
   private createRoomAt(x: number, z: number, type: string): Room {
     // Random visual scale for room footprint (does not affect grid connectivity)
-    const scale = 0.8 + Math.random() * 0.7; // 0.8x - 1.5x
+    const scale = 0.85 + Math.random() * 0.5; // 0.85x - 1.35x
+
+    // Pick base dims by type, then jitter by scale
+    const dims = this.getDimensionsForType(type, this.config.roomSize);
+    const width = dims.width * scale;
+    const height = dims.height * scale;
 
     const room: Room = {
       id: `room_${this.roomIdCounter++}`,
@@ -227,16 +415,67 @@ export class SimpleMapGenerator {
       size: this.config.roomSize,
       isVisited: false,
       isCurrent: false,
-      // Visual sizing (used by renderer floor/walls overlay)
-      width: this.config.roomSize * scale,
-      height: this.config.roomSize * scale,
+      // Visual sizing (used by renderer overlays)
+      width,
+      height,
       items: this.getItemsForRoomType(type),
       specialProperties: this.getSpecialPropertiesForRoomType(type),
     };
+    // Assign default shape by type if applicable
+    const typeShape = this.getShapeForType(type);
+    if (typeShape) room.shape = typeShape as any;
     
     this.rooms.push(room);
     this.grid[x][z] = room;
     return room;
+  }
+
+  private getDimensionsForType(
+    type: string,
+    base: number
+  ): { width: number; height: number } {
+    switch (type) {
+      case RoomType.CORRIDOR:
+        return { width: base * 0.5, height: base * 1.0 };
+      case RoomType.COLOSSEUM:
+      case RoomType.ARENA:
+      case RoomType.BOSS:
+        return { width: base * 1.6, height: base * 1.6 };
+      case RoomType.TREASURE:
+      case RoomType.SECRET:
+        return { width: base * 0.8, height: base * 0.8 };
+      case RoomType.LIBRARY:
+      case RoomType.LIBRARY_UPGRADE:
+      case RoomType.SHRINE:
+        return { width: base * 1.2, height: base * 1.2 };
+      case RoomType.SHOP:
+      case RoomType.COFFEE:
+        return { width: base, height: base };
+      case RoomType.MEDITATION:
+        return { width: base * 1.0, height: base * 1.0 };
+      default:
+        return { width: base, height: base };
+    }
+  }
+
+  private getShapeForType(type: string): Room['shape'] | null {
+    switch (type) {
+      case RoomType.COLOSSEUM:
+      case RoomType.ARENA:
+      case RoomType.PORTAL:
+      case RoomType.MEDITATION:
+        return 'circle';
+      case RoomType.BOSS:
+        return 'octagon';
+      case RoomType.LIBRARY:
+        return 'hexagon';
+      case RoomType.SECRET:
+        return 'diamond';
+      case RoomType.CORRIDOR:
+        return 'square';
+      default:
+        return null;
+    }
   }
 
   private connectRooms(room1: Room, room2: Room): void {
@@ -249,8 +488,8 @@ export class SimpleMapGenerator {
   }
 
   private getRandomRoomType(): string {
-    // Whitelist types we render or handle explicitly
-    const types = [
+    const weights = this.config.roomTypeWeights || {};
+    const pool: Array<{ t: string; w: number }> = [
       RoomType.NORMAL,
       RoomType.TREASURE,
       RoomType.SHOP,
@@ -263,10 +502,17 @@ export class SimpleMapGenerator {
       RoomType.MEDITATION,
       RoomType.PORTAL,
       RoomType.ARENA,
+      RoomType.CORRIDOR,
+      RoomType.COLOSSEUM,
       RoomType.BOSS,
       RoomType.TRAP,
-    ];
-    return types[Math.floor(Math.random() * types.length)];
+    ].map((t) => ({ t, w: Math.max(0.0001, weights[t] ?? 0.2) }));
+    const total = pool.reduce((s, p) => s + p.w, 0);
+    let r = Math.random() * total;
+    for (const p of pool) {
+      if ((r -= p.w) <= 0) return p.t;
+    }
+    return RoomType.NORMAL;
   }
 
   private findPortalDestination(room: Room): string {
@@ -357,5 +603,27 @@ export class SimpleMapGenerator {
       default:
         return {};
     }
+  }
+
+  private assignThemes(): void {
+    const centerX = 0;
+    const centerZ = 0;
+    const maxDist = this.config.roomSize * (this.gridSize / 2);
+    this.rooms.forEach((room) => {
+      const dx = room.position.x - centerX;
+      const dz = room.position.z - centerZ;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      const norm = Math.min(1, dist / maxDist);
+      if (norm < 0.33) {
+        room.theme = 'sanctuary';
+        room.lighting = 'bright';
+      } else if (norm < 0.66) {
+        room.theme = 'dungeon';
+        room.lighting = 'dim';
+      } else {
+        room.theme = 'forge';
+        room.lighting = 'dark';
+      }
+    });
   }
 }

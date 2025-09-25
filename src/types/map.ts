@@ -63,6 +63,8 @@ export const RoomType = {
   // New advanced room types
   PORTAL: 'portal',
   ARENA: 'arena',
+  CORRIDOR: 'corridor',
+  COLOSSEUM: 'colosseum',
   LABORATORY: 'laboratory',
   OBSERVATORY: 'observatory',
   VAULT: 'vault',

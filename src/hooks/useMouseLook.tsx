@@ -46,6 +46,11 @@ export const useMouseLook = () => {
       // Only handle mouse look when pointer is locked (right mouse button held)
       if (!isPointerLocked.current || !isMouseDown.current) return;
 
+      // Don't interfere with Three.js object interactions
+      if (event.target && (event.target as Element).closest("canvas")) {
+        return;
+      }
+
       const deltaX = event.movementX || 0;
       const deltaY = event.movementY || 0;
 

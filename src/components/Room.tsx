@@ -50,7 +50,7 @@ const Room: React.FC<RoomProps> = ({
   playerPosition = [0, 0, 0],
   onInteraction,
 }) => {
-  const roomSize = 8;
+  const roomSize = room.size || 10;
 
   // Compute door placement based on relative position of connected room - DISABLED FOR NOW
   // const getDoorPosition = (self: RoomType, target: RoomType) => {
@@ -223,7 +223,9 @@ const Room: React.FC<RoomProps> = ({
           position={[0, -roomHeight / 2, 0]}
           receiveShadow
         >
-          <planeGeometry args={[room.size, room.size]} />
+          <planeGeometry
+            args={[room.width || roomSize, room.height || roomSize]}
+          />
           <meshLambertMaterial
             color={roomColor}
             transparent
@@ -249,15 +251,11 @@ const Room: React.FC<RoomProps> = ({
           {/* Left segment */}
           <RigidBody type="fixed" colliders="trimesh">
             <mesh
-              position={[-room.size / 4, wallHeight / 2, -room.size / 2]}
+              position={[-roomSize / 4, wallHeight / 2, -roomSize / 2]}
               castShadow
             >
               <boxGeometry
-                args={[
-                  room.size / 2 - doorWidth / 2,
-                  wallHeight,
-                  wallThickness,
-                ]}
+                args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
               />
               <meshLambertMaterial color="#8B4513" />
             </mesh>
@@ -265,15 +263,11 @@ const Room: React.FC<RoomProps> = ({
           {/* Right segment */}
           <RigidBody type="fixed" colliders="trimesh">
             <mesh
-              position={[room.size / 4, wallHeight / 2, -room.size / 2]}
+              position={[roomSize / 4, wallHeight / 2, -roomSize / 2]}
               castShadow
             >
               <boxGeometry
-                args={[
-                  room.size / 2 - doorWidth / 2,
-                  wallHeight,
-                  wallThickness,
-                ]}
+                args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
               />
               <meshLambertMaterial color="#8B4513" />
             </mesh>
@@ -281,8 +275,8 @@ const Room: React.FC<RoomProps> = ({
         </>
       ) : (
         <RigidBody type="fixed" colliders="trimesh">
-          <mesh position={[0, wallHeight / 2, -room.size / 2]} castShadow>
-            <boxGeometry args={[room.size, wallHeight, wallThickness]} />
+          <mesh position={[0, wallHeight / 2, -roomSize / 2]} castShadow>
+            <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
             <meshLambertMaterial color="#8B4513" />
           </mesh>
         </RigidBody>
@@ -294,15 +288,11 @@ const Room: React.FC<RoomProps> = ({
           {/* Left segment */}
           <RigidBody type="fixed" colliders="trimesh">
             <mesh
-              position={[-room.size / 4, wallHeight / 2, room.size / 2]}
+              position={[-roomSize / 4, wallHeight / 2, roomSize / 2]}
               castShadow
             >
               <boxGeometry
-                args={[
-                  room.size / 2 - doorWidth / 2,
-                  wallHeight,
-                  wallThickness,
-                ]}
+                args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
               />
               <meshLambertMaterial color="#8B4513" />
             </mesh>
@@ -310,15 +300,11 @@ const Room: React.FC<RoomProps> = ({
           {/* Right segment */}
           <RigidBody type="fixed" colliders="trimesh">
             <mesh
-              position={[room.size / 4, wallHeight / 2, room.size / 2]}
+              position={[roomSize / 4, wallHeight / 2, roomSize / 2]}
               castShadow
             >
               <boxGeometry
-                args={[
-                  room.size / 2 - doorWidth / 2,
-                  wallHeight,
-                  wallThickness,
-                ]}
+                args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
               />
               <meshLambertMaterial color="#8B4513" />
             </mesh>
@@ -326,8 +312,8 @@ const Room: React.FC<RoomProps> = ({
         </>
       ) : (
         <RigidBody type="fixed" colliders="trimesh">
-          <mesh position={[0, wallHeight / 2, room.size / 2]} castShadow>
-            <boxGeometry args={[room.size, wallHeight, wallThickness]} />
+          <mesh position={[0, wallHeight / 2, roomSize / 2]} castShadow>
+            <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
             <meshLambertMaterial color="#8B4513" />
           </mesh>
         </RigidBody>
@@ -339,15 +325,11 @@ const Room: React.FC<RoomProps> = ({
           {/* Top segment */}
           <RigidBody type="fixed" colliders="trimesh">
             <mesh
-              position={[room.size / 2, wallHeight / 2, -room.size / 4]}
+              position={[roomSize / 2, wallHeight / 2, -roomSize / 4]}
               castShadow
             >
               <boxGeometry
-                args={[
-                  wallThickness,
-                  wallHeight,
-                  room.size / 2 - doorWidth / 2,
-                ]}
+                args={[wallThickness, wallHeight, roomSize / 2 - doorWidth / 2]}
               />
               <meshLambertMaterial color="#8B4513" />
             </mesh>
@@ -355,15 +337,11 @@ const Room: React.FC<RoomProps> = ({
           {/* Bottom segment */}
           <RigidBody type="fixed" colliders="trimesh">
             <mesh
-              position={[room.size / 2, wallHeight / 2, room.size / 4]}
+              position={[roomSize / 2, wallHeight / 2, roomSize / 4]}
               castShadow
             >
               <boxGeometry
-                args={[
-                  wallThickness,
-                  wallHeight,
-                  room.size / 2 - doorWidth / 2,
-                ]}
+                args={[wallThickness, wallHeight, roomSize / 2 - doorWidth / 2]}
               />
               <meshLambertMaterial color="#8B4513" />
             </mesh>
@@ -371,8 +349,8 @@ const Room: React.FC<RoomProps> = ({
         </>
       ) : (
         <RigidBody type="fixed" colliders="trimesh">
-          <mesh position={[room.size / 2, wallHeight / 2, 0]} castShadow>
-            <boxGeometry args={[wallThickness, wallHeight, room.size]} />
+          <mesh position={[roomSize / 2, wallHeight / 2, 0]} castShadow>
+            <boxGeometry args={[wallThickness, wallHeight, roomSize]} />
             <meshLambertMaterial color="#8B4513" />
           </mesh>
         </RigidBody>
@@ -384,15 +362,11 @@ const Room: React.FC<RoomProps> = ({
           {/* Top segment */}
           <RigidBody type="fixed" colliders="trimesh">
             <mesh
-              position={[-room.size / 2, wallHeight / 2, -room.size / 4]}
+              position={[-roomSize / 2, wallHeight / 2, -roomSize / 4]}
               castShadow
             >
               <boxGeometry
-                args={[
-                  wallThickness,
-                  wallHeight,
-                  room.size / 2 - doorWidth / 2,
-                ]}
+                args={[wallThickness, wallHeight, roomSize / 2 - doorWidth / 2]}
               />
               <meshLambertMaterial color="#8B4513" />
             </mesh>
@@ -400,15 +374,11 @@ const Room: React.FC<RoomProps> = ({
           {/* Bottom segment */}
           <RigidBody type="fixed" colliders="trimesh">
             <mesh
-              position={[-room.size / 2, wallHeight / 2, room.size / 4]}
+              position={[-roomSize / 2, wallHeight / 2, roomSize / 4]}
               castShadow
             >
               <boxGeometry
-                args={[
-                  wallThickness,
-                  wallHeight,
-                  room.size / 2 - doorWidth / 2,
-                ]}
+                args={[wallThickness, wallHeight, roomSize / 2 - doorWidth / 2]}
               />
               <meshLambertMaterial color="#8B4513" />
             </mesh>
@@ -416,8 +386,8 @@ const Room: React.FC<RoomProps> = ({
         </>
       ) : (
         <RigidBody type="fixed" colliders="trimesh">
-          <mesh position={[-room.size / 2, wallHeight / 2, 0]} castShadow>
-            <boxGeometry args={[wallThickness, wallHeight, room.size]} />
+          <mesh position={[-roomSize / 2, wallHeight / 2, 0]} castShadow>
+            <boxGeometry args={[wallThickness, wallHeight, roomSize]} />
             <meshLambertMaterial color="#8B4513" />
           </mesh>
         </RigidBody>

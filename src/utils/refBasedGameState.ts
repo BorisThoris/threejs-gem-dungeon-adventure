@@ -152,28 +152,3 @@ class RefBasedGameState {
 }
 
 export const refBasedGameState = new RefBasedGameState();
-
-// Hook for consuming ref-based state
-export const useRefBasedGameState = () => {
-  const stateRef = useRef(refBasedGameState.getState());
-  const [, forceUpdate] = useRef(0);
-
-  const updateState = useCallback(() => {
-    stateRef.current = refBasedGameState.getState();
-    forceUpdate.current += 1;
-  }, []);
-
-  const subscribe = useCallback((event: string, callback: () => void) => {
-    return refBasedGameState.subscribe(event, callback);
-  }, []);
-
-  return {
-    state: stateRef.current,
-    updateState,
-    subscribe,
-    addBuff: refBasedGameState.addBuff,
-    removeBuff: refBasedGameState.removeBuff,
-    startTimer: refBasedGameState.startTimer,
-    stopTimer: refBasedGameState.stopTimer,
-  };
-};

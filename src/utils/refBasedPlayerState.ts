@@ -141,34 +141,3 @@ class RefBasedPlayerState {
 }
 
 export const refBasedPlayerState = new RefBasedPlayerState();
-
-// Hook for consuming ref-based player state
-export const useRefBasedPlayerState = () => {
-  const statsRef = useRef(refBasedPlayerState.getStats());
-  const [, forceUpdate] = useRef(0);
-
-  const updateStats = useCallback(() => {
-    statsRef.current = refBasedPlayerState.getStats();
-    forceUpdate.current += 1;
-  }, []);
-
-  const subscribe = useCallback((callback: () => void) => {
-    return refBasedPlayerState.subscribe(callback);
-  }, []);
-
-  return {
-    stats: statsRef.current,
-    updateStats,
-    subscribe,
-    addExperience: refBasedPlayerState.addExperience,
-    addPoints: refBasedPlayerState.addPoints,
-    upgradeStrength: refBasedPlayerState.upgradeStrength,
-    upgradeDefense: refBasedPlayerState.upgradeDefense,
-    upgradeIntelligence: refBasedPlayerState.upgradeIntelligence,
-    upgradeSpeed: refBasedPlayerState.upgradeSpeed,
-    takeDamage: refBasedPlayerState.takeDamage,
-    heal: refBasedPlayerState.heal,
-    useMana: refBasedPlayerState.useMana,
-    restoreMana: refBasedPlayerState.restoreMana,
-  };
-};

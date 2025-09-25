@@ -263,7 +263,7 @@ const RoomActionCards: React.FC<RoomActionCardsProps> = ({
     >
       {renderedCards}
 
-      <style jsx>{`
+      <style>{`
         @keyframes shimmer {
           0% {
             transform: translateX(-100%);

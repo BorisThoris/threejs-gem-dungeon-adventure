@@ -1,11 +1,10 @@
 // Global room detection manager to handle edge cases and prevent null room states
 import { gameEvents, GAME_EVENTS } from './gameEvents';
-import { refBasedPlayerState } from './refBasedPlayerState';
 
 class RoomDetectionManager {
   private currentRoomId: string | null = null;
   private lastKnownRoomId: string | null = null;
-  private detectionTimeout: NodeJS.Timeout | null = null;
+  private detectionTimeout: number | null = null;
   private isEnabled = true;
 
   constructor() {
@@ -38,6 +37,12 @@ class RoomDetectionManager {
   }
 
   public setCurrentRoom(roomId: string | null) {
+    // Handle undefined values
+    if (roomId === undefined) {
+      console.warn(`RoomDetectionManager: setCurrentRoom called with undefined, ignoring`);
+      return;
+    }
+    
     const previousRoom = this.currentRoomId;
     this.currentRoomId = roomId;
     if (roomId) {

@@ -8,7 +8,7 @@ class DOMUIManager {
   private gameUI: HTMLElement | null = null;
   private instructions: HTMLElement | null = null;
   private isInitialized = false;
-  private updateInterval: NodeJS.Timeout | null = null;
+  private updateInterval: number | null = null;
 
   init() {
     if (this.isInitialized) return;

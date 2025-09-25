@@ -5,9 +5,10 @@ import { SimpleFirstPersonArms } from "./SimpleFirstPersonArms";
 import { usePhysicalKeyboard } from "../hooks/usePhysicalKeyboard";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
+import * as THREE from "three";
 import useGameStore from "../store/gameStore";
-import { useMouseLook } from "../hooks/useMouseLook";
 import useMapStore from "../store/mapStore";
+import { useMouseLook } from "../hooks/useMouseLook";
 import { refBasedGameState } from "../utils/refBasedGameState";
 
 interface ArmsRef {
@@ -15,28 +16,59 @@ interface ArmsRef {
 }
 
 export function BasicFirstPersonPlayer() {
+  console.log(`BasicFirstPersonPlayer: Component rendering`);
+
   const ref = useRef<RapierRigidBody>(null);
   const armsRef = useRef<THREE.Group>(null);
   const armsControlRef = useRef<ArmsRef>(null);
   const isMouseDown = useRef(false);
   const keys = usePhysicalKeyboard();
   const { gamePhase } = useGameStore();
+  const { currentMap, currentRoomId } = useMapStore();
   const { camera } = useThree();
-  const { currentMap } = useMapStore();
+
+  console.log(`BasicFirstPersonPlayer: gamePhase: ${gamePhase}`);
+  console.log(`BasicFirstPersonPlayer: currentMap:`, currentMap);
+  console.log(`BasicFirstPersonPlayer: currentRoomId: ${currentRoomId}`);
 
   // Enable mouse look
-  const { isPointerLocked, isMouseDown: isMouseLookActive } = useMouseLook();
+  useMouseLook();
 
   // Camera refs to avoid stutters
   const cameraPositionRef = useRef(new Vector3());
-  const cameraQuaternionRef = useRef(new Vector3());
   const lastUpdateTime = useRef(0);
 
-  // Get start room position for safe spawning
-  const startRoom = currentMap?.rooms.find((room) => room.type === "start");
-  const spawnPosition: [number, number, number] = startRoom
-    ? [startRoom.position.x, 5, startRoom.position.z] // Spawn 5 units above start room
-    : [0, 5, 0]; // Fallback position
+  // Get current room and calculate spawn position
+  const currentRoom = currentMap?.rooms.find(
+    (room) => room.id === currentRoomId
+  );
+  // Spawn at room position + 1 unit above floor (room is at [0,0,0], floor at y=-0.5, so spawn at y=1)
+  const spawnPosition: [number, number, number] = [0, 1, 0]; // Just above the floor in room coordinates
+
+  // Debug logging for initial spawn
+  console.log(
+    `BasicFirstPersonPlayer: Initial spawn position: [${spawnPosition[0]}, ${spawnPosition[1]}, ${spawnPosition[2]}]`
+  );
+  console.log(`BasicFirstPersonPlayer: Current room ID: ${currentRoomId}`);
+  console.log(`BasicFirstPersonPlayer: Current room:`, currentRoom);
+
+  // Reposition player when room changes
+  useEffect(() => {
+    if (currentRoom && ref.current) {
+      console.log(
+        `BasicFirstPersonPlayer: Repositioning player for room ${currentRoom.id}`
+      );
+      console.log(`BasicFirstPersonPlayer: Room position: [0, 0, 0]`);
+      console.log(`BasicFirstPersonPlayer: Player spawn position: [0, 1, 0]`);
+      console.log(`BasicFirstPersonPlayer: Floor top at y: 0`);
+      // Teleport player to center of new room, just above floor
+      ref.current.setTranslation({ x: 0, y: 1, z: 0 }, true);
+      // Reset camera position
+      camera.position.set(0, 1, 0);
+      camera.lookAt(0, 1, -1); // Look forward
+      console.log(`BasicFirstPersonPlayer: Player teleported to [0, 1, 0]`);
+    }
+  }, [currentRoomId, currentRoom, camera]);
 
   const handleMouseDown = useCallback(
     (event: MouseEvent) => {
@@ -146,6 +178,10 @@ export function BasicFirstPersonPlayer() {
     }
   });
 
+  console.log(
+    `BasicFirstPersonPlayer: Rendering RigidBody at position: [${spawnPosition[0]}, ${spawnPosition[1]}, ${spawnPosition[2]}]`
+  );
+
   return (
     <>
       <RigidBody
@@ -154,7 +190,7 @@ export function BasicFirstPersonPlayer() {
         colliders={false}
         mass={50}
         type="dynamic"
-        position={spawnPosition} // Spawn above start room
+        position={spawnPosition} // Spawn in center of current room
         enabledRotations={[false, false, false]}
         lockRotations
       >
