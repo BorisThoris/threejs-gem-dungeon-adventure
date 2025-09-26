@@ -50,7 +50,7 @@ const GhostScene: React.FC = () => {
   return (
     <>
       {/* Environment */}
-      <Environment files="/night.hdr" ground={{ scale: 100 }} />
+      <Environment files="./night.hdr" ground={{ scale: 100 }} />
 
       {/* Lighting */}
       <ambientLight intensity={0.2} />
@@ -64,7 +64,7 @@ const GhostScene: React.FC = () => {
       </directionalLight>
 
       {/* Physics World */}
-      <Physics timeStep="vary">
+      <Physics timeStep="vary" gravity={[0, -9.81, 0]}>
         {/* Safe Spawn Area */}
         <SafeSpawnArea position={[0, 0, 0]} size={8} />
 
@@ -85,6 +85,14 @@ const GhostScene: React.FC = () => {
 };
 
 const StartScreen: React.FC = () => {
+  console.log("=== STARTSCREEN COMPONENT LOADED ===");
+  console.log(
+    "Environment:",
+    window.navigator.userAgent.toLowerCase().includes("electron")
+      ? "Electron"
+      : "Web Browser"
+  );
+
   const { inventory, useItem: consumeItem } = useGameStore();
   const { generateMap, currentMap } = useMapStore();
   const [isPaused, setIsPaused] = React.useState(false);
@@ -151,6 +159,10 @@ const StartScreen: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [isPaused]);
 
+  console.log("=== RENDERING STARTSCREEN ===");
+  console.log("Is paused:", isPaused);
+  console.log("Current map:", currentMap ? "exists" : "null");
+
   return (
     <div
       style={{
@@ -166,35 +178,99 @@ const StartScreen: React.FC = () => {
         cursor: "none", // Hide default cursor
       }}
     >
-      {!isPaused && (
-        <Canvas
-          shadows
-          style={{
-            width: "100%",
-            height: "100%",
-            background: "transparent",
-            display: "block",
-            cursor: "default", // Show default cursor in free hand mode
-          }}
-          gl={{
-            antialias: true,
-            alpha: true,
-            powerPreference: "high-performance",
-            stencil: false,
-            depth: true,
-          }}
-          camera={{
-            fov: 95,
-            position: [0, 5, 0],
-            rotation: [0, -Math.PI / 2, 0], // Look straight ahead
-          }}
-          dpr={[1, 2]}
-          performance={{ min: 0.5 }}
-          frameloop="demand"
-        >
-          <GhostScene />
-        </Canvas>
-      )}
+      {!isPaused &&
+        (() => {
+          console.log("=== RENDERING CANVAS ===");
+          return (
+            <Canvas
+              shadows
+              style={{
+                width: "100%",
+                height: "100%",
+                background: "transparent",
+                display: "block",
+                cursor: "default", // Show default cursor in free hand mode
+              }}
+              gl={{
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance",
+                stencil: false,
+                depth: true,
+              }}
+              camera={{
+                fov: 95,
+                position: [0, 5, 0],
+                rotation: [0, -Math.PI / 2, 0], // Look straight ahead
+              }}
+              dpr={[1, 2]}
+              performance={{ min: 0.5 }}
+              frameloop="demand"
+              onCreated={({ gl, scene, camera }) => {
+                console.log("=== CANVAS ONCREATED CALLBACK FIRED ===");
+                // Comprehensive debugging
+                console.log("=== THREE.JS CANVAS DEBUG ===");
+                console.log("Three.js Canvas created");
+                console.log("WebGL Context:", gl.getContext());
+                console.log("Renderer Info:", gl.info);
+                console.log("Scene children count:", scene.children.length);
+                console.log("Camera position:", camera.position);
+                console.log("Camera rotation:", camera.rotation);
+
+                // Check if we're in Electron
+                const isElectron = window.navigator.userAgent
+                  .toLowerCase()
+                  .includes("electron");
+                console.log(
+                  "Environment:",
+                  isElectron ? "Electron" : "Web Browser"
+                );
+
+                if (isElectron) {
+                  console.log("=== ELECTRON-SPECIFIC DEBUG ===");
+                  console.log("User Agent:", window.navigator.userAgent);
+                  console.log("WebGL Context:", gl.getContext());
+                  console.log(
+                    "WebGL Extensions:",
+                    gl.getContext().getSupportedExtensions()
+                  );
+
+                  // Test basic WebGL functionality
+                  const canvas = gl.domElement;
+                  const context =
+                    canvas.getContext("webgl") ||
+                    canvas.getContext("experimental-webgl");
+                  if (context) {
+                    console.log("WebGL Test Results:", {
+                      version: context.getParameter(context.VERSION),
+                      vendor: context.getParameter(context.VENDOR),
+                      renderer: context.getParameter(context.RENDERER),
+                      maxTextureSize: context.getParameter(
+                        context.MAX_TEXTURE_SIZE
+                      ),
+                      maxVertexAttribs: context.getParameter(
+                        context.MAX_VERTEX_ATTRIBS
+                      ),
+                    });
+                  }
+                }
+
+                // Monitor scene changes
+                const originalAdd = scene.add.bind(scene);
+                scene.add = function (object) {
+                  console.log(
+                    "Adding object to scene:",
+                    object.type,
+                    object.name || "unnamed"
+                  );
+                  return originalAdd(object);
+                };
+              }}
+            >
+              <GhostScene />
+            </Canvas>
+          );
+        })()}
 
       {/* Event-Driven Action Cards */}
       <EventDrivenActionCards />

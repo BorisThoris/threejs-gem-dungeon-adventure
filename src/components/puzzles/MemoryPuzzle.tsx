@@ -288,7 +288,7 @@ const MemoryPuzzle: React.FC<MemoryPuzzleProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0%,
           100% {

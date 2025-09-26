@@ -360,7 +360,7 @@ const NumberPuzzle: React.FC<NumberPuzzleProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0%,
           100% {

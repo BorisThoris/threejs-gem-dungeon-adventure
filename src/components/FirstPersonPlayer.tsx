@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { CapsuleCollider } from "@react-three/rapier";
 import { FirstPersonArms } from "./FirstPersonArms";

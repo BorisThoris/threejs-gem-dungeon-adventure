@@ -51,6 +51,14 @@ const Room: React.FC<RoomProps> = ({
 }) => {
   const roomSize = room.size || 10;
 
+  // Debug logging for room rendering
+  console.log(`=== ROOM DEBUG: ${room.id} (${room.type}) ===`);
+  console.log("Room position:", room.position);
+  console.log("Room size:", roomSize);
+  console.log("Is current:", isCurrent);
+  console.log("Is visited:", isVisited);
+  console.log("Connected rooms:", connectedRooms.length);
+
   // Compute door placement based on relative position of connected room - DISABLED FOR NOW
   // const getDoorPosition = (self: RoomType, target: RoomType) => {
   //   const dx = target.position.x - self.position.x;
@@ -256,7 +264,15 @@ const Room: React.FC<RoomProps> = ({
               <boxGeometry
                 args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
               />
-              <meshLambertMaterial color="#8B4513" />
+              <meshLambertMaterial
+                color="#8B4513"
+                onUpdate={(material) => {
+                  console.log(
+                    "North Wall Left Material created/updated:",
+                    material
+                  );
+                }}
+              />
             </mesh>
           </RigidBody>
           {/* Right segment */}
@@ -268,7 +284,15 @@ const Room: React.FC<RoomProps> = ({
               <boxGeometry
                 args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
               />
-              <meshLambertMaterial color="#8B4513" />
+              <meshLambertMaterial
+                color="#8B4513"
+                onUpdate={(material) => {
+                  console.log(
+                    "North Wall Right Material created/updated:",
+                    material
+                  );
+                }}
+              />
             </mesh>
           </RigidBody>
         </>
@@ -276,7 +300,12 @@ const Room: React.FC<RoomProps> = ({
         <RigidBody type="fixed" colliders="trimesh">
           <mesh position={[0, wallHeight / 2, -roomSize / 2]} castShadow>
             <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
-            <meshLambertMaterial color="#8B4513" />
+            <meshLambertMaterial
+              color="#8B4513"
+              onUpdate={(material) => {
+                console.log("North Wall Material created/updated:", material);
+              }}
+            />
           </mesh>
         </RigidBody>
       )}

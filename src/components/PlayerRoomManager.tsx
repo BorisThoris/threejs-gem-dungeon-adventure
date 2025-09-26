@@ -15,7 +15,7 @@ const PlayerRoomManager: React.FC<PlayerRoomManagerProps> = ({
   onRoomExit,
 }) => {
   const { updateRoom, updateGamePhase } = useGameState();
-  const { currentMap, currentRoomId } = useMapStore();
+  const { currentMap } = useMapStore();
   const { camera } = useThree();
 
   const lastDetectedRoomId = React.useRef<string | null>(null);

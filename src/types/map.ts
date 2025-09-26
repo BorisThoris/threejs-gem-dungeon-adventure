@@ -103,7 +103,6 @@ export const RoomType = {
   PAGODA: 'pagoda',
   ZIGGURAT: 'ziggurat',
   PYRAMID: 'pyramid',
-  COLOSSEUM: 'colosseum',
   AMPHITHEATER: 'amphitheater',
   AQUEDUCT: 'aqueduct',
   SEWER: 'sewer',

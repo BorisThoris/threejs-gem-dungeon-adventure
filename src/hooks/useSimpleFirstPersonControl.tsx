@@ -1,5 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { RefObject, useRef, useEffect } from "react";
+import { type RefObject, useRef, useEffect } from "react";
 import { Vector3, Mesh, Group } from "three";
 import { RapierRigidBody } from "@react-three/rapier";
 import { useMouseLook } from "./useMouseLook";

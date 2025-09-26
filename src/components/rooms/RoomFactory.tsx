@@ -539,9 +539,7 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
       {/* Doors - Black rectangle doors that trigger room changes */}
       {currentRoom.connections && currentRoom.connections.length > 0 ? (
         <group key={`doors-${currentRoom.id}`}>
-          {console.log(
-            `RoomFactory: Rendering ${currentRoom.connections.length} doors for room ${currentRoom.id}`
-          )}
+          {/* RoomFactory: Rendering doors for room */}
           {currentRoom.connections.map((connectionId, index) => {
             const targetRoom = currentMap?.rooms.find(
               (r) => r.id === connectionId

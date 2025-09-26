@@ -70,11 +70,11 @@ const MapRenderer: React.FC = () => {
 
       {/* Centralized Player Room Manager */}
       <PlayerRoomManager
-        onRoomEnter={(roomId) => {
-          // console.log(`Entered room: ${roomId}`);
+        onRoomEnter={(_roomId) => {
+          // console.log(`Entered room: ${_roomId}`);
         }}
-        onRoomExit={(roomId) => {
-          // console.log(`Exited room: ${roomId}`);
+        onRoomExit={(_roomId) => {
+          // console.log(`Exited room: ${_roomId}`);
         }}
       />
 

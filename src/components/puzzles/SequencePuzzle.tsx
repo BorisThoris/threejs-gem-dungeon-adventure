@@ -325,7 +325,7 @@ const SequencePuzzle: React.FC<SequencePuzzleProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0%,
           100% {

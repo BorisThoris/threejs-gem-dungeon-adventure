@@ -5,6 +5,7 @@ import { SimpleFirstPersonArms } from "./SimpleFirstPersonArms";
 import { useFixedFirstPersonControl } from "../hooks/useFixedFirstPersonControl";
 import { usePhysicalKeyboard } from "../hooks/usePhysicalKeyboard";
 import useGameStore from "../store/gameStore";
+import * as THREE from "three";
 
 interface ArmsRef {
   switchAnimation: (toMagic: boolean) => void;

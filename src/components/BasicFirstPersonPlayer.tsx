@@ -6,8 +6,8 @@ import { usePhysicalKeyboard } from "../hooks/usePhysicalKeyboard";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import * as THREE from "three";
-import useGameStore from "../store/gameStore";
-import useMapStore from "../store/mapStore";
+// import useGameStore from "../store/gameStore";
+// import useMapStore from "../store/mapStore";
 import { useMouseLook } from "../hooks/useMouseLook";
 import { refBasedGameState } from "../utils/refBasedGameState";
 

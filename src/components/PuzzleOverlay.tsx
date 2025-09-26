@@ -178,7 +178,7 @@ const PuzzleOverlay: React.FC<PuzzleOverlayProps> = ({
         Press ESC to close or click the X button
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;

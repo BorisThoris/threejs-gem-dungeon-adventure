@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { RefObject, useRef } from "react";
+import { type RefObject, useRef } from "react";
 import { Vector3, Mesh, Group } from "three";
 import { RapierRigidBody } from "@react-three/rapier";
 
