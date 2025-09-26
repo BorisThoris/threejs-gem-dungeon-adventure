@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { MapState, MapActions, GameMap, MapConfig } from '../types/map';
 import { SimpleMapGenerator, defaultSimpleConfig } from '../algorithms/simpleMapGenerator';
+import { playerRoomDetection } from '../utils/playerRoomDetection';
 
 const defaultConfig: MapConfig = {
   width: 20,
@@ -57,6 +58,10 @@ const useMapStore = create<MapState & MapActions>((set, get) => ({
         console.log('MapStore: Start room connections:', startRoom.connections);
         console.log('MapStore: Start room type:', startRoom.type);
       }
+
+      // Initialize room bounds for optimized collision detection
+      playerRoomDetection.initializeRoomBounds(result.rooms);
+      console.log('MapStore: Initialized room bounds for collision detection');
       
       set({
         currentMap: map,

@@ -66,3 +66,4 @@ export const useDoorInteraction = ({
   }, [onDoorEnter, doors, interactionDistance, camera]);
 };
 
+

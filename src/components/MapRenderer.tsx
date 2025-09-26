@@ -3,7 +3,7 @@ import useMapStore from "../store/mapStore";
 import Room from "./Room";
 import ConnectionLine from "./ConnectionLine";
 import InteractionManager from "./InteractionManager";
-import RoomCollisionDetector from "./RoomCollisionDetector";
+import PlayerRoomManager from "./PlayerRoomManager";
 
 const MapRenderer: React.FC = () => {
   const { currentMap, currentRoomId, visitedRooms, generateMap } =
@@ -50,41 +50,33 @@ const MapRenderer: React.FC = () => {
         );
 
         return (
-          <React.Fragment key={room.id}>
-            <Room
-              room={room}
-              isCurrent={room.id === currentRoomId}
-              isVisited={visitedRooms.has(room.id)}
-              connectedRooms={connectedRooms}
-              playerPosition={[0, 0, 0]} // This would be actual player position
-              onInteraction={(interactionType, roomId) => {
-                console.log(
-                  `Interaction: ${interactionType} in room ${roomId}`
-                );
-              }}
-              onClick={() => {
-                // Handle room click for navigation
-                console.log(`Clicked room: ${room.id} (${room.type})`);
-              }}
-            />
-
-            {/* Room Collision Detector */}
-            <RoomCollisionDetector
-              room={room}
-              onRoomEnter={(enteredRoom) => {
-                console.log(
-                  `Entered room: ${enteredRoom.id} (${enteredRoom.type})`
-                );
-              }}
-              onRoomExit={(exitedRoom) => {
-                console.log(
-                  `Exited room: ${exitedRoom.id} (${exitedRoom.type})`
-                );
-              }}
-            />
-          </React.Fragment>
+          <Room
+            key={room.id}
+            room={room}
+            isCurrent={room.id === currentRoomId}
+            isVisited={visitedRooms.has(room.id)}
+            connectedRooms={connectedRooms}
+            playerPosition={[0, 0, 0]} // This would be actual player position
+            onInteraction={(interactionType, roomId) => {
+              console.log(`Interaction: ${interactionType} in room ${roomId}`);
+            }}
+            onClick={() => {
+              // Handle room click for navigation
+              console.log(`Clicked room: ${room.id} (${room.type})`);
+            }}
+          />
         );
       })}
+
+      {/* Centralized Player Room Manager */}
+      <PlayerRoomManager
+        onRoomEnter={(roomId) => {
+          // console.log(`Entered room: ${roomId}`);
+        }}
+        onRoomExit={(roomId) => {
+          // console.log(`Exited room: ${roomId}`);
+        }}
+      />
 
       {/* Interaction Manager */}
       <InteractionManager

@@ -16,20 +16,12 @@ interface ArmsRef {
 }
 
 export function BasicFirstPersonPlayer() {
-  console.log(`BasicFirstPersonPlayer: Component rendering`);
-
   const ref = useRef<RapierRigidBody>(null);
   const armsRef = useRef<THREE.Group>(null);
   const armsControlRef = useRef<ArmsRef>(null);
   const isMouseDown = useRef(false);
   const keys = usePhysicalKeyboard();
-  const { gamePhase } = useGameStore();
-  const { currentMap, currentRoomId } = useMapStore();
   const { camera } = useThree();
-
-  console.log(`BasicFirstPersonPlayer: gamePhase: ${gamePhase}`);
-  console.log(`BasicFirstPersonPlayer: currentMap:`, currentMap);
-  console.log(`BasicFirstPersonPlayer: currentRoomId: ${currentRoomId}`);
 
   // Enable mouse look
   useMouseLook();
@@ -38,52 +30,21 @@ export function BasicFirstPersonPlayer() {
   const cameraPositionRef = useRef(new Vector3());
   const lastUpdateTime = useRef(0);
 
-  // Get current room and calculate spawn position
-  const currentRoom = currentMap?.rooms.find(
-    (room) => room.id === currentRoomId
-  );
-  // Spawn at room position + 1 unit above floor (room is at [0,0,0], floor at y=-0.5, so spawn at y=1)
-  const spawnPosition: [number, number, number] = [0, 1, 0]; // Just above the floor in room coordinates
+  // Fixed spawn position - no need to recalculate every render
+  const spawnPosition: [number, number, number] = [0, 1, 0];
 
-  // Debug logging for initial spawn
-  console.log(
-    `BasicFirstPersonPlayer: Initial spawn position: [${spawnPosition[0]}, ${spawnPosition[1]}, ${spawnPosition[2]}]`
-  );
-  console.log(`BasicFirstPersonPlayer: Current room ID: ${currentRoomId}`);
-  console.log(`BasicFirstPersonPlayer: Current room:`, currentRoom);
-
-  // Reposition player when room changes
+  // Initialize camera position once
   useEffect(() => {
-    if (currentRoom && ref.current) {
-      console.log(
-        `BasicFirstPersonPlayer: Repositioning player for room ${currentRoom.id}`
-      );
-      console.log(`BasicFirstPersonPlayer: Room position: [0, 0, 0]`);
-      console.log(`BasicFirstPersonPlayer: Player spawn position: [0, 1, 0]`);
-      console.log(`BasicFirstPersonPlayer: Floor top at y: 0`);
-      // Teleport player to center of new room, just above floor
-      ref.current.setTranslation({ x: 0, y: 1, z: 0 }, true);
-      // Reset camera position
-      camera.position.set(0, 1, 0);
-      camera.lookAt(0, 1, -1); // Look forward
-      console.log(`BasicFirstPersonPlayer: Player teleported to [0, 1, 0]`);
-    }
-  }, [currentRoomId, currentRoom, camera]);
+    camera.position.set(0, 1, 0);
+    camera.lookAt(0, 1, -1);
+  }, [camera]);
 
-  const handleMouseDown = useCallback(
-    (event: MouseEvent) => {
-      if (
-        event.button === 0 &&
-        !isMouseDown.current &&
-        armsControlRef.current &&
-        gamePhase === "exploration"
-      ) {
-        isMouseDown.current = true;
-        armsControlRef.current.switchAnimation(true);
-      }
-    },
-    [gamePhase]
-  );
+  const handleMouseDown = useCallback((event: MouseEvent) => {
+    if (event.button === 0 && !isMouseDown.current && armsControlRef.current) {
+      isMouseDown.current = true;
+      armsControlRef.current.switchAnimation(true);
+    }
+  }, []);
 
   const handleMouseUp = useCallback((event: MouseEvent) => {
     if (event.button === 0 && isMouseDown.current && armsControlRef.current) {
@@ -177,10 +138,6 @@ export function BasicFirstPersonPlayer() {
       armsRef.current.updateMatrixWorld(true);
     }
   });
-
-  console.log(
-    `BasicFirstPersonPlayer: Rendering RigidBody at position: [${spawnPosition[0]}, ${spawnPosition[1]}, ${spawnPosition[2]}]`
-  );
 
   return (
     <>

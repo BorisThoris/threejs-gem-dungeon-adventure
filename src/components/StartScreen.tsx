@@ -9,6 +9,7 @@ import MapUI from "./MapUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
 import EventDrivenActionCards from "./EventDrivenActionCards";
+import RoomDetectionDebugger from "./RoomDetectionDebugger";
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
@@ -206,6 +207,9 @@ const StartScreen: React.FC = () => {
 
       {/* Pause Menu */}
       <PauseMenu isVisible={isPaused} onUnpause={handleUnpause} />
+
+      {/* Room Detection Debugger - Enable with 'D' key */}
+      <RoomDetectionDebugger enabled={true} />
 
       {/* UI is now handled by DOM UI Manager - no React re-renders */}
     </div>

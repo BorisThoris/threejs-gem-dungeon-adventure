@@ -26,7 +26,6 @@ import StartRoom from "./rooms/StartRoom";
 import EndRoom from "./rooms/EndRoom";
 import EnemyRoom from "./rooms/EnemyRoom";
 import RoomInteraction from "./RoomInteraction";
-import RoomCollisionDetector from "./RoomCollisionDetector";
 // import Door from "./Door"; // DISABLED FOR NOW
 import DestructibleWall from "./DestructibleWall";
 import RoomDecorator from "./roomElements/RoomDecorator";
@@ -577,8 +576,7 @@ const Room: React.FC<RoomProps> = ({
           />
         )}
 
-        {/* Room Collision Detection */}
-        <RoomCollisionDetector room={room} />
+        {/* Room Collision Detection - Now handled by PlayerRoomManager */}
 
         {/* Doors - DISABLED FOR NOW */}
         {/* {room.connections && room.connections.length > 0 && (
