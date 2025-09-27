@@ -2,6 +2,7 @@ import React from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
+import { withObjectPrototype } from "../../utils/SimplePrototypeMixin";
 
 /**
  * @emoji 🪵
@@ -22,6 +23,9 @@ export interface PlankProps {
   onClick?: () => void;
   onPointerOver?: () => void;
   onPointerOut?: () => void;
+  // Prototype props
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: any) => void;
 }
 
 const Plank: React.FC<PlankProps> = ({
@@ -38,6 +42,8 @@ const Plank: React.FC<PlankProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
+  prototypeId,
+  onPrototypeAction,
 }) => {
   // Wood type color configurations
   const getWoodColor = () => {
@@ -198,5 +204,8 @@ const Plank: React.FC<PlankProps> = ({
     </mesh>
   );
 };
+
+// Create prototype-enabled version
+// Use UniversalPrototype wrapper instead of individual prototype components
 
 export default Plank;

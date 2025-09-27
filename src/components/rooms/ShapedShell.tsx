@@ -1,6 +1,6 @@
 import React from "react";
 import { RigidBody } from "@react-three/rapier";
-import { Wall, Ceiling, Tile } from "../roomElements/RoomElements";
+import { Wall, Ceiling, Tile } from "../roomElements";
 
 type ShapeType =
   | "square"

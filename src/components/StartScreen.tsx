@@ -11,18 +11,34 @@ import PauseMenu from "./PauseMenu";
 import EventDrivenActionCards from "./EventDrivenActionCards";
 import RoomDetectionDebugger from "./RoomDetectionDebugger";
 import SharedNavigation from "./SharedNavigation";
+import SimpleDynamicBreaking from "./SimpleDynamicBreaking";
+import SimpleBreakableRoomV2 from "./rooms/SimpleBreakableRoomV2";
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
 import { uiEvents, UI_EVENTS } from "../utils/uiEvents";
+import { useObjectPrototypeActions } from "../utils/SimplePrototypeMixin";
 
 // First-person controls handled by FirstPersonPlayer component
 
-// Ground Plane Component
+// Ground Plane Component with Prototype
 const Ground: React.FC = () => {
+  const { executeAction } = useObjectPrototypeActions("demo_floor");
+
   return (
     <RigidBody type="fixed" colliders="trimesh">
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -2, 0]}
+        receiveShadow
+        onClick={() => {
+          console.log("Floor clicked! Prototype actions available.");
+          executeAction("glow", { intensity: 1.5 });
+        }}
+        onPointerOver={() => {
+          console.log("Floor hovered!");
+        }}
+      >
         <planeGeometry args={[50, 50]} />
         <meshLambertMaterial color="#2d5016" />
       </mesh>
@@ -46,8 +62,162 @@ const SafetyFloor: React.FC = () => {
   );
 };
 
+// Prototype Demo Component
+const PrototypeDemo: React.FC<{
+  showBreakingDemo: boolean;
+  setShowBreakingDemo: (show: boolean) => void;
+  showBreakableRoom: boolean;
+  setShowBreakableRoom: (show: boolean) => void;
+}> = ({
+  showBreakingDemo,
+  setShowBreakingDemo,
+  showBreakableRoom,
+  setShowBreakableRoom,
+}) => {
+  const { executeAction } = useObjectPrototypeActions("demo_floor");
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "20px",
+        left: "20px",
+        background: "rgba(0,0,0,0.8)",
+        color: "white",
+        padding: "15px",
+        borderRadius: "8px",
+        border: "1px solid rgba(255,255,255,0.2)",
+        zIndex: 1000,
+      }}
+    >
+      <h3 style={{ margin: "0 0 10px 0", color: "#4CAF50" }}>
+        🎯 Prototype System Demo
+      </h3>
+      <p style={{ margin: "0 0 10px 0", fontSize: "12px", color: "#ccc" }}>
+        Click the floor in the 3D scene to see prototype actions!
+      </p>
+      <div
+        style={{
+          display: "flex",
+          gap: "5px",
+          flexWrap: "wrap",
+          marginBottom: "10px",
+        }}
+      >
+        <button
+          onClick={() => executeAction("paint", { color: "#FF0000" })}
+          style={{
+            padding: "5px 10px",
+            background: "#F44336",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "11px",
+          }}
+        >
+          🔴 Red
+        </button>
+        <button
+          onClick={() => executeAction("paint", { color: "#00FF00" })}
+          style={{
+            padding: "5px 10px",
+            background: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "11px",
+          }}
+        >
+          🟢 Green
+        </button>
+        <button
+          onClick={() => executeAction("rotate")}
+          style={{
+            padding: "5px 10px",
+            background: "#FF9800",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "11px",
+          }}
+        >
+          🔄 Rotate
+        </button>
+        <button
+          onClick={() => executeAction("scale", { factor: 1.2 })}
+          style={{
+            padding: "5px 10px",
+            background: "#2196F3",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "11px",
+          }}
+        >
+          📏 Scale
+        </button>
+        <button
+          onClick={() => executeAction("glow", { intensity: 2.0 })}
+          style={{
+            padding: "5px 10px",
+            background: "#9C27B0",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "11px",
+          }}
+        >
+          ✨ Glow
+        </button>
+      </div>
+
+      {/* Breaking System Demo Buttons */}
+      <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+        <button
+          onClick={() => setShowBreakingDemo(!showBreakingDemo)}
+          style={{
+            padding: "5px 10px",
+            background: showBreakingDemo ? "#FF5722" : "#FF9800",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "11px",
+          }}
+        >
+          {showBreakingDemo ? "💥 Hide Breaking Demo" : "💥 Show Breaking Demo"}
+        </button>
+        <button
+          onClick={() => setShowBreakableRoom(!showBreakableRoom)}
+          style={{
+            padding: "5px 10px",
+            background: showBreakableRoom ? "#E91E63" : "#9C27B0",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "11px",
+          }}
+        >
+          {showBreakableRoom
+            ? "🏠 Hide Breakable Room"
+            : "🏠 Show Breakable Room"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Main Scene Component
-const GhostScene: React.FC = () => {
+const GhostScene: React.FC<{
+  showBreakingDemo: boolean;
+  showBreakableRoom: boolean;
+}> = ({ showBreakingDemo, showBreakableRoom }) => {
   return (
     <>
       {/* Environment */}
@@ -80,6 +250,19 @@ const GhostScene: React.FC = () => {
 
         {/* Safety catch floor (invisible) */}
         <SafetyFloor />
+
+        {/* Breaking System Demos */}
+        {showBreakingDemo && (
+          <group position={[0, 0, 0]}>
+            <SimpleDynamicBreaking />
+          </group>
+        )}
+
+        {showBreakableRoom && (
+          <group position={[0, 0, 0]}>
+            <SimpleBreakableRoomV2 />
+          </group>
+        )}
       </Physics>
     </>
   );
@@ -97,6 +280,8 @@ const StartScreen: React.FC = () => {
   const { inventory, useItem: consumeItem } = useGameStore();
   const { generateMap, currentMap } = useMapStore();
   const [isPaused, setIsPaused] = React.useState(false);
+  const [showBreakingDemo, setShowBreakingDemo] = React.useState(false);
+  const [showBreakableRoom, setShowBreakableRoom] = React.useState(false);
 
   // Initialize DOM UI manager
   React.useEffect(() => {
@@ -268,7 +453,10 @@ const StartScreen: React.FC = () => {
                 };
               }}
             >
-              <GhostScene />
+              <GhostScene
+                showBreakingDemo={showBreakingDemo}
+                showBreakableRoom={showBreakableRoom}
+              />
             </Canvas>
           );
         })()}
@@ -290,6 +478,14 @@ const StartScreen: React.FC = () => {
 
       {/* Shared Navigation */}
       <SharedNavigation currentPage="game" />
+
+      {/* Prototype System Demo */}
+      <PrototypeDemo
+        showBreakingDemo={showBreakingDemo}
+        setShowBreakingDemo={setShowBreakingDemo}
+        showBreakableRoom={showBreakableRoom}
+        setShowBreakableRoom={setShowBreakableRoom}
+      />
 
       {/* UI is now handled by DOM UI Manager - no React re-renders */}
     </div>

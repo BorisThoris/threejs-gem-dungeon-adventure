@@ -27,6 +27,8 @@ import StairsRoom from "./rooms/StairsRoom";
 import MiddleStairsRoom from "./rooms/MiddleStairsRoom";
 import ShapedShell from "./rooms/ShapedShell";
 import ComponentShowcaseRoom from "./rooms/ComponentShowcaseRoom";
+import BreakableRoom from "./rooms/BreakableRoom";
+import DynamicBreakableRoom from "./rooms/DynamicBreakableRoom";
 
 // Import other 3D components
 import ItemSprite from "./ItemSprite";
@@ -34,14 +36,7 @@ import TexturePainter from "./TexturePainter";
 import DestructibleWall from "./DestructibleWall";
 import SharedNavigation from "./SharedNavigation";
 import ParticleSystem from "./ParticleSystem";
-import {
-  Tile,
-  Plank,
-  Wall,
-  Ceiling,
-  Stair,
-  Handrail,
-} from "./roomElements/RoomElements";
+import { Tile, Plank, Wall, Ceiling, Stair, Handrail } from "./roomElements";
 
 // Room configuration interface
 interface RoomConfig {
@@ -705,6 +700,24 @@ const ROOM_CONFIGS: RoomConfig[] = [
     editableProps: [
       { key: "roomSize", type: "number" as const, min: 8, max: 20, step: 1 },
     ],
+  },
+  {
+    type: "breakable",
+    component: BreakableRoom,
+    title: "Breakable Room",
+    emoji: "💥",
+    description:
+      "Interactive room with breakable objects using prototype system",
+    props: {},
+  },
+  {
+    type: "dynamic-breakable",
+    component: DynamicBreakableRoom,
+    title: "Dynamic Breakable Room",
+    emoji: "🔨",
+    description:
+      "Objects break into interactive 3D fragments like Three.js example",
+    props: {},
   },
 ];
 

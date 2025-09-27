@@ -2,6 +2,7 @@ import React from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Box, Cylinder } from "@react-three/drei";
 import * as THREE from "three";
+import { withObjectPrototype } from "../../utils/SimplePrototypeMixin";
 
 export interface HandrailProps {
   position: [number, number, number];
@@ -19,6 +20,9 @@ export interface HandrailProps {
   onClick?: () => void;
   onPointerOver?: () => void;
   onPointerOut?: () => void;
+  // Prototype props
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: any) => void;
 }
 
 const Handrail: React.FC<HandrailProps> = ({
@@ -37,6 +41,8 @@ const Handrail: React.FC<HandrailProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
+  prototypeId,
+  onPrototypeAction,
 }) => {
   // Material color configurations
   const getMaterialColor = () => {
@@ -253,5 +259,7 @@ const Handrail: React.FC<HandrailProps> = ({
   );
 };
 
-export default Handrail;
+// Create prototype-enabled version
+// Use UniversalPrototype wrapper instead of individual prototype components
 
+export default Handrail;

@@ -11,7 +11,7 @@ import {
   Crystal,
   Skull,
   FloatingText,
-} from "./RoomElements";
+} from "./index";
 
 interface RoomDecoratorProps {
   roomType: string;

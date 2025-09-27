@@ -7,7 +7,7 @@ import { useGameState } from "../../hooks/useGameState";
 import { gameEvents, GAME_EVENTS } from "../../utils/gameEvents";
 import { useDoorInteraction } from "../../hooks/useDoorInteraction";
 import type { Room } from "../../types/map";
-import { Ceiling } from "../roomElements/RoomElements";
+import { Ceiling } from "../roomElements";
 
 // Import all room content components
 import StartRoom from "./StartRoom";

@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Tile,
-  Plank,
-  Wall,
-  Ceiling,
-  Stair,
-  Handrail,
-} from "../roomElements/RoomElements";
+import { Tile, Plank, Wall, Ceiling, Stair, Handrail } from "../roomElements";
 
 interface ComponentShowcaseRoomProps {
   roomSize?: number;
@@ -261,4 +254,3 @@ const ComponentShowcaseRoom: React.FC<ComponentShowcaseRoomProps> = ({
 };
 
 export default ComponentShowcaseRoom;
-

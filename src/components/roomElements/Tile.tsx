@@ -2,6 +2,7 @@ import React from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
+import { withObjectPrototype } from "../../utils/SimplePrototypeMixin";
 
 /**
  * @emoji 🔲
@@ -24,6 +25,9 @@ export interface TileProps {
   onClick?: () => void;
   onPointerOver?: () => void;
   onPointerOut?: () => void;
+  // Prototype props
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: unknown) => void;
 }
 
 const Tile: React.FC<TileProps> = ({
@@ -42,6 +46,8 @@ const Tile: React.FC<TileProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
+  prototypeId,
+  onPrototypeAction,
 }) => {
   // Material configurations
   const getMaterialProps = () => {
@@ -183,5 +189,8 @@ const Tile: React.FC<TileProps> = ({
     </mesh>
   );
 };
+
+// Create prototype-enabled version
+// Use UniversalPrototype wrapper instead of individual prototype components
 
 export default Tile;

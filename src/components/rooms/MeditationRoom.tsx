@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 import useGameStore from "../../store/gameStore";
-import { Candle, Crystal, PotionBottle } from "../roomElements/RoomElements";
+import { Candle, Crystal, PotionBottle } from "../roomElements";
 import OptimizedPuzzleRouter from "../OptimizedPuzzleRouter";
 import RoomActionCards from "../RoomActionCards";
 import { useRoomActions } from "../../hooks/useRoomActions";

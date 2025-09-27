@@ -2,6 +2,7 @@ import React from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
+import { withObjectPrototype } from "../../utils/SimplePrototypeMixin";
 
 export interface StairProps {
   position: [number, number, number];
@@ -20,6 +21,9 @@ export interface StairProps {
   onClick?: () => void;
   onPointerOver?: () => void;
   onPointerOut?: () => void;
+  // Prototype props
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: any) => void;
 }
 
 const Stair: React.FC<StairProps> = ({
@@ -39,6 +43,8 @@ const Stair: React.FC<StairProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
+  prototypeId,
+  onPrototypeAction,
 }) => {
   // Material color configurations
   const getMaterialColor = () => {
@@ -241,5 +247,7 @@ const Stair: React.FC<StairProps> = ({
   );
 };
 
-export default Stair;
+// Create prototype-enabled version
+// Use UniversalPrototype wrapper instead of individual prototype components
 
+export default Stair;

@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
+import * as THREE from "three";
+import { withObjectPrototype } from "../../utils/SimplePrototypeMixin";
 
 // Torch Component
-export const Torch: React.FC<{ position: [number, number, number] }> = ({
-  position,
-}) => {
+export const Torch: React.FC<{
+  position: [number, number, number];
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: any) => void;
+}> = ({ position, prototypeId, onPrototypeAction }) => {
   const [isLit, setIsLit] = useState(true);
 
   return (
@@ -55,13 +59,16 @@ export const Torch: React.FC<{ position: [number, number, number] }> = ({
 };
 
 // Candle Component
-export const Candle: React.FC<{ position: [number, number, number] }> = ({
-  position,
-}) => {
+export const Candle: React.FC<{
+  position: [number, number, number];
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: any) => void;
+  meshRef?: React.RefObject<THREE.Group>;
+}> = ({ position, prototypeId, onPrototypeAction, meshRef }) => {
   const [isLit, setIsLit] = useState(true);
 
   return (
-    <group position={position}>
+    <group ref={meshRef} position={position}>
       {/* Candle Base */}
       <mesh position={[0, 0.1, 0]} castShadow>
         <cylinderGeometry args={[0.08, 0.08, 0.2]} />
@@ -208,11 +215,14 @@ export const Chest: React.FC<{ position: [number, number, number] }> = ({
 };
 
 // Table Component
-export const Table: React.FC<{ position: [number, number, number] }> = ({
-  position,
-}) => {
+export const Table: React.FC<{
+  position: [number, number, number];
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: any) => void;
+  meshRef?: React.RefObject<THREE.Group>;
+}> = ({ position, prototypeId, onPrototypeAction, meshRef }) => {
   return (
-    <group position={position}>
+    <group ref={meshRef} position={position}>
       {/* Table Top */}
       <mesh position={[0, 0.4, 0]} castShadow>
         <boxGeometry args={[1.2, 0.1, 0.8]} />
@@ -236,11 +246,14 @@ export const Table: React.FC<{ position: [number, number, number] }> = ({
 };
 
 // Chair Component
-export const Chair: React.FC<{ position: [number, number, number] }> = ({
-  position,
-}) => {
+export const Chair: React.FC<{
+  position: [number, number, number];
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: any) => void;
+  meshRef?: React.RefObject<THREE.Group>;
+}> = ({ position, prototypeId, onPrototypeAction, meshRef }) => {
   return (
-    <group position={position}>
+    <group ref={meshRef} position={position}>
       {/* Chair Seat */}
       <mesh position={[0, 0.3, 0]} castShadow>
         <boxGeometry args={[0.4, 0.05, 0.4]} />
@@ -270,9 +283,11 @@ export const Chair: React.FC<{ position: [number, number, number] }> = ({
 };
 
 // Bookshelf Component
-export const Bookshelf: React.FC<{ position: [number, number, number] }> = ({
-  position,
-}) => {
+export const Bookshelf: React.FC<{
+  position: [number, number, number];
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: any) => void;
+}> = ({ position, prototypeId, onPrototypeAction }) => {
   return (
     <group position={position}>
       {/* Bookshelf Frame */}
@@ -402,10 +417,7 @@ export const FloatingText: React.FC<{
   );
 };
 
-// Export new custom components
-export { default as Tile } from "./Tile";
-export { default as Plank } from "./Plank";
-export { default as Wall } from "./Wall";
-export { default as Ceiling } from "./Ceiling";
-export { default as Stair } from "./Stair";
-export { default as Handrail } from "./Handrail";
+// Note: Use UniversalPrototype wrapper instead of individual prototype components
+
+// Note: Individual room element components are exported from their own files
+// and re-exported from the index.ts file

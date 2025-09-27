@@ -3,12 +3,7 @@ import { Text } from "@react-three/drei";
 import { refBasedPlayerState } from "../../utils/refBasedPlayerState";
 import { refBasedGameState } from "../../utils/refBasedGameState";
 import { coffeeRoomUI } from "../../utils/coffeeRoomUI";
-import {
-  Candle,
-  Table,
-  Chair,
-  PotionBottle,
-} from "../roomElements/RoomElements";
+import { Candle, Table, Chair, PotionBottle } from "../roomElements";
 
 interface CoffeeRoomProps {
   onRewardClaim?: () => void;

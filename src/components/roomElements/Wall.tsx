@@ -1,7 +1,7 @@
 import React from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Box } from "@react-three/drei";
-import * as THREE from "three";
+import { withObjectPrototype } from "../../utils/SimplePrototypeMixin";
 
 export interface WallProps {
   position: [number, number, number];
@@ -21,6 +21,9 @@ export interface WallProps {
   onClick?: () => void;
   onPointerOver?: () => void;
   onPointerOut?: () => void;
+  // Prototype props
+  prototypeId?: string;
+  onPrototypeAction?: (action: string, data?: unknown) => void;
 }
 
 const Wall: React.FC<WallProps> = ({
@@ -41,6 +44,8 @@ const Wall: React.FC<WallProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
+  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
+  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) => {
   // Material color configurations
   const getMaterialColor = () => {
@@ -90,11 +95,6 @@ const Wall: React.FC<WallProps> = ({
     }
 
     return positions;
-  };
-
-  // Calculate door position (center by default)
-  const getDoorPosition = () => {
-    return hasDoors ? 0 : null;
   };
 
   const wallContent = (
@@ -232,5 +232,7 @@ const Wall: React.FC<WallProps> = ({
   );
 };
 
-export default Wall;
+// Create prototype-enabled version
+// Use UniversalPrototype wrapper instead of individual prototype components
 
+export default Wall;

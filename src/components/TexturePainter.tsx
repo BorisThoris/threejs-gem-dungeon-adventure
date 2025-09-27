@@ -2,6 +2,13 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text, Html } from "@react-three/drei";
 import * as THREE from "three";
+import {
+  GridCellPrototype,
+  prototypeManager,
+  createGridCell,
+} from "../types/PrototypeSystem";
+import { textureManager } from "../types/TextureSystem";
+import { actionManager, BUILT_IN_ACTIONS } from "../types/ActionSystem";
 
 // Types
 interface GridCell {
@@ -11,6 +18,7 @@ interface GridCell {
   shape: "square" | "circle" | "triangle" | "diamond" | "hexagon";
   size: number;
   rotation: number;
+  prototype?: GridCellPrototype; // Link to prototype system
 }
 
 interface BrushTool {
@@ -240,6 +248,18 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
     const newCells: GridCell[] = [];
     for (let x = 0; x < gridSize; x++) {
       for (let y = 0; y < gridSize; y++) {
+        // Create prototype for this cell
+        const prototype = createGridCell({
+          position: [
+            x - Math.floor(gridSize / 2),
+            y - Math.floor(gridSize / 2),
+            0,
+          ],
+          color: "#2a2a2a",
+          shape: "square",
+          size: 1,
+        });
+
         newCells.push({
           x: x - Math.floor(gridSize / 2),
           y: y - Math.floor(gridSize / 2),
@@ -247,6 +267,7 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
           shape: "square",
           size: 1,
           rotation: 0,
+          prototype,
         });
       }
     }
@@ -260,17 +281,41 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
       setIsPainting(true);
 
       setCells((prevCells) =>
-        prevCells.map((cell) =>
-          cell.x === x && cell.y === y
-            ? {
-                ...cell,
+        prevCells.map((cell) => {
+          if (cell.x === x && cell.y === y) {
+            // Use prototype system to update the cell
+            if (cell.prototype) {
+              // Execute paint action
+              actionManager.executeAction(cell.prototype, "paint", {
                 color: selectedColor,
+              });
+
+              // Execute shape change action
+              actionManager.executeAction(cell.prototype, "change-shape", {
                 shape: selectedTool.shape,
-                size: brushSize,
-                rotation: Math.random() * Math.PI * 2,
-              }
-            : cell
-        )
+              });
+
+              // Execute scale action
+              actionManager.executeAction(cell.prototype, "scale", {
+                factor: brushSize,
+              });
+
+              // Execute rotate action
+              actionManager.executeAction(cell.prototype, "rotate", {
+                angle: Math.random() * Math.PI * 2,
+              });
+            }
+
+            return {
+              ...cell,
+              color: selectedColor,
+              shape: selectedTool.shape,
+              size: brushSize,
+              rotation: Math.random() * Math.PI * 2,
+            };
+          }
+          return cell;
+        })
       );
     },
     [selectedColor, selectedTool.shape, brushSize]
@@ -558,6 +603,113 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
           </div>
         </div>
 
+        {/* Cell Actions */}
+        {selectedCell && (
+          <div style={{ marginBottom: "20px" }}>
+            <h3 style={{ margin: "0 0 10px 0" }}>Cell Actions</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+              {BUILT_IN_ACTIONS.PAINT && (
+                <button
+                  onClick={() => {
+                    const cell = cells.find(
+                      (c) => c.x === selectedCell.x && c.y === selectedCell.y
+                    );
+                    if (cell?.prototype) {
+                      actionManager.executeAction(cell.prototype, "paint", {
+                        color: selectedColor,
+                      });
+                    }
+                  }}
+                  style={{
+                    padding: "6px 10px",
+                    background: "#4CAF50",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "11px",
+                  }}
+                >
+                  🎨 Paint
+                </button>
+              )}
+              {BUILT_IN_ACTIONS.ROTATE && (
+                <button
+                  onClick={() => {
+                    const cell = cells.find(
+                      (c) => c.x === selectedCell.x && c.y === selectedCell.y
+                    );
+                    if (cell?.prototype) {
+                      actionManager.executeAction(cell.prototype, "rotate");
+                    }
+                  }}
+                  style={{
+                    padding: "6px 10px",
+                    background: "#2196F3",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "11px",
+                  }}
+                >
+                  🔄 Rotate
+                </button>
+              )}
+              {BUILT_IN_ACTIONS.SCALE && (
+                <button
+                  onClick={() => {
+                    const cell = cells.find(
+                      (c) => c.x === selectedCell.x && c.y === selectedCell.y
+                    );
+                    if (cell?.prototype) {
+                      actionManager.executeAction(cell.prototype, "scale", {
+                        factor: 1.1,
+                      });
+                    }
+                  }}
+                  style={{
+                    padding: "6px 10px",
+                    background: "#FF9800",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "11px",
+                  }}
+                >
+                  📏 Scale
+                </button>
+              )}
+              {BUILT_IN_ACTIONS.GLOW && (
+                <button
+                  onClick={() => {
+                    const cell = cells.find(
+                      (c) => c.x === selectedCell.x && c.y === selectedCell.y
+                    );
+                    if (cell?.prototype) {
+                      actionManager.executeAction(cell.prototype, "glow", {
+                        intensity: 1.5,
+                      });
+                    }
+                  }}
+                  style={{
+                    padding: "6px 10px",
+                    background: "#9C27B0",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "11px",
+                  }}
+                >
+                  ✨ Glow
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Instructions */}
         <div style={{ marginBottom: "20px" }}>
           <h3 style={{ margin: "0 0 10px 0" }}>Instructions</h3>
@@ -566,6 +718,7 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
             <p>• Drag to paint multiple cells</p>
             <p>• Use different brush tools</p>
             <p>• Adjust brush size</p>
+            <p>• Click cell actions for more options</p>
             <p>• Export your texture</p>
           </div>
         </div>
