@@ -1,6 +1,6 @@
 import React from "react";
 import StartScreen from "./components/StartScreen";
-import EditorLauncher from "./components/EditorLauncher";
+import ThreeDEditor from "./components/ThreeDEditor";
 import "./App.css";
 
 function App() {
@@ -34,7 +34,7 @@ function App() {
   }, [showEditor]);
 
   if (showEditor) {
-    return <EditorLauncher />;
+    return <ThreeDEditor />;
   }
 
   return <StartScreen />;

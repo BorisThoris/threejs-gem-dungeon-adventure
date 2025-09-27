@@ -23,6 +23,8 @@ import EndRoom from "./rooms/EndRoom";
 import SpecialRoom from "./rooms/SpecialRoom";
 import CorridorRoom from "./rooms/CorridorRoom";
 import ColosseumRoom from "./rooms/ColosseumRoom";
+import StairsRoom from "./rooms/StairsRoom";
+import MiddleStairsRoom from "./rooms/MiddleStairsRoom";
 import ShapedShell from "./rooms/ShapedShell";
 
 // Import other 3D components
@@ -77,6 +79,336 @@ const ROOM_CONFIGS: RoomConfig[] = [
     emoji: "🏟️",
     description: "A grand arena for battles",
     props: { size: 12 },
+  },
+  {
+    type: "stairs",
+    component: StairsRoom,
+    title: "Procedural Stairs Room",
+    emoji: "🪜",
+    description: "Algorithm-generated triangular spiral staircase",
+    props: {
+      direction: "up",
+      roomWidth: 8,
+      roomHeight: 6,
+      minWidth: 4,
+      minHeight: 3,
+      tileSize: 0.8,
+      showCustomTiles: true,
+      onClimb: () => console.log("Climbed procedural stairs"),
+      onDescend: () => console.log("Descended procedural stairs"),
+    },
+    availableActions: [
+      {
+        id: "climb",
+        title: "Climb Up",
+        description: "Ascend the procedural spiral staircase",
+        icon: "⬆️",
+        action: () => console.log("Climbing procedural stairs"),
+      },
+      {
+        id: "descend",
+        title: "Go Down",
+        description: "Descend the procedural spiral staircase",
+        icon: "⬇️",
+        action: () => console.log("Descending procedural stairs"),
+      },
+      {
+        id: "examine",
+        title: "Examine Stairs",
+        description: "Study the algorithm-generated structure",
+        icon: "🔍",
+        action: () => console.log("Examining procedural stairs"),
+      },
+    ],
+    editableProps: [
+      {
+        key: "direction",
+        label: "Direction",
+        type: "string",
+        defaultValue: "up",
+        options: ["up", "down"],
+      },
+      {
+        key: "roomWidth",
+        label: "Room Width",
+        type: "number",
+        defaultValue: 8,
+      },
+      {
+        key: "roomHeight",
+        label: "Room Height",
+        type: "number",
+        defaultValue: 6,
+      },
+      {
+        key: "minWidth",
+        label: "Minimum Width",
+        type: "number",
+        defaultValue: 4,
+      },
+      {
+        key: "minHeight",
+        label: "Minimum Height",
+        type: "number",
+        defaultValue: 3,
+      },
+      {
+        key: "tileSize",
+        label: "Tile Size",
+        type: "number",
+        defaultValue: 0.8,
+      },
+      {
+        key: "showCustomTiles",
+        label: "Show Custom Tiles",
+        type: "boolean",
+        defaultValue: true,
+      },
+    ],
+  },
+  {
+    type: "middle-stairs-top",
+    component: MiddleStairsRoom,
+    title: "Middle Stairs - Top",
+    emoji: "🪜⬆️",
+    description: "Top section of connecting staircase",
+    props: {
+      position: "top",
+      roomWidth: 8,
+      roomHeight: 6,
+      minWidth: 4,
+      minHeight: 3,
+      tileSize: 0.8,
+      showCustomTiles: true,
+      onClimb: () => console.log("Climbed from top stairs"),
+      onDescend: () => console.log("Descended from top stairs"),
+    },
+    availableActions: [
+      {
+        id: "descend",
+        title: "Go Down",
+        description: "Descend to the middle level",
+        icon: "⬇️",
+        action: () => console.log("Descending from top stairs"),
+      },
+      {
+        id: "examine",
+        title: "Examine Stairs",
+        description: "Study the top staircase section",
+        icon: "🔍",
+        action: () => console.log("Examining top stairs"),
+      },
+    ],
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "string",
+        defaultValue: "top",
+        options: ["top", "middle", "bottom"],
+      },
+      {
+        key: "roomWidth",
+        label: "Room Width",
+        type: "number",
+        defaultValue: 8,
+      },
+      {
+        key: "roomHeight",
+        label: "Room Height",
+        type: "number",
+        defaultValue: 6,
+      },
+      {
+        key: "minWidth",
+        label: "Minimum Width",
+        type: "number",
+        defaultValue: 4,
+      },
+      {
+        key: "minHeight",
+        label: "Minimum Height",
+        type: "number",
+        defaultValue: 3,
+      },
+      {
+        key: "tileSize",
+        label: "Tile Size",
+        type: "number",
+        defaultValue: 0.8,
+      },
+      {
+        key: "showCustomTiles",
+        label: "Show Custom Tiles",
+        type: "boolean",
+        defaultValue: true,
+      },
+    ],
+  },
+  {
+    type: "middle-stairs-middle",
+    component: MiddleStairsRoom,
+    title: "Middle Stairs - Middle",
+    emoji: "🪜↕️",
+    description: "Middle section of connecting staircase",
+    props: {
+      position: "middle",
+      roomWidth: 8,
+      roomHeight: 6,
+      minWidth: 4,
+      minHeight: 3,
+      tileSize: 0.8,
+      showCustomTiles: true,
+      onClimb: () => console.log("Climbed from middle stairs"),
+      onDescend: () => console.log("Descended from middle stairs"),
+    },
+    availableActions: [
+      {
+        id: "climb",
+        title: "Climb Up",
+        description: "Ascend to the top level",
+        icon: "⬆️",
+        action: () => console.log("Climbing from middle stairs"),
+      },
+      {
+        id: "descend",
+        title: "Go Down",
+        description: "Descend to the bottom level",
+        icon: "⬇️",
+        action: () => console.log("Descending from middle stairs"),
+      },
+      {
+        id: "examine",
+        title: "Examine Stairs",
+        description: "Study the middle staircase section",
+        icon: "🔍",
+        action: () => console.log("Examining middle stairs"),
+      },
+    ],
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "string",
+        defaultValue: "middle",
+        options: ["top", "middle", "bottom"],
+      },
+      {
+        key: "roomWidth",
+        label: "Room Width",
+        type: "number",
+        defaultValue: 8,
+      },
+      {
+        key: "roomHeight",
+        label: "Room Height",
+        type: "number",
+        defaultValue: 6,
+      },
+      {
+        key: "minWidth",
+        label: "Minimum Width",
+        type: "number",
+        defaultValue: 4,
+      },
+      {
+        key: "minHeight",
+        label: "Minimum Height",
+        type: "number",
+        defaultValue: 3,
+      },
+      {
+        key: "tileSize",
+        label: "Tile Size",
+        type: "number",
+        defaultValue: 0.8,
+      },
+      {
+        key: "showCustomTiles",
+        label: "Show Custom Tiles",
+        type: "boolean",
+        defaultValue: true,
+      },
+    ],
+  },
+  {
+    type: "middle-stairs-bottom",
+    component: MiddleStairsRoom,
+    title: "Middle Stairs - Bottom",
+    emoji: "🪜⬇️",
+    description: "Bottom section of connecting staircase",
+    props: {
+      position: "bottom",
+      roomWidth: 8,
+      roomHeight: 6,
+      minWidth: 4,
+      minHeight: 3,
+      tileSize: 0.8,
+      showCustomTiles: true,
+      onClimb: () => console.log("Climbed from bottom stairs"),
+      onDescend: () => console.log("Descended from bottom stairs"),
+    },
+    availableActions: [
+      {
+        id: "climb",
+        title: "Climb Up",
+        description: "Ascend to the middle level",
+        icon: "⬆️",
+        action: () => console.log("Climbing from bottom stairs"),
+      },
+      {
+        id: "examine",
+        title: "Examine Stairs",
+        description: "Study the bottom staircase section",
+        icon: "🔍",
+        action: () => console.log("Examining bottom stairs"),
+      },
+    ],
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "string",
+        defaultValue: "bottom",
+        options: ["top", "middle", "bottom"],
+      },
+      {
+        key: "roomWidth",
+        label: "Room Width",
+        type: "number",
+        defaultValue: 8,
+      },
+      {
+        key: "roomHeight",
+        label: "Room Height",
+        type: "number",
+        defaultValue: 6,
+      },
+      {
+        key: "minWidth",
+        label: "Minimum Width",
+        type: "number",
+        defaultValue: 4,
+      },
+      {
+        key: "minHeight",
+        label: "Minimum Height",
+        type: "number",
+        defaultValue: 3,
+      },
+      {
+        key: "tileSize",
+        label: "Tile Size",
+        type: "number",
+        defaultValue: 0.8,
+      },
+      {
+        key: "showCustomTiles",
+        label: "Show Custom Tiles",
+        type: "boolean",
+        defaultValue: true,
+      },
+    ],
   },
   {
     type: "meditation",
@@ -598,6 +930,27 @@ const PropsEditor: React.FC<{
             />
           )}
 
+          {prop.type === "string" && prop.options && (
+            <select
+              value={localProps[prop.key] || prop.defaultValue || ""}
+              onChange={(e) => handlePropChange(prop.key, e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                background: "#333",
+                border: "1px solid #555",
+                borderRadius: "4px",
+                color: "white",
+              }}
+            >
+              {prop.options.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          )}
+
           {prop.type === "array" && (
             <textarea
               value={JSON.stringify(
@@ -847,12 +1200,16 @@ const EditorScene: React.FC<{
 
 // Main 3D Editor Component
 const ThreeDEditor: React.FC = () => {
-  const [selectedType, setSelectedType] = useState("start");
+  // Initialize state from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const [selectedType, setSelectedType] = useState(
+    urlParams.get("type") || "start"
+  );
   const [selectedCategory, setSelectedCategory] = useState<"rooms" | "objects">(
-    "rooms"
+    (urlParams.get("category") as "rooms" | "objects") || "rooms"
   );
   const [viewMode, setViewMode] = useState<"single" | "grid" | "showcase">(
-    "single"
+    (urlParams.get("view") as "single" | "grid" | "showcase") || "single"
   );
   const [cameraPosition, setCameraPosition] = useState<
     [number, number, number]
@@ -875,6 +1232,32 @@ const ThreeDEditor: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
+  // Function to update URL parameters
+  const updateURL = (updates: {
+    type?: string;
+    category?: string;
+    view?: string;
+  }) => {
+    const newParams = new URLSearchParams(window.location.search);
+
+    if (updates.type !== undefined) newParams.set("type", updates.type);
+    if (updates.category !== undefined)
+      newParams.set("category", updates.category);
+    if (updates.view !== undefined) newParams.set("view", updates.view);
+
+    const newURL = `${window.location.pathname}?${newParams.toString()}`;
+    window.history.replaceState({}, "", newURL);
+  };
+
+  // Update URL when selections change
+  React.useEffect(() => {
+    updateURL({
+      type: selectedType,
+      category: selectedCategory,
+      view: viewMode,
+    });
+  }, [selectedType, selectedCategory, viewMode]);
+
   // Update props when selection changes
   React.useEffect(() => {
     const configs =
@@ -890,6 +1273,68 @@ const ThreeDEditor: React.FC = () => {
   const configs = selectedCategory === "rooms" ? ROOM_CONFIGS : OBJECT_CONFIGS;
   const selectedConfig = configs.find((config) => config.type === selectedType);
 
+  // State for search functionality
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter configs based on search query
+  const filteredConfigs = React.useMemo(() => {
+    if (!searchQuery.trim()) return configs;
+
+    return configs.filter((config) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        config.title.toLowerCase().includes(searchLower) ||
+        config.description.toLowerCase().includes(searchLower) ||
+        config.type.toLowerCase().includes(searchLower) ||
+        config.emoji.includes(searchQuery) // Allow emoji search
+      );
+    });
+  }, [configs, searchQuery]);
+
+  // Group configs by base component type for better organization
+  const groupedConfigs = React.useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const groups: { [key: string]: any[] } = {};
+
+    filteredConfigs.forEach((config) => {
+      // Extract base component name (e.g., "stairs" from "middle-stairs-top")
+      const baseType =
+        config.type.split("-").slice(0, -1).join("-") || config.type;
+
+      if (!groups[baseType]) {
+        groups[baseType] = [];
+      }
+      groups[baseType].push(config);
+    });
+
+    return groups;
+  }, [filteredConfigs]);
+
+  // State for collapsed groups - start with all groups collapsed by default
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    new Set()
+  );
+
+  const toggleGroup = (baseType: string) => {
+    setCollapsedGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(baseType)) {
+        newSet.delete(baseType);
+      } else {
+        newSet.add(baseType);
+      }
+      return newSet;
+    });
+  };
+
+  // Initialize all multi-variant groups as collapsed by default
+  React.useEffect(() => {
+    const multiVariantGroups = Object.keys(groupedConfigs).filter(
+      (baseType) => groupedConfigs[baseType].length > 1
+    );
+    setCollapsedGroups(new Set(multiVariantGroups));
+  }, [groupedConfigs]);
+
   return (
     <div
       style={{
@@ -901,53 +1346,112 @@ const ThreeDEditor: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      {/* Control Panel */}
+      {/* Enhanced Control Panel */}
       <div
         style={{
-          width: "300px",
-          background: "linear-gradient(135deg, #1e1e1e, #2d2d2d)",
-          padding: "20px",
+          width: "400px",
+          background: "linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%)",
+          padding: "0",
           overflowY: "auto",
-          borderRight: "2px solid #444",
-          color: "white",
-          fontFamily: "Arial, sans-serif",
+          borderRight: "1px solid #333",
+          boxShadow: "4px 0 20px rgba(0,0,0,0.3)",
         }}
       >
-        <h2 style={{ margin: "0 0 20px 0", color: "#4CAF50" }}>🎮 3D Editor</h2>
+        {/* Header */}
+        <div
+          style={{
+            padding: "24px",
+            background: "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)",
+            borderBottom: "1px solid #333",
+          }}
+        >
+          <h1
+            style={{
+              margin: "0 0 8px 0",
+              fontSize: "28px",
+              fontWeight: "700",
+              textAlign: "center",
+              background: "linear-gradient(45deg, #fff, #e8f5e8)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            🎮 3D Editor
+          </h1>
+          <p
+            style={{
+              margin: "0",
+              fontSize: "14px",
+              opacity: 0.9,
+              textAlign: "center",
+            }}
+          >
+            Interactive 3D Scene Builder
+          </p>
+        </div>
 
-        {/* Category Selection */}
-        <div style={{ marginBottom: "20px" }}>
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>Category</h3>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              onClick={() => setSelectedCategory("rooms")}
-              style={{
-                padding: "8px 16px",
-                background: selectedCategory === "rooms" ? "#4CAF50" : "#555",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
-            >
-              🏠 Rooms
-            </button>
-            <button
-              onClick={() => setSelectedCategory("objects")}
-              style={{
-                padding: "8px 16px",
-                background: selectedCategory === "objects" ? "#4CAF50" : "#555",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
-            >
-              🎯 Objects
-            </button>
-          </div>
+        {/* Navigation Tabs */}
+        <div
+          style={{
+            display: "flex",
+            background: "#222",
+            borderBottom: "1px solid #333",
+          }}
+        >
+          <button
+            onClick={() => {
+              setSelectedCategory("rooms");
+              const firstRoom = ROOM_CONFIGS[0];
+              if (firstRoom) {
+                setSelectedType(firstRoom.type);
+              }
+            }}
+            style={{
+              flex: 1,
+              padding: "16px",
+              background:
+                selectedCategory === "rooms" ? "#4CAF50" : "transparent",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "600",
+              transition: "all 0.2s ease",
+              borderBottom:
+                selectedCategory === "rooms"
+                  ? "3px solid #fff"
+                  : "3px solid transparent",
+            }}
+          >
+            🏠 Rooms
+          </button>
+          <button
+            onClick={() => {
+              setSelectedCategory("objects");
+              const firstObject = OBJECT_CONFIGS[0];
+              if (firstObject) {
+                setSelectedType(firstObject.type);
+              }
+            }}
+            style={{
+              flex: 1,
+              padding: "16px",
+              background:
+                selectedCategory === "objects" ? "#4CAF50" : "transparent",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "600",
+              transition: "all 0.2s ease",
+              borderBottom:
+                selectedCategory === "objects"
+                  ? "3px solid #fff"
+                  : "3px solid transparent",
+            }}
+          >
+            🎯 Objects
+          </button>
         </div>
 
         {/* View Mode Selection */}
@@ -992,6 +1496,354 @@ const ThreeDEditor: React.FC = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Search Bar */}
+        <div style={{ marginBottom: "20px" }}>
+          <h3 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
+            Search Components
+          </h3>
+          <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              placeholder="Search by name, description, or emoji..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px 16px 12px 40px",
+                background: "#222",
+                border: "1px solid #444",
+                borderRadius: "8px",
+                color: "white",
+                fontSize: "14px",
+                outline: "none",
+                transition: "all 0.2s ease",
+                boxSizing: "border-box",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#4CAF50";
+                e.target.style.boxShadow = "0 0 0 2px rgba(76, 175, 80, 0.2)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#444";
+                e.target.style.boxShadow = "none";
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                fontSize: "16px",
+                color: "#888",
+                pointerEvents: "none",
+              }}
+            >
+              🔍
+            </div>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: "none",
+                  color: "#888",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  padding: "4px",
+                  borderRadius: "4px",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#333";
+                  e.currentTarget.style.color = "#fff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "#888";
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <div style={{ marginTop: "8px", fontSize: "12px", color: "#888" }}>
+              Found {filteredConfigs.length} component
+              {filteredConfigs.length !== 1 ? "s" : ""}
+            </div>
+          )}
+        </div>
+
+        {/* Enhanced Component Groups */}
+        <div style={{ padding: "20px", borderTop: "1px solid #333" }}>
+          <h3
+            style={{
+              margin: "0 0 16px 0",
+              fontSize: "16px",
+              fontWeight: "600",
+            }}
+          >
+            {selectedCategory === "rooms" ? "Room Components" : "3D Objects"}
+          </h3>
+
+          {Object.entries(groupedConfigs).map(([baseType, configs]) => {
+            const isCollapsed = collapsedGroups.has(baseType);
+            const hasMultipleVariants = configs.length > 1;
+
+            // If only one variant, render it directly without group wrapper
+            if (!hasMultipleVariants) {
+              const config = configs[0];
+              return (
+                <div key={baseType} style={{ marginBottom: "12px" }}>
+                  <div
+                    onClick={() => setSelectedType(config.type)}
+                    style={{
+                      padding: "12px",
+                      background:
+                        selectedType === config.type
+                          ? "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)"
+                          : "#2a2a2a",
+                      cursor: "pointer",
+                      borderRadius: "8px",
+                      border:
+                        selectedType === config.type
+                          ? "2px solid #fff"
+                          : "1px solid #444",
+                      transition: "all 0.2s ease",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedType !== config.type) {
+                        e.currentTarget.style.background = "#333";
+                        e.currentTarget.style.transform = "translateX(4px)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedType !== config.type) {
+                        e.currentTarget.style.background = "#2a2a2a";
+                        e.currentTarget.style.transform = "translateX(0)";
+                      }
+                    }}
+                  >
+                    {/* Selection indicator */}
+                    {selectedType === config.type && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "0",
+                          left: "0",
+                          width: "4px",
+                          height: "100%",
+                          background: "#fff",
+                        }}
+                      />
+                    )}
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <span style={{ fontSize: "20px" }}>{config.emoji}</span>
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            fontWeight: "600",
+                            fontSize: "14px",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {config.title}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            opacity: 0.8,
+                            lineHeight: "1.4",
+                          }}
+                        >
+                          {config.description}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Multiple variants - render with group header
+            return (
+              <div key={baseType} style={{ marginBottom: "24px" }}>
+                {/* Group Header */}
+                <div
+                  onClick={() => toggleGroup(baseType)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "12px",
+                    padding: "8px 12px",
+                    background: "#222",
+                    borderRadius: "8px",
+                    border: "1px solid #333",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#333";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#222";
+                  }}
+                >
+                  <span style={{ fontSize: "18px" }}>
+                    {configs[0]?.emoji || "🔧"}
+                  </span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: "14px", fontWeight: "600" }}>
+                      {baseType
+                        .replace(/-/g, " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </div>
+                    <div style={{ fontSize: "12px", opacity: 0.7 }}>
+                      {configs.length} variants
+                    </div>
+                  </div>
+
+                  {/* Collapse/Expand Icon */}
+                  <div
+                    style={{
+                      fontSize: "16px",
+                      color: "#888",
+                      transition: "transform 0.2s ease",
+                      transform: isCollapsed
+                        ? "rotate(-90deg)"
+                        : "rotate(0deg)",
+                    }}
+                  >
+                    ▼
+                  </div>
+                </div>
+
+                {/* Variants - Only show if not collapsed */}
+                {!isCollapsed && (
+                  <div style={{ marginLeft: "16px" }}>
+                    {configs.map((config, index) => (
+                      <div
+                        key={config.type}
+                        onClick={() => setSelectedType(config.type)}
+                        style={{
+                          padding: "12px",
+                          background:
+                            selectedType === config.type
+                              ? "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)"
+                              : "#2a2a2a",
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          marginBottom: "8px",
+                          border:
+                            selectedType === config.type
+                              ? "2px solid #fff"
+                              : "1px solid #444",
+                          transition: "all 0.2s ease",
+                          position: "relative",
+                          overflow: "hidden",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedType !== config.type) {
+                            e.currentTarget.style.background = "#333";
+                            e.currentTarget.style.transform = "translateX(4px)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedType !== config.type) {
+                            e.currentTarget.style.background = "#2a2a2a";
+                            e.currentTarget.style.transform = "translateX(0)";
+                          }
+                        }}
+                      >
+                        {/* Selection indicator */}
+                        {selectedType === config.type && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "0",
+                              left: "0",
+                              width: "4px",
+                              height: "100%",
+                              background: "#fff",
+                            }}
+                          />
+                        )}
+
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                          }}
+                        >
+                          <span style={{ fontSize: "20px" }}>
+                            {config.emoji}
+                          </span>
+                          <div style={{ flex: 1 }}>
+                            <div
+                              style={{
+                                fontWeight: "600",
+                                fontSize: "14px",
+                                marginBottom: "4px",
+                              }}
+                            >
+                              {config.title}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                opacity: 0.8,
+                                lineHeight: "1.4",
+                              }}
+                            >
+                              {config.description}
+                            </div>
+                          </div>
+
+                          {/* Variant indicator */}
+                          <div
+                            style={{
+                              background:
+                                selectedType === config.type ? "#fff" : "#666",
+                              color:
+                                selectedType === config.type
+                                  ? "#4CAF50"
+                                  : "#fff",
+                              padding: "4px 8px",
+                              borderRadius: "12px",
+                              fontSize: "10px",
+                              fontWeight: "600",
+                              minWidth: "20px",
+                              textAlign: "center",
+                            }}
+                          >
+                            {index + 1}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Room Controls */}
@@ -1276,6 +2128,56 @@ const ThreeDEditor: React.FC = () => {
           <div>Mouse - Orbit & Pan</div>
           <div>Mouse Wheel - Zoom</div>
           <div>ESC - Exit editor</div>
+        </div>
+
+        {/* URL Display */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            right: "20px",
+            background: "rgba(0,0,0,0.7)",
+            color: "white",
+            padding: "10px",
+            borderRadius: "4px",
+            fontSize: "11px",
+            zIndex: 1000,
+            maxWidth: "300px",
+            wordBreak: "break-all",
+          }}
+        >
+          <div style={{ fontWeight: "bold", marginBottom: "5px" }}>
+            🔗 Current URL:
+          </div>
+          <div
+            style={{
+              background: "rgba(255, 255, 255, 0.1)",
+              padding: "5px",
+              borderRadius: "3px",
+              fontFamily: "monospace",
+              fontSize: "10px",
+              marginBottom: "5px",
+            }}
+          >
+            {window.location.href}
+          </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert("URL copied to clipboard!");
+            }}
+            style={{
+              background: "#4CAF50",
+              color: "white",
+              border: "none",
+              padding: "4px 8px",
+              borderRadius: "3px",
+              cursor: "pointer",
+              fontSize: "10px",
+            }}
+          >
+            📋 Copy URL
+          </button>
         </div>
       </div>
     </div>
