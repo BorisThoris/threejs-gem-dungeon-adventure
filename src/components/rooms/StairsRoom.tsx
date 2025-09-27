@@ -3,6 +3,7 @@ import { Text, Box, Cylinder, Sphere, Html } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 import RoomActionCards, { type ActionCard } from "../RoomActionCards";
+import { Tile, Stair, Handrail } from "../roomElements/RoomElements";
 
 interface StairsRoomProps {
   direction?: "up" | "down";
@@ -275,70 +276,49 @@ const StairsRoom: React.FC<StairsRoomProps> = ({
           let tileType = "normal";
           let tileHeight = 0.1;
           let tileColor = "#5A5A5A";
+          let material = "stone" as const;
+          let pattern = "smooth" as const;
 
           // Define circular zones
           if (distanceFromCenter < openingRadius + 0.5) {
             tileType = "opening_edge";
             tileHeight = 0.15;
             tileColor = "#8B8B8B";
+            pattern = "cracked";
           } else if (distanceFromCenter < openingRadius + 1.5) {
             tileType = "inner_ring";
             tileHeight = 0.12;
             tileColor = "#6B6B6B";
+            pattern = "tiled";
           } else if (distanceFromCenter < roomRadius - 1) {
             tileType = "middle_ring";
             tileHeight = 0.1;
             tileColor = "#5A5A5A";
+            pattern = "smooth";
           } else {
             tileType = "outer_ring";
             tileHeight = 0.08;
             tileColor = "#4A4A4A";
+            pattern = "rough";
           }
 
           // Add some variation based on angle for visual interest
           const angle = Math.atan2(tileZ, tileX);
-          const angleVariation = Math.sin(angle * 8) * 0.1; // Subtle pattern
 
-          // Use triangular tiles for opening edge
-          if (tileType === "opening_edge") {
-            const triangleGeometry = new THREE.ConeGeometry(
-              tileSize * 0.4,
-              tileHeight,
-              3
-            );
-            tiles.push(
-              <RigidBody
-                key={`floor-${x}-${z}`}
-                type="fixed"
-                position={[tileX, -0.05, tileZ]}
-              >
-                <mesh geometry={triangleGeometry} rotation={[0, angle, 0]}>
-                  <meshStandardMaterial
-                    color={tileColor}
-                    roughness={0.8}
-                    metalness={0.1}
-                  />
-                </mesh>
-              </RigidBody>
-            );
-          } else {
-            // Regular square tiles for other zones
-            tiles.push(
-              <RigidBody
-                key={`floor-${x}-${z}`}
-                type="fixed"
-                position={[tileX, -0.05, tileZ]}
-              >
-                <Box args={[tileSize * 0.9, tileHeight, tileSize * 0.9]}>
-                  <meshStandardMaterial
-                    color={tileColor}
-                    roughness={0.8}
-                    metalness={0.1}
-                  />
-                </Box>
-              </RigidBody>
-            );
-          }
+          // Use custom Tile component
+          tiles.push(
+            <Tile
+              key={`floor-${x}-${z}`}
+              position={[tileX, -0.05, tileZ]}
+              size={tileSize * 0.9}
+              height={tileHeight}
+              color={tileColor}
+              material={material}
+              pattern={pattern}
+              rotation={[0, angle, 0]}
+              isCollidable={true}
+            />
+          );
         }
       }
     }

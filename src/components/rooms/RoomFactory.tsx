@@ -7,6 +7,7 @@ import { useGameState } from "../../hooks/useGameState";
 import { gameEvents, GAME_EVENTS } from "../../utils/gameEvents";
 import { useDoorInteraction } from "../../hooks/useDoorInteraction";
 import type { Room } from "../../types/map";
+import { Ceiling } from "../roomElements/RoomElements";
 
 // Import all room content components
 import StartRoom from "./StartRoom";
@@ -528,13 +529,17 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
         <ShapedShell size={roomSize} shape={currentRoom.shape as any} />
       )}
 
-      {/* Roof */}
-      <RigidBody type="fixed" colliders="cuboid">
-        <mesh position={[0, 4.5, 0]} receiveShadow>
-          <boxGeometry args={[roomSize, 0.5, roomSize]} />
-          <meshLambertMaterial color="#654321" />
-        </mesh>
-      </RigidBody>
+      {/* Roof using Ceiling component */}
+      <Ceiling
+        position={[0, 4.5, 0]}
+        width={roomSize}
+        height={0.5}
+        depth={roomSize}
+        material="wood"
+        style="beamed"
+        color="#654321"
+        isCollidable={true}
+      />
 
       {/* Doors - Black rectangle doors that trigger room changes */}
       {currentRoom.connections && currentRoom.connections.length > 0 ? (

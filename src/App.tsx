@@ -1,6 +1,7 @@
 import React from "react";
 import StartScreen from "./components/StartScreen";
 import ThreeDEditor from "./components/ThreeDEditor";
+import TexturePainterLauncher from "./components/TexturePainterLauncher";
 import "./App.css";
 
 function App() {
@@ -12,9 +13,10 @@ function App() {
       : "Web Browser"
   );
 
-  // Check URL parameter to show editor
+  // Check URL parameter to show editor or texture painter
   const urlParams = new URLSearchParams(window.location.search);
   const showEditor = urlParams.get("editor") === "true";
+  const showTexturePainter = urlParams.get("texture-painter") === "true";
 
   // Add CSS class to root element for editor mode
   React.useEffect(() => {
@@ -35,6 +37,10 @@ function App() {
 
   if (showEditor) {
     return <ThreeDEditor />;
+  }
+
+  if (showTexturePainter) {
+    return <TexturePainterLauncher />;
   }
 
   return <StartScreen />;

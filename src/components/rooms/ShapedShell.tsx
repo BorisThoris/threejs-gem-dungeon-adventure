@@ -1,5 +1,6 @@
 import React from "react";
 import { RigidBody } from "@react-three/rapier";
+import { Wall, Ceiling, Tile } from "../roomElements/RoomElements";
 
 type ShapeType =
   | "square"
@@ -109,37 +110,54 @@ const ShapedShell: React.FC<ShapedShellProps> = ({
   // Default: square room
   return (
     <group>
-      {/* Floor */}
-      <RigidBody type="fixed" colliders="cuboid">
-        <mesh position={[0, -0.5, 0]} receiveShadow>
-          <boxGeometry args={[size, 1, size]} />
-          <meshLambertMaterial color={colorFloor} />
-        </mesh>
-      </RigidBody>
+      {/* Floor using Tile component */}
+      <Tile
+        position={[0, -0.5, 0]}
+        size={size}
+        height={1}
+        color={colorFloor}
+        material="stone"
+        pattern="smooth"
+        isCollidable={true}
+      />
 
-      {/* Walls */}
-      <RigidBody type="fixed" colliders="cuboid">
-        {/* North */}
-        <mesh position={[0, 2, -size / 2]} receiveShadow>
-          <boxGeometry args={[size, 4, 0.5]} />
-          <meshLambertMaterial color={colorWall} />
-        </mesh>
-        {/* South */}
-        <mesh position={[0, 2, size / 2]} receiveShadow>
-          <boxGeometry args={[size, 4, 0.5]} />
-          <meshLambertMaterial color={colorWall} />
-        </mesh>
-        {/* East */}
-        <mesh position={[size / 2, 2, 0]} receiveShadow>
-          <boxGeometry args={[0.5, 4, size]} />
-          <meshLambertMaterial color={colorWall} />
-        </mesh>
-        {/* West */}
-        <mesh position={[-size / 2, 2, 0]} receiveShadow>
-          <boxGeometry args={[0.5, 4, size]} />
-          <meshLambertMaterial color={colorWall} />
-        </mesh>
-      </RigidBody>
+      {/* Walls using Wall component */}
+      <Wall
+        position={[0, 2, -size / 2]}
+        width={size}
+        height={4}
+        depth={0.5}
+        material="stone"
+        color={colorWall}
+        isCollidable={true}
+      />
+      <Wall
+        position={[0, 2, size / 2]}
+        width={size}
+        height={4}
+        depth={0.5}
+        material="stone"
+        color={colorWall}
+        isCollidable={true}
+      />
+      <Wall
+        position={[size / 2, 2, 0]}
+        width={0.5}
+        height={4}
+        depth={size}
+        material="stone"
+        color={colorWall}
+        isCollidable={true}
+      />
+      <Wall
+        position={[-size / 2, 2, 0]}
+        width={0.5}
+        height={4}
+        depth={size}
+        material="stone"
+        color={colorWall}
+        isCollidable={true}
+      />
     </group>
   );
 };

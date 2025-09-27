@@ -3,6 +3,7 @@ import { Text, Box, Cylinder, Sphere, Html } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 import RoomActionCards, { type ActionCard } from "../RoomActionCards";
+import { Tile, Stair, Handrail } from "../roomElements/RoomElements";
 
 interface MiddleStairsRoomProps {
   position?: "middle" | "top" | "bottom";

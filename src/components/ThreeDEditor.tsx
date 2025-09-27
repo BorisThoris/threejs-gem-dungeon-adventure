@@ -26,11 +26,22 @@ import ColosseumRoom from "./rooms/ColosseumRoom";
 import StairsRoom from "./rooms/StairsRoom";
 import MiddleStairsRoom from "./rooms/MiddleStairsRoom";
 import ShapedShell from "./rooms/ShapedShell";
+import ComponentShowcaseRoom from "./rooms/ComponentShowcaseRoom";
 
 // Import other 3D components
 import ItemSprite from "./ItemSprite";
+import TexturePainter from "./TexturePainter";
 import DestructibleWall from "./DestructibleWall";
+import SharedNavigation from "./SharedNavigation";
 import ParticleSystem from "./ParticleSystem";
+import {
+  Tile,
+  Plank,
+  Wall,
+  Ceiling,
+  Stair,
+  Handrail,
+} from "./roomElements/RoomElements";
 
 // Room configuration interface
 interface RoomConfig {
@@ -48,11 +59,21 @@ interface RoomConfig {
 
 interface PropConfig {
   key: string;
-  label: string;
-  type: "string" | "number" | "boolean" | "array" | "object";
+  label?: string;
+  type:
+    | "string"
+    | "number"
+    | "boolean"
+    | "array"
+    | "object"
+    | "select"
+    | "color";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  defaultValue: any;
+  defaultValue?: any;
   options?: string[];
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
 // Available room configurations
@@ -672,6 +693,19 @@ const ROOM_CONFIGS: RoomConfig[] = [
     emoji: "✨",
     description: "Unique and mysterious",
   },
+  {
+    type: "component-showcase",
+    component: ComponentShowcaseRoom,
+    title: "Component Showcase",
+    emoji: "🎨",
+    description: "Demonstrates all custom components",
+    props: {
+      roomSize: 12,
+    },
+    editableProps: [
+      { key: "roomSize", type: "number" as const, min: 8, max: 20, step: 1 },
+    ],
+  },
 ];
 
 // 3D Objects configuration
@@ -723,6 +757,222 @@ const OBJECT_CONFIGS = [
       position: [0, 0, 0],
       type: "sparkle",
     },
+  },
+  // New Custom Components
+  {
+    type: "tile",
+    component: Tile,
+    title: "Tile",
+    emoji: "🔲",
+    description: "Floor tiles with various materials and patterns",
+    props: {
+      position: [0, 0, 0],
+      size: 1,
+      height: 0.1,
+      material: "stone",
+      pattern: "smooth",
+      color: "#4a4a4a",
+    },
+    editableProps: [
+      { key: "size", type: "number" as const, min: 0.1, max: 5, step: 0.1 },
+      { key: "height", type: "number" as const, min: 0.01, max: 1, step: 0.01 },
+      {
+        key: "material",
+        type: "select" as const,
+        options: ["stone", "marble", "wood", "metal", "brick", "carpet"],
+      },
+      {
+        key: "pattern",
+        type: "select" as const,
+        options: ["smooth", "rough", "tiled", "cracked", "polished"],
+      },
+      { key: "color", type: "color" as const },
+    ],
+  },
+  {
+    type: "plank",
+    component: Plank,
+    title: "Plank",
+    emoji: "🪵",
+    description: "Wooden planks with grain patterns and details",
+    props: {
+      position: [0, 0, 0],
+      length: 2,
+      width: 0.2,
+      height: 0.05,
+      woodType: "oak",
+      finish: "smooth",
+      hasNails: true,
+      hasGrain: true,
+    },
+    editableProps: [
+      { key: "length", type: "number" as const, min: 0.1, max: 10, step: 0.1 },
+      { key: "width", type: "number" as const, min: 0.05, max: 2, step: 0.05 },
+      { key: "height", type: "number" as const, min: 0.01, max: 1, step: 0.01 },
+      {
+        key: "woodType",
+        type: "select" as const,
+        options: ["oak", "pine", "mahogany", "birch", "weathered", "dark"],
+      },
+      {
+        key: "finish",
+        type: "select" as const,
+        options: ["rough", "smooth", "polished", "weathered"],
+      },
+      { key: "hasNails", type: "boolean" as const },
+      { key: "hasGrain", type: "boolean" as const },
+    ],
+  },
+  {
+    type: "wall",
+    component: Wall,
+    title: "Wall",
+    emoji: "🧱",
+    description: "Walls with different materials, windows, and doors",
+    props: {
+      position: [0, 0, 0],
+      width: 4,
+      height: 4,
+      depth: 0.5,
+      material: "stone",
+      texture: "smooth",
+      hasWindows: false,
+      hasDoors: false,
+    },
+    editableProps: [
+      { key: "width", type: "number" as const, min: 0.5, max: 20, step: 0.5 },
+      { key: "height", type: "number" as const, min: 1, max: 10, step: 0.5 },
+      { key: "depth", type: "number" as const, min: 0.1, max: 2, step: 0.1 },
+      {
+        key: "material",
+        type: "select" as const,
+        options: ["stone", "brick", "wood", "plaster", "metal", "concrete"],
+      },
+      {
+        key: "texture",
+        type: "select" as const,
+        options: ["smooth", "rough", "weathered", "cracked", "painted"],
+      },
+      { key: "hasWindows", type: "boolean" as const },
+      { key: "hasDoors", type: "boolean" as const },
+    ],
+  },
+  {
+    type: "ceiling",
+    component: Ceiling,
+    title: "Ceiling",
+    emoji: "🏠",
+    description: "Ceilings with different styles and lighting",
+    props: {
+      position: [0, 0, 0],
+      width: 8,
+      height: 0.2,
+      depth: 8,
+      material: "wood",
+      style: "flat",
+      hasLighting: false,
+      lightCount: 1,
+    },
+    editableProps: [
+      { key: "width", type: "number" as const, min: 1, max: 20, step: 0.5 },
+      { key: "height", type: "number" as const, min: 0.1, max: 2, step: 0.1 },
+      { key: "depth", type: "number" as const, min: 1, max: 20, step: 0.5 },
+      {
+        key: "material",
+        type: "select" as const,
+        options: ["wood", "plaster", "stone", "metal", "tile", "fabric"],
+      },
+      {
+        key: "style",
+        type: "select" as const,
+        options: ["flat", "beamed", "vaulted", "coffered", "exposed"],
+      },
+      { key: "hasLighting", type: "boolean" as const },
+      { key: "lightCount", type: "number" as const, min: 0, max: 10, step: 1 },
+    ],
+  },
+  {
+    type: "stair",
+    component: Stair,
+    title: "Stair",
+    emoji: "🪜",
+    description: "Individual stairs with different materials and styles",
+    props: {
+      position: [0, 0, 0],
+      width: 1,
+      height: 0.2,
+      depth: 0.5,
+      material: "stone",
+      style: "solid",
+      hasRailing: false,
+      hasTreads: true,
+    },
+    editableProps: [
+      { key: "width", type: "number" as const, min: 0.5, max: 5, step: 0.1 },
+      { key: "height", type: "number" as const, min: 0.05, max: 1, step: 0.05 },
+      { key: "depth", type: "number" as const, min: 0.2, max: 3, step: 0.1 },
+      {
+        key: "material",
+        type: "select" as const,
+        options: ["stone", "wood", "metal", "marble", "concrete"],
+      },
+      {
+        key: "style",
+        type: "select" as const,
+        options: ["solid", "open", "spiral", "floating"],
+      },
+      { key: "hasRailing", type: "boolean" as const },
+      { key: "hasTreads", type: "boolean" as const },
+    ],
+  },
+  {
+    type: "handrail",
+    component: Handrail,
+    title: "Handrail",
+    emoji: "🛡️",
+    description: "Handrails with different materials and decorative styles",
+    props: {
+      position: [0, 0, 0],
+      length: 4,
+      height: 0.8,
+      material: "wood",
+      style: "simple",
+      hasPosts: true,
+      postCount: 3,
+      hasDecorative: false,
+    },
+    editableProps: [
+      { key: "length", type: "number" as const, min: 0.5, max: 20, step: 0.5 },
+      { key: "height", type: "number" as const, min: 0.3, max: 2, step: 0.1 },
+      {
+        key: "material",
+        type: "select" as const,
+        options: ["wood", "metal", "stone", "wrought_iron"],
+      },
+      {
+        key: "style",
+        type: "select" as const,
+        options: ["simple", "ornate", "modern", "rustic"],
+      },
+      { key: "hasPosts", type: "boolean" as const },
+      { key: "postCount", type: "number" as const, min: 0, max: 20, step: 1 },
+      { key: "hasDecorative", type: "boolean" as const },
+    ],
+  },
+  {
+    type: "texture-painter",
+    component: TexturePainter,
+    title: "Texture Painter",
+    emoji: "🎨",
+    description: "Create mosaic-like textures with various shapes and colors",
+    props: {
+      gridSize: 16,
+      cellSize: 0.5,
+    },
+    editableProps: [
+      { key: "gridSize", type: "number" as const, min: 8, max: 32, step: 2 },
+      { key: "cellSize", type: "number" as const, min: 0.2, max: 1, step: 0.1 },
+    ],
   },
 ];
 
@@ -1346,6 +1596,8 @@ const ThreeDEditor: React.FC = () => {
         overflow: "hidden",
       }}
     >
+      {/* Shared Navigation */}
+      <SharedNavigation currentPage="editor" />
       {/* Enhanced Control Panel */}
       <div
         style={{
@@ -2013,7 +2265,7 @@ const ThreeDEditor: React.FC = () => {
         style={{
           flex: 1,
           position: "relative",
-          width: "calc(100vw - 300px)",
+          width: "calc(100vw - 400px)",
           height: "100vh",
         }}
       >
