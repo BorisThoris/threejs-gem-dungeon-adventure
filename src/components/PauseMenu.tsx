@@ -8,6 +8,10 @@ interface PauseMenuProps {
 const PauseMenu: React.FC<PauseMenuProps> = ({ isVisible, onUnpause }) => {
   if (!isVisible) return null;
 
+  // Check if we're in development mode
+  const isDevMode =
+    import.meta.env.DEV || window.location.hostname === "localhost";
+
   return (
     <div
       style={{
@@ -41,32 +45,76 @@ const PauseMenu: React.FC<PauseMenuProps> = ({ isVisible, onUnpause }) => {
         </p>
       </div>
 
-      <button
-        onClick={onUnpause}
+      <div
         style={{
-          padding: "15px 30px",
-          fontSize: "1.5rem",
-          backgroundColor: "#00ff00",
-          color: "black",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer",
-          fontFamily: "monospace",
-          fontWeight: "bold",
-          transition: "all 0.3s ease",
-          boxShadow: "0 4px 15px rgba(0, 255, 0, 0.3)",
-        }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.backgroundColor = "#00cc00";
-          e.currentTarget.style.transform = "scale(1.05)";
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.backgroundColor = "#00ff00";
-          e.currentTarget.style.transform = "scale(1)";
+          display: "flex",
+          flexDirection: "column",
+          gap: "15px",
+          alignItems: "center",
         }}
       >
-        Lol, unpause
-      </button>
+        <button
+          onClick={onUnpause}
+          style={{
+            padding: "15px 30px",
+            fontSize: "1.5rem",
+            backgroundColor: "#00ff00",
+            color: "black",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontFamily: "monospace",
+            fontWeight: "bold",
+            transition: "all 0.3s ease",
+            boxShadow: "0 4px 15px rgba(0, 255, 0, 0.3)",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = "#00cc00";
+            e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = "#00ff00";
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
+          Lol, unpause
+        </button>
+
+        {/* 3D Editor Button - Only show in dev mode */}
+        {isDevMode && (
+          <button
+            onClick={() => (window.location.href = "?editor=true")}
+            style={{
+              padding: "12px 24px",
+              fontSize: "1.2rem",
+              background: "linear-gradient(45deg, #4CAF50, #8BC34A)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontFamily: "monospace",
+              fontWeight: "bold",
+              transition: "all 0.3s ease",
+              boxShadow: "0 4px 15px rgba(76, 175, 80, 0.4)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "scale(1.05)";
+              e.currentTarget.style.boxShadow =
+                "0 6px 20px rgba(76, 175, 80, 0.6)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 15px rgba(76, 175, 80, 0.4)";
+            }}
+          >
+            🎮 3D Editor
+          </button>
+        )}
+      </div>
 
       <div style={{ marginTop: "2rem", fontSize: "0.9rem", opacity: 0.5 }}>
         <p>Controls:</p>

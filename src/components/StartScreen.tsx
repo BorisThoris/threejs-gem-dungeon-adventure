@@ -287,6 +287,47 @@ const StartScreen: React.FC = () => {
       {/* Room Detection Debugger - Enable with 'D' key */}
       <RoomDetectionDebugger enabled={true} />
 
+      {/* 3D Editor Button */}
+      <div
+        style={{
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          zIndex: 1000,
+        }}
+      >
+        <button
+          onClick={() => (window.location.href = "?editor=true")}
+          style={{
+            background: "linear-gradient(45deg, #4CAF50, #8BC34A)",
+            color: "white",
+            border: "none",
+            padding: "12px 20px",
+            borderRadius: "25px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "bold",
+            boxShadow: "0 4px 15px rgba(76, 175, 80, 0.4)",
+            transition: "all 0.3s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-2px)";
+            e.currentTarget.style.boxShadow =
+              "0 6px 20px rgba(76, 175, 80, 0.6)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow =
+              "0 4px 15px rgba(76, 175, 80, 0.4)";
+          }}
+        >
+          🎮 3D Editor
+        </button>
+      </div>
+
       {/* UI is now handled by DOM UI Manager - no React re-renders */}
     </div>
   );
