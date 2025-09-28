@@ -37,3 +37,4 @@ async function generateConfig() {
 // Run the generation
 generateConfig();
 
+

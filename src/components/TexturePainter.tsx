@@ -14,6 +14,9 @@ import {
   getRandomColor,
   useTheme,
 } from "../themes";
+import { JsonTextureGrid } from "./JsonTextureGrid";
+import { generateThemeTextures } from "../utils/generateThemeTextures";
+// Removed PresetTextureLibrary import - now integrated directly
 
 // Types
 interface Brush {
@@ -49,6 +52,7 @@ interface TexturePainterProps {
   gridSize?: number;
   onTextureChange?: (texture: string) => void;
   programmaticAccess?: boolean;
+  showTextureLibrary?: boolean;
 }
 
 // Default brushes
@@ -515,6 +519,7 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
   gridSize = 32,
   onTextureChange,
   programmaticAccess = false,
+  showTextureLibrary = true,
 }) => {
   const { currentTheme } = useTheme();
   const [layers, setLayers] = useState<Layer[]>([]);
@@ -530,12 +535,30 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
   const [currentPixelSize, setCurrentPixelSize] = useState(pixelSize);
   const [currentGridSize, setCurrentGridSize] = useState(gridSize);
   const [showGrid, setShowGrid] = useState(true);
+  // Removed showLibrary state - no longer using separate library
+  const [presetTextures, setPresetTextures] = useState<any[]>([]);
+  const [showPresetGrid, setShowPresetGrid] = useState(true);
 
   // Initialize with a base layer
   useEffect(() => {
     const baseLayer = createLayer("Base Layer");
     setLayers([baseLayer]);
     setActiveLayerId(baseLayer.id);
+  }, []);
+
+  // Load theme-based texture definitions
+  useEffect(() => {
+    const loadThemeTextures = () => {
+      try {
+        // Generate textures directly for now
+        const textures = generateThemeTextures();
+        setPresetTextures(textures);
+        console.log(`Loaded ${textures.length} textures`);
+      } catch (error) {
+        console.error("Failed to generate theme textures:", error);
+      }
+    };
+    loadThemeTextures();
   }, []);
 
   const createLayer = (name: string): Layer => {
@@ -586,6 +609,48 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
   };
 
   const activeLayer = layers.find((layer) => layer.id === activeLayerId);
+
+  // Handle texture injection from JSON-defined textures
+  const handleTextureInject = useCallback(
+    (texture: any) => {
+      if (activeLayer && !activeLayer.locked) {
+        const layerCtx = activeLayer.canvas.getContext("2d");
+        if (layerCtx) {
+          // Clear the layer first
+          layerCtx.clearRect(0, 0, width, height);
+
+          // Calculate scaling factors
+          const scaleX = width / texture.width;
+          const scaleY = height / texture.height;
+
+          // Draw each pixel from the JSON data
+          for (let y = 0; y < texture.height; y++) {
+            for (let x = 0; x < texture.width; x++) {
+              const pixelIndex = y * texture.width + x;
+              const color = texture.pixels[pixelIndex];
+
+              if (color) {
+                layerCtx.fillStyle = color;
+                layerCtx.fillRect(
+                  Math.floor(x * scaleX),
+                  Math.floor(y * scaleY),
+                  Math.ceil(scaleX),
+                  Math.ceil(scaleY)
+                );
+              }
+            }
+          }
+
+          // Update the texture and force re-render
+          activeLayer.texture.needsUpdate = true;
+          setLayers((prevLayers) => [...prevLayers]);
+
+          console.log(`Injected JSON texture: ${texture.name}`);
+        }
+      }
+    },
+    [activeLayer, width, height]
+  );
 
   const handlePaint = (x: number, y: number, pressure: number) => {
     // This is handled in the canvas component
@@ -749,6 +814,8 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
         background: currentTheme.background,
       }}
     >
+      {/* Removed separate texture library - now integrated into main interface */}
+
       {/* Control Panel */}
       <div
         style={{
@@ -1296,7 +1363,16 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
       </div>
 
       {/* Main Content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+        }}
+      >
+        {/* Preset textures are now integrated into the main interface */}
+
         {/* Canvas Area */}
         <div
           style={{
@@ -1324,6 +1400,126 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
             onEndPaint={handleEndPaint}
           />
         </div>
+
+        {/* Preset Texture Grid */}
+        {showPresetGrid && presetTextures.length > 0 && (
+          <div
+            style={{
+              background: currentTheme.surface,
+              borderTop: `1px solid ${currentTheme.border}`,
+              padding: "16px",
+              maxHeight: "200px",
+              overflowY: "auto",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
+              <h3
+                style={{
+                  margin: 0,
+                  color: currentTheme.primary,
+                  fontSize: "16px",
+                }}
+              >
+                🎨 Preset Textures
+              </h3>
+              <button
+                onClick={() => setShowPresetGrid(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: currentTheme.textSecondary,
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  padding: "4px",
+                }}
+                title="Hide Preset Textures"
+              >
+                ×
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(60px, 1fr))",
+                gap: "8px",
+              }}
+            >
+              {presetTextures.map((texture) => (
+                <div
+                  key={texture.id}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    padding: "8px",
+                    background: currentTheme.background,
+                    border: `1px solid ${currentTheme.border}`,
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    position: "relative",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = currentTheme.primary;
+                    e.currentTarget.style.transform = "scale(1.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = currentTheme.border;
+                    e.currentTarget.style.transform = "scale(1)";
+                  }}
+                  onClick={() => handleTextureInject(texture)}
+                  title={`${texture.name} - ${texture.description}`}
+                >
+                  <JsonTextureGrid texture={texture} size={40} />
+                  <div
+                    style={{
+                      fontSize: "9px",
+                      textAlign: "center",
+                      marginTop: "4px",
+                      color: currentTheme.textSecondary,
+                      lineHeight: "1.2",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {texture.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Show Preset Textures Button */}
+        {!showPresetGrid && presetTextures.length > 0 && (
+          <button
+            onClick={() => setShowPresetGrid(true)}
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              right: "20px",
+              zIndex: 1000,
+              padding: "8px 16px",
+              background: currentTheme.primary,
+              color: currentTheme.text,
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "bold",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            }}
+          >
+            🎨 Show Preset Textures
+          </button>
+        )}
 
         {/* 3D Preview */}
         {showPreview && (

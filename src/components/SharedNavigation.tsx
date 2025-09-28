@@ -26,6 +26,7 @@ const SharedNavigation: React.FC<SharedNavigationProps> = ({
       id: "texture-painter",
       label: "🎨 Texture Painter",
       url: "?texture-painter=true",
+      description: "Advanced Texture Painter with Library",
     },
     {
       id: "mosaic-creator",

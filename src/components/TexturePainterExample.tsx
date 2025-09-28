@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import TexturePainter from "./TexturePainter";
 import { ColorPaletteDemo } from "./ColorPaletteDemo";
+import PresetTextureGenerator from "./TextureGenerator";
+import { ProgrammaticTextureGenerator } from "./ProgrammaticTextureGenerator";
 
 const TexturePainterExample: React.FC = () => {
   const [textureData, setTextureData] = useState<string>("");
@@ -162,6 +164,21 @@ const TexturePainterExample: React.FC = () => {
       {/* Color Palette Demo */}
       <div style={{ marginBottom: "20px" }}>
         <ColorPaletteDemo />
+      </div>
+
+      {/* Texture Generator */}
+      <div style={{ marginBottom: "20px" }}>
+        <PresetTextureGenerator />
+      </div>
+
+      {/* Programmatic Texture Generator */}
+      <div style={{ marginBottom: "20px" }}>
+        <ProgrammaticTextureGenerator
+          onTextureGenerated={(texture, name) => {
+            console.log(`Generated programmatic texture: ${name}`);
+            setTextureData(texture);
+          }}
+        />
       </div>
 
       {/* Texture Painter */}
