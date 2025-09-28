@@ -92,7 +92,10 @@ const CrackedDestructibleWall: React.FC<CrackedDestructibleWallProps> = ({
           wallWidth / 2 +
           rowOffset +
           brickWidth / 2;
-        const y = row * (brickHeight + mortarThickness) + brickHeight / 2;
+        const y =
+          row * (brickHeight + mortarThickness) -
+          wallHeight / 2 +
+          brickHeight / 2;
         const z = 0;
 
         // Determine crack intensity based on health

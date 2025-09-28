@@ -3,7 +3,7 @@ import { RigidBody } from "@react-three/rapier";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
 // import withOptionalBreaking from "../../../withOptionalBreaking";
-// import { loadTextureFromImage } from "../../../../utils/textureUtils";
+import { loadTextureFromImage } from "../../../utils/textureUtils";
 
 export interface ConcreteSlabProps {
   position: [number, number, number];
@@ -22,7 +22,7 @@ export interface ConcreteSlabProps {
   onPrototypeAction?: (action: string, data?: unknown) => void;
   // Breaking props
   enabled?: boolean;
-  breakingOptions?: any;
+  breakingOptions?: Record<string, unknown>;
   onBreak?: (impactPoint: THREE.Vector3) => void;
   onFragmentClick?: (fragmentId: string) => void;
   showHoverEffect?: boolean;
@@ -45,7 +45,9 @@ const ConcreteSlab: React.FC<ConcreteSlabProps> = ({
   onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) => {
   // Load concrete texture
-  const [concreteTexture, setConcreteTexture] = useState(null);
+  const [concreteTexture, setConcreteTexture] = useState<THREE.Texture | null>(
+    null
+  );
 
   useEffect(() => {
     const loadTexture = async () => {

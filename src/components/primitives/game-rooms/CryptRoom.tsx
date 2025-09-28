@@ -76,10 +76,10 @@ const CryptRoom: React.FC<CryptRoomProps> = ({ size = 10, onRoomComplete }) => {
         </mesh>
       </RigidBody>
 
-      {/* Skeletons */}
-      <Skeleton position={[-1, 0, 2]} isAnimated={true} />
-      <Skeleton position={[1, 0, 2]} isAnimated={true} />
-      <Skeleton position={[0, 0, -2]} isAnimated={true} />
+      {/* Skeletons - using ragdoll for more realistic movement */}
+      <Skeleton position={[-1, 0, 2]} isRagdoll={true} color="#F5F5DC" />
+      <Skeleton position={[1, 0, 2]} isRagdoll={true} color="#F5F5DC" />
+      <Skeleton position={[0, 0, -2]} isRagdoll={true} color="#F5F5DC" />
 
       {/* Altar */}
       <Altar position={[0, 0, 0]} isActivated={false} offering="Soul" />

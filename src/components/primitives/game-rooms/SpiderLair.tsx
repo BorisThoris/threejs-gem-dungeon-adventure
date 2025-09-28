@@ -130,17 +130,38 @@ const SpiderLair: React.FC<SpiderLairProps> = ({
         damage={10}
       />
 
-      {/* Spider skeletons */}
-      <Skeleton position={[-2, 0, -2]} isAnimated={true} health={30} />
-      <Skeleton position={[2, 0, -2]} isAnimated={true} health={30} />
-      <Skeleton position={[-2, 0, 2]} isAnimated={true} health={30} />
-      <Skeleton position={[2, 0, 2]} isAnimated={true} health={30} />
+      {/* Spider skeletons - using ragdoll for more dynamic movement */}
+      <Skeleton
+        position={[-2, 0, -2]}
+        isRagdoll={true}
+        health={30}
+        color="#8B4513"
+      />
+      <Skeleton
+        position={[2, 0, -2]}
+        isRagdoll={true}
+        health={30}
+        color="#8B4513"
+      />
+      <Skeleton
+        position={[-2, 0, 2]}
+        isRagdoll={true}
+        health={30}
+        color="#8B4513"
+      />
+      <Skeleton
+        position={[2, 0, 2]}
+        isRagdoll={true}
+        health={30}
+        color="#8B4513"
+      />
 
-      {/* Central spider boss */}
+      {/* Central spider boss - regular skeleton for more control */}
       <Skeleton
         position={[0, 0, 0]}
         isAnimated={true}
         health={100}
+        color="#FF6B6B"
         onDeath={handleSpiderDefeat}
       />
 

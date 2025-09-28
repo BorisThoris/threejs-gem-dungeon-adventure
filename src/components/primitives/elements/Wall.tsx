@@ -28,7 +28,7 @@ export interface WallProps {
   onPrototypeAction?: (action: string, data?: unknown) => void;
   // Breaking props
   enabled?: boolean;
-  breakingOptions?: any;
+  breakingOptions?: Record<string, unknown>;
   onBreak?: (impactPoint: THREE.Vector3) => void;
   onFragmentClick?: (fragmentId: string) => void;
   showHoverEffect?: boolean;
@@ -57,7 +57,7 @@ const Wall: React.FC<WallProps> = ({
   onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) => {
   // Load appropriate texture based on material
-  const [wallTexture, setWallTexture] = useState(null);
+  const [wallTexture, setWallTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
     const loadTexture = async () => {
@@ -118,7 +118,8 @@ const Wall: React.FC<WallProps> = ({
           width / 2 +
           rowOffset +
           brickWidth / 2;
-        const y = row * (brickHeight + mortarThickness) + brickHeight / 2;
+        const y =
+          row * (brickHeight + mortarThickness) - height / 2 + brickHeight / 2;
         const z = 0;
 
         // Skip bricks that would be in window/door areas

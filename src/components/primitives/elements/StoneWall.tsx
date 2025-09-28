@@ -89,7 +89,8 @@ const StoneWall: React.FC<StoneWallProps> = ({
           width / 2 +
           rowOffset +
           stoneWidth / 2;
-        const y = row * (stoneHeight + mortarThickness) + stoneHeight / 2;
+        const y =
+          row * (stoneHeight + mortarThickness) - height / 2 + stoneHeight / 2;
         const z = 0;
 
         // Skip stones that would be in window/door areas
