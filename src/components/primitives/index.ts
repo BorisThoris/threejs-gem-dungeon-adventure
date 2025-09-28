@@ -6,6 +6,6 @@ export * as Elements from './elements';
 
 // Re-export commonly used components for convenience
 export { StartRoom, CoffeeRoom, MeditationRoom } from './game-rooms';
-export { ItemSprite, DestructibleWall, ParticleSystem } from './objects';
+export { ItemSprite, DestructibleWall, CrackedDestructibleWall, ParticleSystem } from './objects';
 export { Tile, Wall, Ceiling, Plank, Stair, Handrail } from './elements';
-export { Torch, Barrel, Chest, Brick, Stone, WoodPlank } from './elements';
+export { Torch, Barrel, Chest, Brick, CrackedBrick, Stone, WoodPlank } from './elements';

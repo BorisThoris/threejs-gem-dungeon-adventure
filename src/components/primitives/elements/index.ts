@@ -15,6 +15,7 @@ export { default as RoomDecorator } from './RoomDecorator';
 
 // Building block primitives
 export { default as Brick } from './Brick';
+export { default as CrackedBrick } from './CrackedBrick';
 export { default as Stone } from './Stone';
 export { default as WoodPlank } from './WoodPlank';
 export { default as MetalBar } from './MetalBar';

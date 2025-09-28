@@ -85,24 +85,31 @@ const OptionalBreakable: React.FC<OptionalBreakableProps> = ({
 
     groupRef.current.traverse((child) => {
       if (child instanceof THREE.Mesh && child.material) {
-        if (isHovered) {
-          // Store original color if not already stored
-          if (!child.userData.originalColor) {
-            child.userData.originalColor = (
-              child.material as THREE.MeshStandardMaterial
-            ).color?.getHexString();
+        const materials = Array.isArray(child.material)
+          ? child.material
+          : [child.material];
+
+        materials.forEach((material, index) => {
+          if (material && "color" in material && material.color) {
+            const materialKey = `material_${index}`;
+
+            if (isHovered) {
+              // Store original color if not already stored
+              if (!child.userData[`originalColor_${materialKey}`]) {
+                child.userData[`originalColor_${materialKey}`] =
+                  material.color.getHexString();
+              }
+              material.color.setHex(parseInt(hoverColor.replace("#", ""), 16));
+            } else {
+              // Restore original color
+              if (child.userData[`originalColor_${materialKey}`]) {
+                material.color.setHex(
+                  parseInt(child.userData[`originalColor_${materialKey}`], 16)
+                );
+              }
+            }
           }
-          (child.material as THREE.MeshStandardMaterial).color.setHex(
-            parseInt(hoverColor.replace("#", ""), 16)
-          );
-        } else {
-          // Restore original color
-          if (child.userData.originalColor) {
-            (child.material as THREE.MeshStandardMaterial).color.setHex(
-              parseInt(child.userData.originalColor, 16)
-            );
-          }
-        }
+        });
       }
     });
   }, [isHovered, enabled, showHoverEffect, hoverColor]);

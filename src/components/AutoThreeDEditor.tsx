@@ -33,10 +33,12 @@ import ShopRoom from "./primitives/game-rooms/ShopRoom";
 import SpecialRoom from "./primitives/game-rooms/SpecialRoom";
 import TreasureRoom from "./primitives/game-rooms/TreasureRoom";
 import BenchPressRoom from "./primitives/game-rooms/BenchPressRoom";
+import CrackedBrickDemo from "./primitives/demo-rooms/CrackedBrickDemo";
 
 // Import object components
 import ItemSprite from "./primitives/objects/ItemSprite";
 import DestructibleWall from "./primitives/objects/DestructibleWall";
+import CrackedDestructibleWall from "./primitives/objects/CrackedDestructibleWall";
 import ParticleSystem from "./primitives/objects/ParticleSystem";
 import MosaicCreator from "./primitives/objects/MosaicCreator";
 
@@ -79,6 +81,7 @@ import {
 // Import building block primitives
 import {
   Brick,
+  CrackedBrick,
   Stone,
   WoodPlank,
   MetalBar,
@@ -803,6 +806,16 @@ const ROOM_CONFIGS: RoomConfig[] = [
       },
     ],
   },
+  {
+    type: "cracked-brick-demo",
+    component: CrackedBrickDemo,
+    title: "Cracked Brick Demo",
+    emoji: "🧱💥",
+    description: "Demo room showcasing cracked brick components",
+    props: {},
+    category: "room",
+    editableProps: [],
+  },
 ];
 
 // Object configurations
@@ -882,6 +895,41 @@ const OBJECT_CONFIGS: RoomConfig[] = [
         min: 1,
         max: 10,
         step: 1,
+      },
+    ],
+  },
+  {
+    type: "cracked-destructible-wall",
+    component: CrackedDestructibleWall,
+    title: "Cracked Destructible Wall",
+    emoji: "🧱💥",
+    description:
+      "Destructible wall made of cracked bricks with breakable system",
+    props: {
+      position: [0, 1.5, 0],
+      health: 3,
+      bombRequired: false,
+      enabled: true,
+    },
+    category: "object",
+    editableProps: [
+      {
+        key: "health",
+        label: "Health",
+        type: "number",
+        min: 1,
+        max: 10,
+        step: 1,
+      },
+      {
+        key: "bombRequired",
+        label: "Bomb Required",
+        type: "boolean",
+      },
+      {
+        key: "enabled",
+        label: "Breaking Enabled",
+        type: "boolean",
       },
     ],
   },
@@ -1783,6 +1831,44 @@ const ELEMENT_CONFIGS: RoomConfig[] = [
           { value: "ancient", label: "Ancient" },
           { value: "modern", label: "Modern" },
         ],
+      },
+    ],
+  },
+  {
+    type: "cracked-brick",
+    component: CrackedBrick,
+    title: "Cracked Brick",
+    emoji: "🧱💥",
+    description: "Cracked brick with different damage levels",
+    props: {
+      position: [0, 0, 0],
+      color: "#8B4513",
+      scale: 1,
+      crackIntensity: "medium",
+      size: [1, 0.5, 0.5],
+      enabled: true,
+    },
+    category: "element",
+    editableProps: [
+      {
+        key: "color",
+        label: "Color",
+        type: "color",
+      },
+      {
+        key: "crackIntensity",
+        label: "Crack Intensity",
+        type: "select",
+        options: [
+          { value: "light", label: "Light" },
+          { value: "medium", label: "Medium" },
+          { value: "heavy", label: "Heavy" },
+        ],
+      },
+      {
+        key: "enabled",
+        label: "Breaking Enabled",
+        type: "boolean",
       },
     ],
   },

@@ -1,6 +1,7 @@
 // Export all object components
 export { default as ItemSprite } from './ItemSprite';
 export { default as DestructibleWall } from './DestructibleWall';
+export { default as CrackedDestructibleWall } from './CrackedDestructibleWall';
 export { default as ParticleSystem } from './ParticleSystem';
 export { default as MosaicCreator } from './MosaicCreator';
 
