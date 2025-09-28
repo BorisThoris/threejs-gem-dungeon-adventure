@@ -9,3 +9,6 @@ export * from './RoomElements';
 
 // All breakable elements using universal wrapper
 export * from './AllBreakableElements';
+
+// Room decorator
+export { default as RoomDecorator } from './RoomDecorator';

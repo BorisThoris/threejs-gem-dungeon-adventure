@@ -21,5 +21,8 @@ export { default as StairsRoom } from './StairsRoom';
 export { default as MiddleStairsRoom } from './MiddleStairsRoom';
 export { default as ShapedShell } from './ShapedShell';
 export { default as ComponentShowcaseRoom } from './ComponentShowcaseRoom';
-export { default as BreakableRoom } from './BreakableRoom';
+export { default as CleanBreakableRoom } from './CleanBreakableRoom';
+export { default as OptionalBreakingDemo } from './OptionalBreakingDemo';
+export { default as AllBreakableDemo } from './AllBreakableDemo';
+export { default as UniversalBreakableDemo } from './UniversalBreakableDemo';
 
