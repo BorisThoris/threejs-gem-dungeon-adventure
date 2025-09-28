@@ -2,7 +2,7 @@ import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
-import { BasicFirstPersonPlayer } from "./BasicFirstPersonPlayer";
+import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
 import { SafeSpawnArea } from "./SafeSpawnArea";
 import MapContainer from "./MapContainer";
 import MapUI from "./MapUI";
@@ -245,8 +245,11 @@ const GhostScene: React.FC<{
         {/* Safe Spawn Area */}
         <SafeSpawnArea position={[0, 0, 0]} size={8} />
 
-        {/* Basic First Person Player */}
-        <BasicFirstPersonPlayer />
+        {/* Safe First Person Player */}
+        <SafeFirstPersonPlayer
+          initialSpawnPosition={[0, 1, 0]}
+          showDebugInfo={true}
+        />
 
         {/* Generated Map - Centered by algorithm */}
         <MapContainer centerMap={false} />
