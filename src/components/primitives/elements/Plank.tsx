@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
+import { loadTextureFromImage } from "../../../utils/textureUtils";
 import withOptionalBreaking from "../../withOptionalBreaking";
 
 /**
@@ -52,6 +53,15 @@ const Plank: React.FC<PlankProps> = ({
   prototypeId,
   onPrototypeAction,
 }) => {
+  // Load wood texture
+  const [woodTexture, setWoodTexture] = useState(null);
+
+  useEffect(() => {
+    loadTextureFromImage("wood")
+      .then(setWoodTexture)
+      .catch((error) => console.error("Failed to load wood texture:", error));
+  }, []);
+
   // Wood type color configurations
   const getWoodColor = () => {
     switch (woodType) {
@@ -80,6 +90,7 @@ const Plank: React.FC<PlankProps> = ({
       color: baseColor,
       roughness: finish === "rough" ? 0.9 : finish === "polished" ? 0.1 : 0.4,
       metalness: finish === "polished" ? 0.1 : 0.0,
+      map: woodTexture,
     };
   };
 

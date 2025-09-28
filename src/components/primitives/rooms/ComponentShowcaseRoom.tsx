@@ -6,6 +6,12 @@ import {
   BreakableCeiling,
   BreakableStair,
   BreakableHandrail,
+  Plank,
+  Tile,
+  Wall,
+  Ceiling,
+  Stair,
+  Handrail,
 } from "../elements";
 
 interface ComponentShowcaseRoomProps {

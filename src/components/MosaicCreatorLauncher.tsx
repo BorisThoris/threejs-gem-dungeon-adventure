@@ -1,5 +1,5 @@
 import React from "react";
-import MosaicCreator from "./MosaicCreator";
+import MosaicCreator from "./primitives/objects/MosaicCreator";
 import SharedNavigation from "./SharedNavigation";
 
 const MosaicCreatorLauncher: React.FC = () => {

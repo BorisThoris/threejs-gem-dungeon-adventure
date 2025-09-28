@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import type { Item } from "../../../types/map";
-import ItemSprite from "../../ItemSprite";
+import ItemSprite from "../objects/ItemSprite";
 import OptimizedPuzzleRouter from "../../OptimizedPuzzleRouter";
 import RoomActionCards from "../../RoomActionCards";
 import { useRoomActions } from "../../../hooks/useRoomActions";

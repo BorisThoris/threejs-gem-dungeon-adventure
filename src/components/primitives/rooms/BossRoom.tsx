@@ -1,163 +1,191 @@
 import React, { useState } from "react";
-import { Text } from "@react-three/drei";
-import RoomActionCards from "../../RoomActionCards";
-import { useRoomActions } from "../../../hooks/useRoomActions";
+import { RigidBody } from "@react-three/rapier";
+import Torch from "../elements/Torch";
+import Brazier from "../elements/Brazier";
+import Pillar from "../elements/Pillar";
+import Chain from "../elements/Chain";
+import Statue from "../objects/Statue";
+import Switch from "../objects/Switch";
+import Door from "../elements/Door";
 
-interface BossRoomProps {
-  onBossFight?: () => void;
+export interface BossRoomProps {
+  size?: number;
+  onRoomComplete?: () => void;
 }
 
-const BossRoom: React.FC<BossRoomProps> = ({ onBossFight }) => {
+const BossRoom: React.FC<BossRoomProps> = ({ size = 15, onRoomComplete }) => {
   const [bossDefeated, setBossDefeated] = useState(false);
-  const [bossActive, setBossActive] = useState(false);
+  const [doorsUnlocked, setDoorsUnlocked] = useState(false);
 
-  const { cards, isVisible, showCards, hideCards } = useRoomActions({
-    roomType: "boss",
-    onBossFight: () => {
-      setBossActive(true);
-      onBossFight?.();
-    },
-  });
+  const handleBossDefeat = () => {
+    setBossDefeated(true);
+    setDoorsUnlocked(true);
+    if (onRoomComplete) onRoomComplete();
+  };
+
+  const handleSwitchToggle = (isOn: boolean) => {
+    if (isOn && bossDefeated) {
+      setDoorsUnlocked(true);
+    }
+  };
 
   return (
     <group>
-      {/* Boss Floor */}
-      <mesh position={[0, -0.5, 0]} receiveShadow>
-        <boxGeometry args={[8, 1, 8]} />
-        <meshStandardMaterial color="#2F2F2F" />
+      {/* Floor */}
+      <RigidBody type="fixed" position={[0, -0.5, 0]}>
+        <mesh>
+          <boxGeometry args={[size, 1, size]} />
+          <meshLambertMaterial color="#1A1A1A" />
+        </mesh>
+      </RigidBody>
+
+      {/* Walls */}
+      <RigidBody type="fixed" position={[0, size / 2, size / 2]}>
+        <mesh>
+          <boxGeometry args={[size, size, 1]} />
+          <meshLambertMaterial color="#0F0F0F" />
+        </mesh>
+      </RigidBody>
+      <RigidBody type="fixed" position={[0, size / 2, -size / 2]}>
+        <mesh>
+          <boxGeometry args={[size, size, 1]} />
+          <meshLambertMaterial color="#0F0F0F" />
+        </mesh>
+      </RigidBody>
+      <RigidBody type="fixed" position={[size / 2, size / 2, 0]}>
+        <mesh>
+          <boxGeometry args={[1, size, size]} />
+          <meshLambertMaterial color="#0F0F0F" />
+        </mesh>
+      </RigidBody>
+      <RigidBody type="fixed" position={[-size / 2, size / 2, 0]}>
+        <mesh>
+          <boxGeometry args={[1, size, size]} />
+          <meshLambertMaterial color="#0F0F0F" />
+        </mesh>
+      </RigidBody>
+
+      {/* Ceiling */}
+      <RigidBody type="fixed" position={[0, size, 0]}>
+        <mesh>
+          <boxGeometry args={[size, 1, size]} />
+          <meshLambertMaterial color="#000000" />
+        </mesh>
+      </RigidBody>
+
+      {/* Lighting */}
+      <Brazier
+        position={[-size / 3, 0, -size / 3]}
+        isLit={true}
+        flameColor="#8A2BE2"
+      />
+      <Brazier
+        position={[size / 3, 0, -size / 3]}
+        isLit={true}
+        flameColor="#8A2BE2"
+      />
+      <Brazier
+        position={[-size / 3, 0, size / 3]}
+        isLit={true}
+        flameColor="#8A2BE2"
+      />
+      <Brazier
+        position={[size / 3, 0, size / 3]}
+        isLit={true}
+        flameColor="#8A2BE2"
+      />
+
+      {/* Corner torches */}
+      <Torch position={[-size / 2 + 1, 0, -size / 2 + 1]} color="#8A2BE2" />
+      <Torch position={[size / 2 - 1, 0, -size / 2 + 1]} color="#8A2BE2" />
+      <Torch position={[-size / 2 + 1, 0, size / 2 - 1]} color="#8A2BE2" />
+      <Torch position={[size / 2 - 1, 0, size / 2 - 1]} color="#8A2BE2" />
+
+      {/* Decorative pillars */}
+      <Pillar position={[-size / 3, 0, 0]} height={4} color="#8B4513" />
+      <Pillar position={[size / 3, 0, 0]} height={4} color="#8B4513" />
+      <Pillar position={[0, 0, -size / 3]} height={4} color="#8B4513" />
+      <Pillar position={[0, 0, size / 3]} height={4} color="#8B4513" />
+
+      {/* Hanging chains */}
+      <Chain position={[-size / 4, 3, -size / 4]} length={2} swing={true} />
+      <Chain position={[size / 4, 3, -size / 4]} length={2} swing={true} />
+      <Chain position={[-size / 4, 3, size / 4]} length={2} swing={true} />
+      <Chain position={[size / 4, 3, size / 4]} length={2} swing={true} />
+
+      {/* Guardian statues */}
+      <Statue
+        position={[-size / 2 + 2, 0, -size / 2 + 2]}
+        type="guardian"
+        isAnimated={true}
+      />
+      <Statue
+        position={[size / 2 - 2, 0, -size / 2 + 2]}
+        type="guardian"
+        isAnimated={true}
+      />
+      <Statue
+        position={[-size / 2 + 2, 0, size / 2 - 2]}
+        type="guardian"
+        isAnimated={true}
+      />
+      <Statue
+        position={[size / 2 - 2, 0, size / 2 - 2]}
+        type="guardian"
+        isAnimated={true}
+      />
+
+      {/* Boss area */}
+      <Statue
+        position={[0, 0, 0]}
+        type="deity"
+        isAnimated={true}
+        onInteract={bossDefeated ? undefined : handleBossDefeat}
+      />
+
+      {/* Control switches */}
+      <Switch
+        position={[0, 0, -size / 2 + 1]}
+        isOn={doorsUnlocked}
+        onToggle={handleSwitchToggle}
+        label="Unlock Doors"
+        switchType="toggle"
+      />
+
+      {/* Exit doors */}
+      <Door
+        position={[0, 0, size / 2]}
+        isOpen={doorsUnlocked}
+        isLocked={!doorsUnlocked}
+        keyRequired="boss_defeated"
+        onUnlock={(key) => key === "boss_defeated"}
+      />
+
+      {/* Victory platform */}
+      {bossDefeated && (
+        <RigidBody type="fixed" position={[0, 0.1, 0]}>
+          <mesh>
+            <cylinderGeometry args={[2, 2, 0.2, 12]} />
+            <meshLambertMaterial
+              color="#FFD700"
+              emissive="#FFD700"
+              emissiveIntensity={0.5}
+            />
+          </mesh>
+        </RigidBody>
+      )}
+
+      {/* Decorative elements */}
+      <mesh position={[0, size / 2, 0]}>
+        <boxGeometry args={[size - 2, 0.1, size - 2]} />
+        <meshLambertMaterial
+          color="#8A2BE2"
+          emissive="#8A2BE2"
+          emissiveIntensity={0.1}
+          transparent
+          opacity={0.3}
+        />
       </mesh>
-
-      {/* Boss Platform */}
-      <group position={[0, 0, 0]}>
-        <mesh position={[0, 0.1, 0]} castShadow>
-          <cylinderGeometry args={[4, 4, 0.2]} />
-          <meshStandardMaterial color="#444444" />
-        </mesh>
-
-        {/* Boss Area */}
-        <mesh position={[0, 0.2, 0]}>
-          <cylinderGeometry args={[4.2, 4.2, 0.4]} />
-          <meshStandardMaterial
-            color={
-              bossDefeated ? "#4CAF50" : bossActive ? "#FF5722" : "#E91E63"
-            }
-            emissive={
-              bossDefeated ? "#4CAF50" : bossActive ? "#FF5722" : "#E91E63"
-            }
-            emissiveIntensity={0.4}
-            transparent
-            opacity={0.3}
-          />
-        </mesh>
-      </group>
-
-      {/* Boss Monster */}
-      <group position={[0, 1.5, 0]}>
-        <mesh position={[0, 0, 0]} castShadow>
-          <boxGeometry args={[1.5, 2, 1]} />
-          <meshStandardMaterial color="#8B0000" />
-        </mesh>
-
-        {/* Boss Head */}
-        <mesh position={[0, 1.2, 0]} castShadow>
-          <sphereGeometry args={[0.8]} />
-          <meshStandardMaterial color="#FF0000" />
-        </mesh>
-
-        {/* Boss Eyes */}
-        <mesh position={[-0.3, 1.3, 0.6]} castShadow>
-          <sphereGeometry args={[0.1]} />
-          <meshStandardMaterial color="#FFFF00" />
-        </mesh>
-        <mesh position={[0.3, 1.3, 0.6]} castShadow>
-          <sphereGeometry args={[0.1]} />
-          <meshStandardMaterial color="#FFFF00" />
-        </mesh>
-      </group>
-
-      {/* Boss Weapons */}
-      <group position={[-2, 1, 0]}>
-        <mesh position={[0, 0, 0]} castShadow>
-          <boxGeometry args={[0.2, 2, 0.2]} />
-          <meshStandardMaterial color="#C0C0C0" />
-        </mesh>
-      </group>
-      <group position={[2, 1, 0]}>
-        <mesh position={[0, 0, 0]} castShadow>
-          <boxGeometry args={[0.2, 2, 0.2]} />
-          <meshStandardMaterial color="#C0C0C0" />
-        </mesh>
-      </group>
-
-      {/* Boss Glow */}
-      <pointLight
-        position={[0, 2, 0]}
-        color={bossDefeated ? "#4CAF50" : "#FF0000"}
-        intensity={1.5}
-        distance={8}
-      />
-
-      {/* Room Title */}
-      <Text
-        position={[0, 4, 0]}
-        fontSize={1.0}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.05}
-        outlineColor="#000000"
-      >
-        👹 BOSS ROOM 👹
-      </Text>
-
-      {/* Instructions */}
-      <Text
-        position={[0, 3.2, 0]}
-        fontSize={0.5}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.03}
-        outlineColor="#000000"
-      >
-        {bossDefeated
-          ? "Boss defeated!"
-          : bossActive
-          ? "Boss battle in progress!"
-          : "Use action cards below to see options!"}
-      </Text>
-
-      {/* Boss Info */}
-      <Text
-        position={[0, 2.8, 0]}
-        fontSize={0.3}
-        color="#00ff00"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        {bossDefeated
-          ? "Epic victory achieved!"
-          : bossActive
-          ? "Face the ultimate challenge!"
-          : "Prepare for the ultimate battle!"}
-      </Text>
-
-      {/* Action Cards */}
-      <RoomActionCards
-        cards={cards}
-        isVisible={isVisible}
-        onCardClick={(card) => {
-          if (card.id === "boss_fight") {
-            setBossActive(true);
-            hideCards();
-          } else if (card.id === "prepare") {
-            setBossActive(false);
-            hideCards();
-          }
-        }}
-      />
     </group>
   );
 };

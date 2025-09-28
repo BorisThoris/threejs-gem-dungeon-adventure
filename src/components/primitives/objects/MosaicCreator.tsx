@@ -6,9 +6,9 @@ import {
   GridCellPrototype,
   prototypeManager,
   createGridCell,
-} from "../types/PrototypeSystem";
-import { textureManager } from "../types/TextureSystem";
-import { actionManager, BUILT_IN_ACTIONS } from "../types/ActionSystem";
+} from "../../../types/PrototypeSystem";
+import { textureManager } from "../../../types/TextureSystem";
+import { actionManager, BUILT_IN_ACTIONS } from "../../../types/ActionSystem";
 
 // Types
 interface GridCell {

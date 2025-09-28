@@ -51,15 +51,15 @@ export class ComponentScanner {
     const components: ComponentConfig[] = [];
 
     // Scan rooms
-    const rooms = await this.scanDirectory('rooms', 'room');
+    const rooms = await this.scanDirectory('primitives/rooms', 'room');
     components.push(...rooms);
 
     // Scan objects
-    const objects = await this.scanDirectory('objects', 'object');
+    const objects = await this.scanDirectory('primitives/objects', 'object');
     components.push(...objects);
 
     // Scan room elements
-    const elements = await this.scanDirectory('roomElements', 'element');
+    const elements = await this.scanDirectory('primitives/elements', 'element');
     components.push(...elements);
 
     return components;

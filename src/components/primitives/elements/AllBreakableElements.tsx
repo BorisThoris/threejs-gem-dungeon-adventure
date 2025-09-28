@@ -19,9 +19,9 @@ import Ceiling from "./Ceiling";
 import Plank from "./Plank";
 import Stair from "./Stair";
 import Handrail from "./Handrail";
-import DestructibleWall from "../../DestructibleWall";
-import Door from "../../Door";
-import ItemSprite from "../../ItemSprite";
+import DestructibleWall from "../objects/DestructibleWall";
+import Door from "./Door";
+import ItemSprite from "../objects/ItemSprite";
 
 // Create breakable versions of all RoomElements components
 // Small objects (decorative items)

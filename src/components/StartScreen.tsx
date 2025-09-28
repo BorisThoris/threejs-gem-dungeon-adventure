@@ -137,7 +137,7 @@ const BreakingDemo: React.FC<{
             margin: "5px 0 0 0",
             fontSize: "10px",
             color: "#ccc",
-            textAlign: "center",
+             textAlign: "center",
           }}
         >
           Toggle breaking for ALL 3D objects in the game

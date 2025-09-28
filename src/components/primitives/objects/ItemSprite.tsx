@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import type { Item } from "../types/map";
+import type { Item } from "../../../types/map";
 import { Group } from "three";
 
 interface ItemSpriteProps {

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
 import withOptionalBreaking from "../../withOptionalBreaking";
+import { loadTextureFromImage } from "../../../utils/textureUtils";
 
 /**
  * @emoji 🔲
@@ -62,6 +63,45 @@ const Tile: React.FC<TileProps> = ({
   prototypeId,
   onPrototypeAction,
 }) => {
+  // Load appropriate texture based on material
+  const [texture, setTexture] = useState(null);
+
+  useEffect(() => {
+    const loadTexture = async () => {
+      try {
+        let textureId = null;
+        switch (material) {
+          case "stone":
+            textureId = "cobblestone";
+            break;
+          case "wood":
+            textureId = "wood";
+            break;
+          case "brick":
+            textureId = "brick";
+            break;
+          case "metal":
+            textureId = "pixel_checkerboard";
+            break;
+          case "carpet":
+            textureId = "grass";
+            break;
+          default:
+            return;
+        }
+
+        if (textureId) {
+          const loadedTexture = await loadTextureFromImage(textureId);
+          setTexture(loadedTexture);
+        }
+      } catch (error) {
+        console.error(`Failed to load texture for ${material}:`, error);
+      }
+    };
+
+    loadTexture();
+  }, [material]);
+
   // Material configurations
   const getMaterialProps = () => {
     const baseProps = {
@@ -70,6 +110,7 @@ const Tile: React.FC<TileProps> = ({
       opacity,
       emissive: emissive ? emissiveColor : "#000000",
       emissiveIntensity: emissive ? emissiveIntensity : 0,
+      map: texture,
     };
 
     switch (material) {

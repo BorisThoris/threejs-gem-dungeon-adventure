@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
-import useGameStore from "../store/gameStore";
+import useGameStore from "../../../store/gameStore";
 
 interface DestructibleWallProps {
   position: [number, number, number];

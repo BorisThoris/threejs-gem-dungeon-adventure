@@ -8,7 +8,7 @@ import {
 } from "three";
 import type { Room as RoomType, Item } from "../types/map";
 import { RoomType as RoomTypeValues } from "../types/map";
-import ItemSprite from "./ItemSprite";
+import ItemSprite from "./primitives/objects/ItemSprite";
 import PuzzleGrid from "./PuzzleGrid";
 import TreasureRoom from "./primitives/rooms/TreasureRoom";
 import ShopRoom from "./primitives/rooms/ShopRoom";
@@ -27,7 +27,7 @@ import EndRoom from "./primitives/rooms/EndRoom";
 import EnemyRoom from "./primitives/rooms/EnemyRoom";
 import RoomInteraction from "./RoomInteraction";
 // import Door from "./Door"; // DISABLED FOR NOW
-import DestructibleWall from "./DestructibleWall";
+import DestructibleWall from "./primitives/objects/DestructibleWall";
 import RoomDecorator from "./primitives/elements/RoomDecorator";
 
 interface RoomProps {

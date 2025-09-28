@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import type { Item } from "../../../types/map";
-import ItemSprite from "../../ItemSprite";
+import ItemSprite from "../objects/ItemSprite";
 
 interface SpecialRoomProps {
   roomType: "devil-room" | "angel-room" | "cursed-room" | "secret";
