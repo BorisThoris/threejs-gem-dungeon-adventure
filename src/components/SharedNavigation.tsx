@@ -1,7 +1,7 @@
 import React from "react";
 
 interface SharedNavigationProps {
-  currentPage: "game" | "editor" | "texture-painter";
+  currentPage: "game" | "editor" | "texture-painter" | "mosaic-creator";
   className?: string;
 }
 
@@ -26,6 +26,11 @@ const SharedNavigation: React.FC<SharedNavigationProps> = ({
       id: "texture-painter",
       label: "🎨 Texture Painter",
       url: "?texture-painter=true",
+    },
+    {
+      id: "mosaic-creator",
+      label: "🧩 3D Mosaic Creator",
+      url: "?mosaic-creator=true",
       description: "Texture Creation Tool",
     },
   ];
@@ -57,7 +62,6 @@ const SharedNavigation: React.FC<SharedNavigationProps> = ({
             padding: "12px 20px",
             fontSize: "14px",
             fontWeight: "600",
-            border: "none",
             borderRadius: "20px",
             cursor: "pointer",
             transition: "all 0.3s ease",

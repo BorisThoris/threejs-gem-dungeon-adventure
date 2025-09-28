@@ -28,7 +28,7 @@ import Handrail from "./primitives/elements/Handrail";
 
 // Import other 3D components
 import ItemSprite from "./ItemSprite";
-import TexturePainter from "./TexturePainter";
+import MosaicCreator from "./MosaicCreator";
 import DestructibleWall from "./DestructibleWall";
 import SharedNavigation from "./SharedNavigation";
 import ParticleSystem from "./ParticleSystem";
@@ -67,7 +67,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "The beginning of your adventure",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -78,7 +85,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A cozy room with coffee and rewards",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -89,7 +103,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A peaceful room for reflection",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -100,7 +121,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A room for upgrading your library",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -111,7 +139,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A room with stairs in the middle",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -122,7 +157,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A room with stairs",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -133,7 +175,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A room showcasing various components",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -144,7 +193,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A factory for creating rooms",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -155,7 +211,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A room with a unique shell shape",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -166,7 +229,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A room with clean breakable objects",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -177,7 +247,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A demo of optional breaking functionality",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -188,7 +265,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A demo of all breakable objects",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
   {
@@ -199,7 +283,14 @@ const ROOM_CONFIGS: RoomConfig[] = [
     description: "A demo of universal breakable objects",
     props: { size: 10 },
     editableProps: [
-      { key: "size", label: "Room Size", type: "number", min: 5, max: 20, step: 1 },
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
     ],
   },
 ];
@@ -214,10 +305,29 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Floor tiles with various materials and patterns",
     props: { position: [0, 0, 0], size: 1, height: 0.1 },
     editableProps: [
-      { key: "size", label: "Size", type: "number", min: 0.1, max: 5, step: 0.1 },
-      { key: "height", label: "Height", type: "number", min: 0.01, max: 2, step: 0.01 },
+      {
+        key: "size",
+        label: "Size",
+        type: "number",
+        min: 0.1,
+        max: 5,
+        step: 0.1,
+      },
+      {
+        key: "height",
+        label: "Height",
+        type: "number",
+        min: 0.01,
+        max: 2,
+        step: 0.01,
+      },
       { key: "color", label: "Color", type: "color" },
-      { key: "material", label: "Material", type: "select", options: ["stone", "marble", "wood", "metal", "brick", "carpet"] },
+      {
+        key: "material",
+        label: "Material",
+        type: "select",
+        options: ["stone", "marble", "wood", "metal", "brick", "carpet"],
+      },
     ],
   },
   {
@@ -228,9 +338,30 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Structural walls for room boundaries",
     props: { position: [0, 0, 0], width: 1, height: 3, depth: 0.2 },
     editableProps: [
-      { key: "width", label: "Width", type: "number", min: 0.1, max: 10, step: 0.1 },
-      { key: "height", label: "Height", type: "number", min: 0.1, max: 10, step: 0.1 },
-      { key: "depth", label: "Depth", type: "number", min: 0.01, max: 2, step: 0.01 },
+      {
+        key: "width",
+        label: "Width",
+        type: "number",
+        min: 0.1,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "height",
+        label: "Height",
+        type: "number",
+        min: 0.1,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "depth",
+        label: "Depth",
+        type: "number",
+        min: 0.01,
+        max: 2,
+        step: 0.01,
+      },
       { key: "color", label: "Color", type: "color" },
     ],
   },
@@ -242,9 +373,30 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Room ceilings with various materials",
     props: { position: [0, 0, 0], width: 10, height: 10, depth: 0.2 },
     editableProps: [
-      { key: "width", label: "Width", type: "number", min: 1, max: 20, step: 0.1 },
-      { key: "height", label: "Height", type: "number", min: 1, max: 20, step: 0.1 },
-      { key: "depth", label: "Depth", type: "number", min: 0.01, max: 2, step: 0.01 },
+      {
+        key: "width",
+        label: "Width",
+        type: "number",
+        min: 1,
+        max: 20,
+        step: 0.1,
+      },
+      {
+        key: "height",
+        label: "Height",
+        type: "number",
+        min: 1,
+        max: 20,
+        step: 0.1,
+      },
+      {
+        key: "depth",
+        label: "Depth",
+        type: "number",
+        min: 0.01,
+        max: 2,
+        step: 0.01,
+      },
       { key: "color", label: "Color", type: "color" },
     ],
   },
@@ -256,9 +408,30 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Wooden planks for construction",
     props: { position: [0, 0, 0], length: 2, width: 0.2, height: 0.1 },
     editableProps: [
-      { key: "length", label: "Length", type: "number", min: 0.1, max: 10, step: 0.1 },
-      { key: "width", label: "Width", type: "number", min: 0.01, max: 2, step: 0.01 },
-      { key: "height", label: "Height", type: "number", min: 0.01, max: 2, step: 0.01 },
+      {
+        key: "length",
+        label: "Length",
+        type: "number",
+        min: 0.1,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "width",
+        label: "Width",
+        type: "number",
+        min: 0.01,
+        max: 2,
+        step: 0.01,
+      },
+      {
+        key: "height",
+        label: "Height",
+        type: "number",
+        min: 0.01,
+        max: 2,
+        step: 0.01,
+      },
       { key: "color", label: "Color", type: "color" },
     ],
   },
@@ -270,10 +443,38 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Stairs for vertical movement",
     props: { position: [0, 0, 0], width: 2, height: 2, depth: 1, steps: 10 },
     editableProps: [
-      { key: "width", label: "Width", type: "number", min: 0.5, max: 5, step: 0.1 },
-      { key: "height", label: "Height", type: "number", min: 0.5, max: 5, step: 0.1 },
-      { key: "depth", label: "Depth", type: "number", min: 0.5, max: 5, step: 0.1 },
-      { key: "steps", label: "Steps", type: "number", min: 3, max: 20, step: 1 },
+      {
+        key: "width",
+        label: "Width",
+        type: "number",
+        min: 0.5,
+        max: 5,
+        step: 0.1,
+      },
+      {
+        key: "height",
+        label: "Height",
+        type: "number",
+        min: 0.5,
+        max: 5,
+        step: 0.1,
+      },
+      {
+        key: "depth",
+        label: "Depth",
+        type: "number",
+        min: 0.5,
+        max: 5,
+        step: 0.1,
+      },
+      {
+        key: "steps",
+        label: "Steps",
+        type: "number",
+        min: 3,
+        max: 20,
+        step: 1,
+      },
       { key: "color", label: "Color", type: "color" },
     ],
   },
@@ -285,9 +486,30 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Safety handrails for stairs and platforms",
     props: { position: [0, 0, 0], length: 2, height: 1, thickness: 0.05 },
     editableProps: [
-      { key: "length", label: "Length", type: "number", min: 0.1, max: 10, step: 0.1 },
-      { key: "height", label: "Height", type: "number", min: 0.1, max: 3, step: 0.1 },
-      { key: "thickness", label: "Thickness", type: "number", min: 0.01, max: 0.5, step: 0.01 },
+      {
+        key: "length",
+        label: "Length",
+        type: "number",
+        min: 0.1,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "height",
+        label: "Height",
+        type: "number",
+        min: 0.1,
+        max: 3,
+        step: 0.1,
+      },
+      {
+        key: "thickness",
+        label: "Thickness",
+        type: "number",
+        min: 0.01,
+        max: 0.5,
+        step: 0.01,
+      },
       { key: "color", label: "Color", type: "color" },
     ],
   },
@@ -299,19 +521,38 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Interactive item sprites",
     props: { position: [0, 0, 0], itemType: "gem", scale: 1 },
     editableProps: [
-      { key: "itemType", label: "Item Type", type: "select", options: ["gem", "key", "potion", "coin"] },
-      { key: "scale", label: "Scale", type: "number", min: 0.1, max: 5, step: 0.1 },
+      {
+        key: "itemType",
+        label: "Item Type",
+        type: "select",
+        options: ["gem", "key", "potion", "coin"],
+      },
+      {
+        key: "scale",
+        label: "Scale",
+        type: "number",
+        min: 0.1,
+        max: 5,
+        step: 0.1,
+      },
     ],
   },
   {
-    type: "texture-painter",
-    component: TexturePainter,
-    title: "Texture Painter",
-    emoji: "🎨",
-    description: "Interactive texture painting tool",
+    type: "mosaic-creator",
+    component: MosaicCreator,
+    title: "3D Mosaic Creator",
+    emoji: "🧩",
+    description: "Create 3D mosaic patterns with shapes and colors",
     props: { position: [0, 0, 0], size: 5 },
     editableProps: [
-      { key: "size", label: "Size", type: "number", min: 1, max: 20, step: 0.1 },
+      {
+        key: "size",
+        label: "Size",
+        type: "number",
+        min: 1,
+        max: 20,
+        step: 0.1,
+      },
     ],
   },
   {
@@ -322,9 +563,30 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Walls that can be destroyed",
     props: { position: [0, 0, 0], width: 2, height: 3, depth: 0.2 },
     editableProps: [
-      { key: "width", label: "Width", type: "number", min: 0.1, max: 10, step: 0.1 },
-      { key: "height", label: "Height", type: "number", min: 0.1, max: 10, step: 0.1 },
-      { key: "depth", label: "Depth", type: "number", min: 0.01, max: 2, step: 0.01 },
+      {
+        key: "width",
+        label: "Width",
+        type: "number",
+        min: 0.1,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "height",
+        label: "Height",
+        type: "number",
+        min: 0.1,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "depth",
+        label: "Depth",
+        type: "number",
+        min: 0.01,
+        max: 2,
+        step: 0.01,
+      },
       { key: "color", label: "Color", type: "color" },
     ],
   },
@@ -336,7 +598,14 @@ const OBJECT_CONFIGS: RoomConfig[] = [
     description: "Visual particle effects",
     props: { position: [0, 0, 0], count: 100, color: "#ffffff" },
     editableProps: [
-      { key: "count", label: "Particle Count", type: "number", min: 10, max: 1000, step: 10 },
+      {
+        key: "count",
+        label: "Particle Count",
+        type: "number",
+        min: 10,
+        max: 1000,
+        step: 10,
+      },
       { key: "color", label: "Color", type: "color" },
     ],
   },
@@ -487,9 +756,7 @@ const RoomInfoPanel: React.FC<{ config: RoomConfig }> = ({ config }) => {
       <p style={{ margin: "0 0 10px 0", fontSize: "14px" }}>
         {config.description}
       </p>
-      <div style={{ fontSize: "12px", color: "#888" }}>
-        Type: {config.type}
-      </div>
+      <div style={{ fontSize: "12px", color: "#888" }}>Type: {config.type}</div>
     </div>
   );
 };
@@ -589,7 +856,7 @@ const ThreeDEditor: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<"rooms" | "objects">(
     (urlParams.get("category") as "rooms" | "objects") || "rooms"
   );
-  
+
   const [cameraPosition, setCameraPosition] = useState<
     [number, number, number]
   >([10, 10, 10]);
@@ -650,15 +917,16 @@ const ThreeDEditor: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter configs based on search query
-  const filteredConfigs = configs.filter((config) =>
-    config.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    config.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    config.type.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConfigs = configs.filter(
+    (config) =>
+      config.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      config.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      config.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Group configs by base type for collapsible sections
   const groupedConfigs = filteredConfigs.reduce((groups, config) => {
-    const baseType = config.type.split('-')[0];
+    const baseType = config.type.split("-")[0];
     if (!groups[baseType]) {
       groups[baseType] = [];
     }
@@ -667,7 +935,9 @@ const ThreeDEditor: React.FC = () => {
   }, {} as Record<string, typeof filteredConfigs>);
 
   // State for collapsible groups
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    new Set()
+  );
 
   // Auto-collapse groups with multiple variants
   React.useEffect(() => {
@@ -883,7 +1153,9 @@ const ThreeDEditor: React.FC = () => {
                           }
                         }}
                       >
-                        <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                        <div
+                          style={{ fontWeight: "bold", marginBottom: "4px" }}
+                        >
                           {config.emoji} {config.title}
                         </div>
                         <div style={{ fontSize: "12px", color: "#ccc" }}>
@@ -909,7 +1181,11 @@ const ThreeDEditor: React.FC = () => {
             }}
           >
             <h3
-              style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#4CAF50" }}
+              style={{
+                margin: "0 0 10px 0",
+                fontSize: "16px",
+                color: "#4CAF50",
+              }}
             >
               {selectedConfig.emoji} {selectedConfig.title}
             </h3>

@@ -15,6 +15,7 @@ import CleanBreakableRoom from "./primitives/rooms/CleanBreakableRoom";
 import OptionalBreakingDemo from "./primitives/rooms/OptionalBreakingDemo";
 import AllBreakableDemo from "./primitives/rooms/AllBreakableDemo";
 import UniversalBreakableDemo from "./primitives/rooms/UniversalBreakableDemo";
+import { ThemeSelector, ThemePreview } from "../themes";
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
@@ -507,6 +508,23 @@ const StartScreenContent: React.FC = () => {
 
       {/* Shared Navigation */}
       <SharedNavigation currentPage="game" />
+
+      {/* Theme Selector */}
+      <div
+        style={{
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          zIndex: 1000,
+          background: "rgba(0, 0, 0, 0.8)",
+          padding: "15px",
+          borderRadius: "8px",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        <ThemeSelector />
+        <ThemePreview />
+      </div>
 
       {/* Breaking System Demo */}
       <BreakingDemo

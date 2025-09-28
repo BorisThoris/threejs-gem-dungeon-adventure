@@ -2,6 +2,9 @@ import React from "react";
 import StartScreen from "./components/StartScreen";
 import ThreeDEditor from "./components/ThreeDEditor";
 import TexturePainterLauncher from "./components/TexturePainterLauncher";
+import MosaicCreatorLauncher from "./components/MosaicCreatorLauncher";
+import TexturePainterExample from "./components/TexturePainterExample";
+import { ThemeProvider } from "./themes";
 import "./App.css";
 
 function App() {
@@ -17,6 +20,9 @@ function App() {
   const urlParams = new URLSearchParams(window.location.search);
   const showEditor = urlParams.get("editor") === "true";
   const showTexturePainter = urlParams.get("texture-painter") === "true";
+  const showMosaicCreator = urlParams.get("mosaic-creator") === "true";
+  const showTexturePainterExample =
+    urlParams.get("texture-painter-example") === "true";
 
   // Add CSS class to root element for editor mode
   React.useEffect(() => {
@@ -36,14 +42,42 @@ function App() {
   }, [showEditor]);
 
   if (showEditor) {
-    return <ThreeDEditor />;
+    return (
+      <ThemeProvider>
+        <ThreeDEditor />
+      </ThemeProvider>
+    );
   }
 
   if (showTexturePainter) {
-    return <TexturePainterLauncher />;
+    return (
+      <ThemeProvider>
+        <TexturePainterLauncher />
+      </ThemeProvider>
+    );
   }
 
-  return <StartScreen />;
+  if (showMosaicCreator) {
+    return (
+      <ThemeProvider>
+        <MosaicCreatorLauncher />
+      </ThemeProvider>
+    );
+  }
+
+  if (showTexturePainterExample) {
+    return (
+      <ThemeProvider>
+        <TexturePainterExample />
+      </ThemeProvider>
+    );
+  }
+
+  return (
+    <ThemeProvider>
+      <StartScreen />
+    </ThemeProvider>
+  );
 }
 
 export default App;

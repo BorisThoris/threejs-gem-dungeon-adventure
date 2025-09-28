@@ -1,32 +1,103 @@
 # 🎨 Texture Painter
 
-A powerful 3D texture painting tool that allows you to create mosaic-like patterns on a square grid using various shapes and colors.
+A professional-grade texture painting tool with advanced features for creating high-quality textures with layers, filters, and real-time 3D preview.
 
 ## Features
 
-### 🎯 Multiple Brush Tools
-- **Square** ⬜ - Paint square shapes
-- **Circle** ⭕ - Paint circular shapes  
-- **Triangle** 🔺 - Paint triangular shapes
-- **Diamond** 💎 - Paint diamond shapes
-- **Hexagon** ⬡ - Paint hexagonal shapes
+### 🎨 Professional Brush System
+- **Round Brush** ● - Soft circular brush with adjustable hardness
+- **Square Brush** ■ - Hard-edged square brush
+- **Soft Brush** ○ - Airbrush-style soft brush
+- **Hard Brush** ● - Precise hard-edged brush
+- **Customizable Settings** - Size, opacity, hardness, and spacing controls
 
-### 🌈 Rich Color Palette
-- 30+ vibrant colors to choose from
-- Easy color selection with visual palette
+### 🎯 Paint Modes
+- **Free Paint Mode** 🎨 - Smooth, continuous painting with gradients
+- **Grid Paint Mode** 🔲 - Pixelated painting with grid snapping
+- **Pixel Size Control** - Adjustable pixel size from 4px to 64px
+- **Grid Visualization** - Toggle grid lines for precise pixel art
+
+### 🌈 Advanced Color System
+- 40+ color palette with easy selection
 - Real-time color preview
+- Custom color support
+- Color picker integration
 
-### 🎛️ Advanced Controls
-- **Brush Size** - Adjustable from 0.5x to 2x
-- **Grid Size** - Configurable grid dimensions (8x8 to 32x32)
-- **Cell Size** - Adjustable cell spacing
-- **Grid Toggle** - Show/hide grid lines
-- **Preview Mode** - Real-time texture preview
+### 📚 Layer System
+- **Multiple Layers** - Create complex textures with layer stacking
+- **Layer Visibility** - Toggle layers on/off
+- **Layer Opacity** - Adjust individual layer transparency
+- **Blend Modes** - 12 different blending modes (normal, multiply, screen, etc.)
+- **Layer Locking** - Prevent accidental edits
+- **Layer Management** - Add, delete, and reorder layers
 
-### 💾 Export Functionality
-- Export textures as PNG images
-- High-resolution output
-- Automatic download
+### 🎛️ Advanced Filters
+- **Blur** - Soften and smooth textures
+- **Sharpen** - Enhance texture details
+- **Grayscale** - Convert to black and white
+- **Sepia** - Vintage photo effect
+- **Invert** - Color inversion
+- **Brightness/Contrast** - Adjust lighting and contrast
+- **Filter Intensity** - Adjustable filter strength
+
+### 🎮 Real-time 3D Preview
+- Live 3D preview of your texture
+- Interactive 3D model rotation
+- Real-time updates as you paint
+- Toggle preview on/off
+
+### 💾 Professional Export
+- High-resolution PNG export
+- Preserves all layer information
+- Custom export settings
+- Automatic download functionality
+
+### 🔧 Programmatic Access
+- **JavaScript API** - Control the painter programmatically
+- **Real-time Updates** - Get notified when textures change
+- **Method Library** - Complete set of methods for automation
+- **Integration Ready** - Easy to embed in other applications
+
+## Programmatic API
+
+### Basic Usage
+```javascript
+// Enable programmatic access
+<TexturePainter programmaticAccess={true} onTextureChange={handleChange} />
+
+// Access the API
+const painter = window.texturePainter;
+
+// Set paint mode
+painter.setMode("grid"); // or "free"
+painter.setPixelSize(16);
+
+// Paint programmatically
+painter.setColor("#ff0000");
+painter.paintAt(100, 100);
+
+// Layer management
+painter.addLayer();
+painter.setActiveLayer("layer_id");
+painter.clearLayer();
+
+// Get current texture
+const textureData = painter.getCurrentTexture();
+```
+
+### Available Methods
+- `setMode(mode)` - Set paint mode ("free" or "grid")
+- `setPixelSize(size)` - Set pixel size for grid mode
+- `setColor(color)` - Set brush color
+- `setBrushSize(size)` - Set brush size
+- `setBrushOpacity(opacity)` - Set brush opacity
+- `setBrushHardness(hardness)` - Set brush hardness
+- `addLayer()` - Add new layer
+- `deleteLayer(layerId)` - Delete layer
+- `setActiveLayer(layerId)` - Set active layer
+- `getCurrentTexture()` - Get current texture as data URL
+- `paintAt(x, y, color?)` - Paint at specific coordinates
+- `clearLayer(layerId?)` - Clear layer
 
 ## How to Use
 

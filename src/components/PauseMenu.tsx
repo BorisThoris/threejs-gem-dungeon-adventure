@@ -115,39 +115,76 @@ const PauseMenu: React.FC<PauseMenuProps> = ({ isVisible, onUnpause }) => {
           </button>
         )}
 
-        {/* Texture Painter Button - Only show in dev mode */}
+        {/* Texture Tools - Only show in dev mode */}
         {isDevMode && (
-          <button
-            onClick={() => (window.location.href = "?texture-painter=true")}
-            style={{
-              padding: "12px 24px",
-              fontSize: "1.2rem",
-              background: "linear-gradient(45deg, #667eea, #764ba2)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontFamily: "monospace",
-              fontWeight: "bold",
-              transition: "all 0.3s ease",
-              boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "scale(1.05)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(102, 126, 234, 0.6)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 15px rgba(102, 126, 234, 0.4)";
-            }}
-          >
-            🎨 Texture Painter
-          </button>
+          <>
+            <button
+              className="menu-button"
+              onClick={() => (window.location.href = "?texture-painter=true")}
+              style={{
+                padding: "12px 24px",
+                fontSize: "1.2rem",
+                background: "linear-gradient(45deg, #4CAF50, #45a049)",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontFamily: "monospace",
+                fontWeight: "bold",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 15px rgba(76, 175, 80, 0.4)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                margin: "5px",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 20px rgba(76, 175, 80, 0.6)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 15px rgba(76, 175, 80, 0.4)";
+              }}
+            >
+              🎨 Texture Painter
+            </button>
+            <button
+              className="menu-button"
+              onClick={() => (window.location.href = "?mosaic-creator=true")}
+              style={{
+                padding: "12px 24px",
+                fontSize: "1.2rem",
+                background: "linear-gradient(45deg, #667eea, #764ba2)",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontFamily: "monospace",
+                fontWeight: "bold",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                margin: "5px",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 20px rgba(102, 126, 234, 0.6)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 15px rgba(102, 126, 234, 0.4)";
+              }}
+            >
+              🧩 3D Mosaic Creator
+            </button>
+          </>
         )}
       </div>
 
