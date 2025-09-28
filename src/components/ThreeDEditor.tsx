@@ -4,20 +4,19 @@ import { OrbitControls, Environment, Text, Html } from "@react-three/drei";
 import { Physics, RigidBody } from "@react-three/rapier";
 import RoomActionCards, { type ActionCard } from "./RoomActionCards";
 
-// Import room components directly
-import StartRoom from "./primitives/rooms/StartRoom";
-import CoffeeRoom from "./primitives/rooms/CoffeeRoom";
-import MeditationRoom from "./primitives/rooms/MeditationRoom";
-import LibraryUpgradeRoom from "./primitives/rooms/LibraryUpgradeRoom";
-import MiddleStairsRoom from "./primitives/rooms/MiddleStairsRoom";
-import StairsRoom from "./primitives/rooms/StairsRoom";
-import ComponentShowcaseRoom from "./primitives/rooms/ComponentShowcaseRoom";
-import RoomFactory from "./primitives/rooms/RoomFactory";
-import ShapedShell from "./primitives/rooms/ShapedShell";
-import CleanBreakableRoom from "./primitives/rooms/CleanBreakableRoom";
-import OptionalBreakingDemo from "./primitives/rooms/OptionalBreakingDemo";
-import AllBreakableDemo from "./primitives/rooms/AllBreakableDemo";
-import UniversalBreakableDemo from "./primitives/rooms/UniversalBreakableDemo";
+// Import room components from new structure
+import StartRoom from "./primitives/game-rooms/StartRoom";
+import CoffeeRoom from "./primitives/game-rooms/CoffeeRoom";
+import MeditationRoom from "./primitives/game-rooms/MeditationRoom";
+import LibraryUpgradeRoom from "./primitives/game-rooms/LibraryUpgradeRoom";
+import MiddleStairsRoom from "./primitives/game-rooms/MiddleStairsRoom";
+import StairsRoom from "./primitives/game-rooms/StairsRoom";
+import RoomFactory from "./primitives/game-rooms/RoomFactory";
+import ShapedShell from "./primitives/game-rooms/ShapedShell";
+import ComponentShowcaseRoom from "./primitives/demo-rooms/ComponentShowcaseRoom";
+import CleanBreakableRoom from "./primitives/demo-rooms/CleanBreakableRoom";
+import AllBreakableDemo from "./primitives/demo-rooms/AllBreakableDemo";
+import UniversalBreakableDemo from "./primitives/demo-rooms/UniversalBreakableDemo";
 // Import room elements directly
 import Tile from "./primitives/elements/Tile";
 import Wall from "./primitives/elements/Wall";
@@ -57,8 +56,84 @@ interface PropConfig {
   step?: number;
 }
 
-// Room configurations
-const ROOM_CONFIGS: RoomConfig[] = [
+// Demo Room configurations
+const DEMO_ROOM_CONFIGS: RoomConfig[] = [
+  {
+    type: "component-showcase",
+    component: ComponentShowcaseRoom,
+    title: "Component Showcase Room",
+    emoji: "🎨",
+    description: "A room showcasing various components",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "clean-breakable",
+    component: CleanBreakableRoom,
+    title: "Clean Breakable Room",
+    emoji: "💥",
+    description: "A room with clean breakable objects",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "all-breakable-demo",
+    component: AllBreakableDemo,
+    title: "All Breakable Demo",
+    emoji: "💥",
+    description: "A demo of all breakable objects",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "universal-breakable-demo",
+    component: UniversalBreakableDemo,
+    title: "Universal Breakable Demo",
+    emoji: "🌍",
+    description: "A demo of universal breakable objects",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+];
+
+// Game Room configurations
+const GAME_ROOM_CONFIGS: RoomConfig[] = [
   {
     type: "start",
     component: StartRoom,
@@ -168,24 +243,6 @@ const ROOM_CONFIGS: RoomConfig[] = [
     ],
   },
   {
-    type: "component-showcase",
-    component: ComponentShowcaseRoom,
-    title: "Component Showcase Room",
-    emoji: "🎨",
-    description: "A room showcasing various components",
-    props: { size: 10 },
-    editableProps: [
-      {
-        key: "size",
-        label: "Room Size",
-        type: "number",
-        min: 5,
-        max: 20,
-        step: 1,
-      },
-    ],
-  },
-  {
     type: "room-factory",
     component: RoomFactory,
     title: "Room Factory",
@@ -209,78 +266,6 @@ const ROOM_CONFIGS: RoomConfig[] = [
     title: "Shaped Shell Room",
     emoji: "🐚",
     description: "A room with a unique shell shape",
-    props: { size: 10 },
-    editableProps: [
-      {
-        key: "size",
-        label: "Room Size",
-        type: "number",
-        min: 5,
-        max: 20,
-        step: 1,
-      },
-    ],
-  },
-  {
-    type: "clean-breakable",
-    component: CleanBreakableRoom,
-    title: "Clean Breakable Room",
-    emoji: "💥",
-    description: "A room with clean breakable objects",
-    props: { size: 10 },
-    editableProps: [
-      {
-        key: "size",
-        label: "Room Size",
-        type: "number",
-        min: 5,
-        max: 20,
-        step: 1,
-      },
-    ],
-  },
-  {
-    type: "optional-breaking-demo",
-    component: OptionalBreakingDemo,
-    title: "Optional Breaking Demo",
-    emoji: "🔨",
-    description: "A demo of optional breaking functionality",
-    props: { size: 10 },
-    editableProps: [
-      {
-        key: "size",
-        label: "Room Size",
-        type: "number",
-        min: 5,
-        max: 20,
-        step: 1,
-      },
-    ],
-  },
-  {
-    type: "all-breakable-demo",
-    component: AllBreakableDemo,
-    title: "All Breakable Demo",
-    emoji: "💥",
-    description: "A demo of all breakable objects",
-    props: { size: 10 },
-    editableProps: [
-      {
-        key: "size",
-        label: "Room Size",
-        type: "number",
-        min: 5,
-        max: 20,
-        step: 1,
-      },
-    ],
-  },
-  {
-    type: "universal-breakable-demo",
-    component: UniversalBreakableDemo,
-    title: "Universal Breakable Demo",
-    emoji: "🌍",
-    description: "A demo of universal breakable objects",
     props: { size: 10 },
     editableProps: [
       {
@@ -791,8 +776,20 @@ const EditorScene: React.FC<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentProps: any;
   showActionCards: boolean;
-}> = ({ selectedType, selectedCategory, currentProps, showActionCards }) => {
-  const configs = selectedCategory === "rooms" ? ROOM_CONFIGS : OBJECT_CONFIGS;
+  activeTab: "demo" | "game";
+}> = ({
+  selectedType,
+  selectedCategory,
+  currentProps,
+  showActionCards,
+  activeTab,
+}) => {
+  const configs =
+    selectedCategory === "rooms"
+      ? activeTab === "demo"
+        ? DEMO_ROOM_CONFIGS
+        : GAME_ROOM_CONFIGS
+      : OBJECT_CONFIGS;
   const selectedConfig = configs.find((config) => config.type === selectedType);
 
   if (!selectedConfig) {
@@ -856,6 +853,9 @@ const ThreeDEditor: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<"rooms" | "objects">(
     (urlParams.get("category") as "rooms" | "objects") || "rooms"
   );
+  const [activeTab, setActiveTab] = useState<"demo" | "game">(
+    (urlParams.get("tab") as "demo" | "game") || "game"
+  );
 
   const [cameraPosition, setCameraPosition] = useState<
     [number, number, number]
@@ -879,12 +879,17 @@ const ThreeDEditor: React.FC = () => {
   }, []);
 
   // Function to update URL parameters
-  const updateURL = (updates: { type?: string; category?: string }) => {
+  const updateURL = (updates: {
+    type?: string;
+    category?: string;
+    tab?: string;
+  }) => {
     const newParams = new URLSearchParams(window.location.search);
 
     if (updates.type !== undefined) newParams.set("type", updates.type);
     if (updates.category !== undefined)
       newParams.set("category", updates.category);
+    if (updates.tab !== undefined) newParams.set("tab", updates.tab);
 
     const newURL = `${window.location.pathname}?${newParams.toString()}`;
     window.history.replaceState({}, "", newURL);
@@ -895,13 +900,18 @@ const ThreeDEditor: React.FC = () => {
     updateURL({
       type: selectedType,
       category: selectedCategory,
+      tab: activeTab,
     });
-  }, [selectedType, selectedCategory]);
+  }, [selectedType, selectedCategory, activeTab]);
 
   // Update props when selection changes
   React.useEffect(() => {
     const configs =
-      selectedCategory === "rooms" ? ROOM_CONFIGS : OBJECT_CONFIGS;
+      selectedCategory === "rooms"
+        ? activeTab === "demo"
+          ? DEMO_ROOM_CONFIGS
+          : GAME_ROOM_CONFIGS
+        : OBJECT_CONFIGS;
     const selectedConfig = configs.find(
       (config) => config.type === selectedType
     );
@@ -910,7 +920,12 @@ const ThreeDEditor: React.FC = () => {
     }
   }, [selectedType, selectedCategory]);
 
-  const configs = selectedCategory === "rooms" ? ROOM_CONFIGS : OBJECT_CONFIGS;
+  const configs =
+    selectedCategory === "rooms"
+      ? activeTab === "demo"
+        ? DEMO_ROOM_CONFIGS
+        : GAME_ROOM_CONFIGS
+      : OBJECT_CONFIGS;
   const selectedConfig = configs.find((config) => config.type === selectedType);
 
   // State for search functionality
@@ -1002,6 +1017,64 @@ const ThreeDEditor: React.FC = () => {
           </p>
         </div>
 
+        {/* Tab Navigation for Rooms */}
+        {selectedCategory === "rooms" && (
+          <div
+            style={{
+              display: "flex",
+              marginBottom: "20px",
+              background: "#222",
+              borderRadius: "8px",
+              overflow: "hidden",
+            }}
+          >
+            <button
+              onClick={() => {
+                setActiveTab("game");
+                const firstRoom = GAME_ROOM_CONFIGS[0];
+                if (firstRoom) {
+                  setSelectedType(firstRoom.type);
+                }
+              }}
+              style={{
+                flex: 1,
+                padding: "12px 16px",
+                background: activeTab === "game" ? "#4CAF50" : "transparent",
+                color: "white",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "14px",
+                fontWeight: "600",
+                transition: "all 0.2s ease",
+              }}
+            >
+              🎮 Game Rooms
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("demo");
+                const firstRoom = DEMO_ROOM_CONFIGS[0];
+                if (firstRoom) {
+                  setSelectedType(firstRoom.type);
+                }
+              }}
+              style={{
+                flex: 1,
+                padding: "12px 16px",
+                background: activeTab === "demo" ? "#4CAF50" : "transparent",
+                color: "white",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "14px",
+                fontWeight: "600",
+                transition: "all 0.2s ease",
+              }}
+            >
+              🎨 Demo Rooms
+            </button>
+          </div>
+        )}
+
         {/* Category Navigation */}
         <div
           style={{
@@ -1014,7 +1087,9 @@ const ThreeDEditor: React.FC = () => {
           <button
             onClick={() => {
               setSelectedCategory("rooms");
-              const firstRoom = ROOM_CONFIGS[0];
+              const firstRoom = (
+                activeTab === "demo" ? DEMO_ROOM_CONFIGS : GAME_ROOM_CONFIGS
+              )[0];
               if (firstRoom) {
                 setSelectedType(firstRoom.type);
               }
@@ -1286,6 +1361,7 @@ const ThreeDEditor: React.FC = () => {
               selectedCategory={selectedCategory}
               currentProps={currentProps}
               showActionCards={showActionCards}
+              activeTab={activeTab}
             />
 
             {/* Controls - Always enabled for mouse */}

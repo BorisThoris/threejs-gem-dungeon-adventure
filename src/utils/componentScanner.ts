@@ -50,9 +50,13 @@ export class ComponentScanner {
   async scanComponents(): Promise<ComponentConfig[]> {
     const components: ComponentConfig[] = [];
 
-    // Scan rooms
-    const rooms = await this.scanDirectory('primitives/rooms', 'room');
-    components.push(...rooms);
+    // Scan game rooms
+    const gameRooms = await this.scanDirectory('primitives/game-rooms', 'room');
+    components.push(...gameRooms);
+    
+    // Scan demo rooms
+    const demoRooms = await this.scanDirectory('primitives/demo-rooms', 'room');
+    components.push(...demoRooms);
 
     // Scan objects
     const objects = await this.scanDirectory('primitives/objects', 'object');

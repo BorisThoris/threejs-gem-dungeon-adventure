@@ -1,5 +1,5 @@
 import React from "react";
-import RoomFactory from "./primitives/rooms/RoomFactory";
+import RoomFactory from "./primitives/game-rooms/RoomFactory";
 
 interface SingleRoomProps {
   currentRoomId: string | null;

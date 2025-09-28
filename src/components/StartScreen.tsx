@@ -11,10 +11,10 @@ import PauseMenu from "./PauseMenu";
 import EventDrivenActionCards from "./EventDrivenActionCards";
 import RoomDetectionDebugger from "./RoomDetectionDebugger";
 import SharedNavigation from "./SharedNavigation";
-import CleanBreakableRoom from "./primitives/rooms/CleanBreakableRoom";
-import OptionalBreakingDemo from "./primitives/rooms/OptionalBreakingDemo";
-import AllBreakableDemo from "./primitives/rooms/AllBreakableDemo";
-import UniversalBreakableDemo from "./primitives/rooms/UniversalBreakableDemo";
+import CleanBreakableRoom from "./primitives/demo-rooms/CleanBreakableRoom";
+import OptionalBreakingDemo from "./primitives/demo-rooms/OptionalBreakingDemo";
+import AllBreakableDemo from "./primitives/demo-rooms/AllBreakableDemo";
+import UniversalBreakableDemo from "./primitives/demo-rooms/UniversalBreakableDemo";
 import { ThemeSelector, ThemePreview } from "../themes";
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
@@ -137,7 +137,7 @@ const BreakingDemo: React.FC<{
             margin: "5px 0 0 0",
             fontSize: "10px",
             color: "#ccc",
-             textAlign: "center",
+            textAlign: "center",
           }}
         >
           Toggle breaking for ALL 3D objects in the game

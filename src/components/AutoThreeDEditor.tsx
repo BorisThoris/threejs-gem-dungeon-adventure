@@ -6,33 +6,33 @@ import * as THREE from "three";
 import SharedNavigation from "./SharedNavigation";
 
 // Import all room components
-import StartRoom from "./primitives/rooms/StartRoom";
-import CoffeeRoom from "./primitives/rooms/CoffeeRoom";
-import MeditationRoom from "./primitives/rooms/MeditationRoom";
-import LibraryUpgradeRoom from "./primitives/rooms/LibraryUpgradeRoom";
-import MiddleStairsRoom from "./primitives/rooms/MiddleStairsRoom";
-import StairsRoom from "./primitives/rooms/StairsRoom";
-import ComponentShowcaseRoom from "./primitives/rooms/ComponentShowcaseRoom";
-import RoomFactory from "./primitives/rooms/RoomFactory";
-import ShapedShell from "./primitives/rooms/ShapedShell";
-import CleanBreakableRoom from "./primitives/rooms/CleanBreakableRoom";
-import OptionalBreakingDemo from "./primitives/rooms/OptionalBreakingDemo";
-import AllBreakableDemo from "./primitives/rooms/AllBreakableDemo";
-import UniversalBreakableDemo from "./primitives/rooms/UniversalBreakableDemo";
-import ArenaRoom from "./primitives/rooms/ArenaRoom";
-import ColosseumRoom from "./primitives/rooms/ColosseumRoom";
-import BossRoom from "./primitives/rooms/BossRoom";
-import ChallengeRoom from "./primitives/rooms/ChallengeRoom";
-import CorridorRoom from "./primitives/rooms/CorridorRoom";
-import EndRoom from "./primitives/rooms/EndRoom";
-import EnemyRoom from "./primitives/rooms/EnemyRoom";
-import LibraryRoom from "./primitives/rooms/LibraryRoom";
-import PortalRoom from "./primitives/rooms/PortalRoom";
-import PuzzleRoom from "./primitives/rooms/PuzzleRoom";
-import ShopRoom from "./primitives/rooms/ShopRoom";
-import SpecialRoom from "./primitives/rooms/SpecialRoom";
-import TreasureRoom from "./primitives/rooms/TreasureRoom";
-import BenchPressRoom from "./primitives/rooms/BenchPressRoom";
+import StartRoom from "./primitives/game-rooms/StartRoom";
+import CoffeeRoom from "./primitives/game-rooms/CoffeeRoom";
+import MeditationRoom from "./primitives/game-rooms/MeditationRoom";
+import LibraryUpgradeRoom from "./primitives/game-rooms/LibraryUpgradeRoom";
+import MiddleStairsRoom from "./primitives/game-rooms/MiddleStairsRoom";
+import StairsRoom from "./primitives/game-rooms/StairsRoom";
+import ComponentShowcaseRoom from "./primitives/demo-rooms/ComponentShowcaseRoom";
+import RoomFactory from "./primitives/game-rooms/RoomFactory";
+import ShapedShell from "./primitives/game-rooms/ShapedShell";
+import CleanBreakableRoom from "./primitives/demo-rooms/CleanBreakableRoom";
+import OptionalBreakingDemo from "./primitives/demo-rooms/OptionalBreakingDemo";
+import AllBreakableDemo from "./primitives/demo-rooms/AllBreakableDemo";
+import UniversalBreakableDemo from "./primitives/demo-rooms/UniversalBreakableDemo";
+import ArenaRoom from "./primitives/game-rooms/ArenaRoom";
+import ColosseumRoom from "./primitives/game-rooms/ColosseumRoom";
+import BossRoom from "./primitives/game-rooms/BossRoom";
+import ChallengeRoom from "./primitives/game-rooms/ChallengeRoom";
+import CorridorRoom from "./primitives/game-rooms/CorridorRoom";
+import EndRoom from "./primitives/game-rooms/EndRoom";
+import EnemyRoom from "./primitives/game-rooms/EnemyRoom";
+import LibraryRoom from "./primitives/game-rooms/LibraryRoom";
+import PortalRoom from "./primitives/game-rooms/PortalRoom";
+import PuzzleRoom from "./primitives/game-rooms/PuzzleRoom";
+import ShopRoom from "./primitives/game-rooms/ShopRoom";
+import SpecialRoom from "./primitives/game-rooms/SpecialRoom";
+import TreasureRoom from "./primitives/game-rooms/TreasureRoom";
+import BenchPressRoom from "./primitives/game-rooms/BenchPressRoom";
 
 // Import object components
 import ItemSprite from "./primitives/objects/ItemSprite";
@@ -74,7 +74,7 @@ import {
   TrapRoom,
   TreasureVault,
   SpiderLair,
-} from "./primitives/rooms";
+} from "./primitives/game-rooms";
 
 // Import building block primitives
 import {

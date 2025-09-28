@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import MeditationRoom from "./primitives/rooms/MeditationRoom";
-import BenchPressRoom from "./primitives/rooms/BenchPressRoom";
-import ShopRoom from "./primitives/rooms/ShopRoom";
-import TreasureRoom from "./primitives/rooms/TreasureRoom";
-import ChallengeRoom from "./primitives/rooms/ChallengeRoom";
-import PuzzleRoom from "./primitives/rooms/PuzzleRoom";
-import LibraryRoom from "./primitives/rooms/LibraryRoom";
+import MeditationRoom from "./primitives/game-rooms/MeditationRoom";
+import BenchPressRoom from "./primitives/game-rooms/BenchPressRoom";
+import ShopRoom from "./primitives/game-rooms/ShopRoom";
+import TreasureRoom from "./primitives/game-rooms/TreasureRoom";
+import ChallengeRoom from "./primitives/game-rooms/ChallengeRoom";
+import PuzzleRoom from "./primitives/game-rooms/PuzzleRoom";
+import LibraryRoom from "./primitives/game-rooms/LibraryRoom";
 
 type RoomType =
   | "meditation"
