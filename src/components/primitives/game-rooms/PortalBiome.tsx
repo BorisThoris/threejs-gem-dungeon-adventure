@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
+import { RigidBody } from "@react-three/rapier";
 import useGameStore from "../../../store/gameStore";
+import { getBiomeScale } from "../../../utils/biomeScaling";
 
 interface PortalBiomeProps {
+  size?: number;
   onRewardClaim?: () => void;
   portalDestination?: string;
 }
@@ -10,7 +13,13 @@ interface PortalBiomeProps {
 const PortalBiome: React.FC<PortalBiomeProps> = ({
   onRewardClaim,
   portalDestination,
+  size = 10,
 }) => {
+  const playerDimensions = useGameStore(
+    (state) => state.playerStats.dimensions
+  );
+  const scale = getBiomeScale(playerDimensions);
+  const biomeSize = size;
   const { addPoints, addExperience } = useGameStore();
   const [isActivated, setIsActivated] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -32,6 +41,13 @@ const PortalBiome: React.FC<PortalBiomeProps> = ({
 
   return (
     <group>
+      {/* Floor */}
+      <RigidBody type="fixed" position={[0, -0.5, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[biomeSize, 1, biomeSize]} />
+          <meshStandardMaterial color="#4a4a4a" />
+        </mesh>
+      </RigidBody>
 
       {/* Portal Ring */}
       <group position={[0, 1, 0]}>

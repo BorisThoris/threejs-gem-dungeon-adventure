@@ -2,6 +2,14 @@ import { create } from 'zustand';
 import type { Item } from '../types/map';
 import type { Enemy } from '../components/Enemy';
 
+export interface PlayerDimensions {
+  width: number; // Player width in units
+  height: number; // Player height in units
+  depth: number; // Player depth in units (for 3D hitbox)
+  capsuleRadius: number; // Radius for capsule collider
+  capsuleHeight: number; // Height for capsule collider
+}
+
 interface PlayerStats {
   lives: number;
   maxLives: number;
@@ -20,6 +28,8 @@ interface PlayerStats {
   strength: number; // Damage multiplier
   defense: number; // Damage reduction
   luck: number; // Better item drops
+  // Physical dimensions
+  dimensions: PlayerDimensions;
   // Temporary buffs
   buffs: {
     speedBoost: number; // Coffee effect duration
@@ -114,6 +124,14 @@ const initialStats: PlayerStats = {
   strength: 1.0,
   defense: 0,
   luck: 0,
+  // Physical dimensions (standard player size)
+  dimensions: {
+    width: 0.6, // Player width
+    height: 1.8, // Player height (typical human height)
+    depth: 0.6, // Player depth
+    capsuleRadius: 0.3, // Capsule collider radius
+    capsuleHeight: 1.4, // Capsule collider height
+  },
   // Temporary buffs
   buffs: {
     speedBoost: 0,

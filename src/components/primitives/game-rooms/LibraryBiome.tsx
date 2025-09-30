@@ -39,6 +39,15 @@ const LibraryBiome: React.FC<LibraryBiomeProps> = ({ books = [] }) => {
 
   return (
     <group>
+      {/* Floor */}
+      <RigidBody type="fixed" position={[0, -0.5, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[10, 1, 10]} />
+          <meshStandardMaterial color="#4a4a4a" />
+        </mesh>
+      </RigidBody>
+
+
       {/* Bookshelves */}
       {Array.from({ length: 4 }).map((_, i) => {
         const angle = (i * Math.PI) / 2;

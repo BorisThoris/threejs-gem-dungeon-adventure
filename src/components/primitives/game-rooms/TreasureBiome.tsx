@@ -1,13 +1,25 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
+import { RigidBody } from "@react-three/rapier";
+import useGameStore from "../../../store/gameStore";
+import { getBiomeScale } from "../../../utils/biomeScaling";
 import RoomActionCards from "../../RoomActionCards";
 import { useRoomActions } from "../../../hooks/useRoomActions";
 
 interface TreasureBiomeProps {
+  size?: number;
   onTreasureOpen?: () => void;
 }
 
-const TreasureBiome: React.FC<TreasureBiomeProps> = ({ onTreasureOpen }) => {
+const TreasureBiome: React.FC<TreasureBiomeProps> = ({
+  onTreasureOpen,
+  size = 10,
+}) => {
+  const playerDimensions = useGameStore(
+    (state) => state.playerStats.dimensions
+  );
+  const scale = getBiomeScale(playerDimensions);
+  const biomeSize = size;
   const [treasureOpened, setTreasureOpened] = useState(false);
 
   const { cards, isVisible, showCards, hideCards } = useRoomActions({
@@ -20,6 +32,13 @@ const TreasureBiome: React.FC<TreasureBiomeProps> = ({ onTreasureOpen }) => {
 
   return (
     <group>
+      {/* Floor */}
+      <RigidBody type="fixed" position={[0, -0.5, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[biomeSize, 1, biomeSize]} />
+          <meshStandardMaterial color="#4a4a4a" />
+        </mesh>
+      </RigidBody>
 
       {/* Treasure Chest */}
       <group position={[0, 0, 0]}>

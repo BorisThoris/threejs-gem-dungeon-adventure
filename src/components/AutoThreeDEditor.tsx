@@ -33,6 +33,18 @@ import ShopBiome from "./primitives/game-rooms/ShopBiome";
 import SpecialBiome from "./primitives/game-rooms/SpecialBiome";
 import TreasureBiome from "./primitives/game-rooms/TreasureBiome";
 import GymBiome from "./primitives/game-rooms/GymBiome";
+import GardenBiome from "./primitives/game-rooms/GardenBiome";
+import KitchenBiome from "./primitives/game-rooms/KitchenBiome";
+import BedroomBiome from "./primitives/game-rooms/BedroomBiome";
+import LaboratoryBiome from "./primitives/game-rooms/LaboratoryBiome";
+import ObservatoryBiome from "./primitives/game-rooms/ObservatoryBiome";
+import WorkshopBiome from "./primitives/game-rooms/WorkshopBiome";
+import ArchBiome from "./primitives/game-rooms/ArchBiome";
+import PillarBiome from "./primitives/game-rooms/PillarBiome";
+import BarrierBiome from "./primitives/game-rooms/BarrierBiome";
+import MazeBiome from "./primitives/game-rooms/MazeBiome";
+import BridgeBiome from "./primitives/game-rooms/BridgeBiome";
+import StatueBiome from "./primitives/game-rooms/StatueBiome";
 import CrackedBrickDemo from "./primitives/demo-rooms/CrackedBrickDemo";
 
 // Import object components
@@ -216,9 +228,18 @@ const BIOME_CONFIGS: RoomConfig[] = [
     title: "Shop Biome",
     emoji: "🛒",
     description: "Shop environment biome for rooms",
-    props: { onShopOpen: () => console.log("Shop opened!") },
+    props: { size: 10, onShopOpen: () => console.log("Shop opened!") },
     category: "biome",
-    editableProps: [],
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 30,
+        step: 5,
+      },
+    ],
   },
   {
     type: "treasure",
@@ -226,9 +247,18 @@ const BIOME_CONFIGS: RoomConfig[] = [
     title: "Treasure Biome",
     emoji: "💰",
     description: "Treasure environment biome for rooms",
-    props: { onTreasureOpen: () => console.log("Treasure opened!") },
+    props: { size: 10, onTreasureOpen: () => console.log("Treasure opened!") },
     category: "biome",
-    editableProps: [],
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 30,
+        step: 5,
+      },
+    ],
   },
   {
     type: "puzzle",
@@ -582,6 +612,255 @@ const BIOME_CONFIGS: RoomConfig[] = [
         min: 3,
         max: 12,
         step: 1,
+      },
+    ],
+  },
+  {
+    type: "garden",
+    component: GardenBiome,
+    title: "Garden Biome",
+    emoji: "🌿",
+    description: "Garden environment biome for rooms",
+    props: {
+      size: 10,
+      onGardenComplete: () => console.log("Garden complete!"),
+    },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 30,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "kitchen",
+    component: KitchenBiome,
+    title: "Kitchen Biome",
+    emoji: "🍳",
+    description: "Kitchen environment biome for rooms",
+    props: {
+      size: 10,
+      onCookingComplete: () => console.log("Cooking complete!"),
+    },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 30,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "bedroom",
+    component: BedroomBiome,
+    title: "Bedroom Biome",
+    emoji: "🛏️",
+    description: "Bedroom environment biome for rooms",
+    props: { size: 10, onRestComplete: () => console.log("Rest complete!") },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 30,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "laboratory",
+    component: LaboratoryBiome,
+    title: "Laboratory Biome",
+    emoji: "🧪",
+    description: "Laboratory environment biome for rooms",
+    props: {
+      size: 10,
+      onExperimentComplete: () => console.log("Experiment complete!"),
+    },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 30,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "observatory",
+    component: ObservatoryBiome,
+    title: "Observatory Biome",
+    emoji: "🔭",
+    description: "Observatory environment biome for rooms",
+    props: {
+      size: 10,
+      onObservationComplete: () => console.log("Observation complete!"),
+    },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 30,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "workshop",
+    component: WorkshopBiome,
+    title: "Workshop Biome",
+    emoji: "🔨",
+    description: "Workshop environment biome for rooms",
+    props: { size: 10, onCraftComplete: () => console.log("Craft complete!") },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 30,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "arch",
+    component: ArchBiome,
+    title: "Arch Biome",
+    emoji: "🏛️",
+    description: "Architectural arch structure biome",
+    props: {
+      size: 10,
+      onPassThrough: () => console.log("Passed through arch!"),
+    },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "pillar",
+    component: PillarBiome,
+    title: "Pillar Biome",
+    emoji: "🏛️",
+    description: "Pillar structure biome with navigation challenges",
+    props: {
+      size: 10,
+      onNavigate: () => console.log("Navigated around pillars!"),
+    },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "barrier",
+    component: BarrierBiome,
+    title: "Barrier Biome",
+    emoji: "🚧",
+    description: "Barrier obstacle biome with spikes and warnings",
+    props: { size: 10, onOvercome: () => console.log("Overcame barrier!") },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "maze",
+    component: MazeBiome,
+    title: "Maze Biome",
+    emoji: "🌀",
+    description: "Maze navigation biome with start and end markers",
+    props: { size: 15, onNavigate: () => console.log("Navigated maze!") },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Maze Size",
+        type: "number",
+        min: 10,
+        max: 40,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "bridge",
+    component: BridgeBiome,
+    title: "Bridge Biome",
+    emoji: "🌉",
+    description: "Bridge crossing biome over water or gap",
+    props: { size: 30, onCross: () => console.log("Crossed bridge!") },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Bridge Length",
+        type: "number",
+        min: 10,
+        max: 50,
+        step: 5,
+      },
+    ],
+  },
+  {
+    type: "statue",
+    component: StatueBiome,
+    title: "Statue Biome",
+    emoji: "🗿",
+    description: "Monumental statue biome with surrounding pillars",
+    props: {
+      size: 10,
+      onInteract: () => console.log("Interacted with statue!"),
+    },
+    category: "biome",
+    editableProps: [
+      {
+        key: "size",
+        label: "Biome Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 5,
       },
     ],
   },

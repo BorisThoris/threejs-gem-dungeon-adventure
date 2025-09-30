@@ -12,4 +12,5 @@ export { default as Skeleton } from './Skeleton';
 export { default as PressurePlate } from './PressurePlate';
 export { default as Statue } from './Statue';
 export { default as Switch } from './Switch';
+export { default as MazeReward } from './MazeReward';
 

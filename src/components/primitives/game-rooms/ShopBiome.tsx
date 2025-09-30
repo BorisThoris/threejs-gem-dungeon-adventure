@@ -1,13 +1,22 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
+import { RigidBody } from "@react-three/rapier";
+import useGameStore from "../../../store/gameStore";
+import { getBiomeScale } from "../../../utils/biomeScaling";
 import RoomActionCards from "../../RoomActionCards";
 import { useRoomActions } from "../../../hooks/useRoomActions";
 
 interface ShopBiomeProps {
+  size?: number;
   onShopOpen?: () => void;
 }
 
-const ShopBiome: React.FC<ShopBiomeProps> = ({ onShopOpen }) => {
+const ShopBiome: React.FC<ShopBiomeProps> = ({ onShopOpen, size = 10 }) => {
+  const playerDimensions = useGameStore(
+    (state) => state.playerStats.dimensions
+  );
+  const scale = getBiomeScale(playerDimensions);
+  const biomeSize = size;
   const [shopOpen, setShopOpen] = useState(false);
 
   const { cards, isVisible, showCards, hideCards } = useRoomActions({
@@ -20,6 +29,13 @@ const ShopBiome: React.FC<ShopBiomeProps> = ({ onShopOpen }) => {
 
   return (
     <group>
+      {/* Floor */}
+      <RigidBody type="fixed" position={[0, -0.5, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[biomeSize, 1, biomeSize]} />
+          <meshStandardMaterial color="#4a4a4a" />
+        </mesh>
+      </RigidBody>
 
       {/* Shop Counter */}
       <group position={[0, 0, 0]}>
