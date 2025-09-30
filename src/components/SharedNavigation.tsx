@@ -1,7 +1,12 @@
 import React from "react";
 
 interface SharedNavigationProps {
-  currentPage: "game" | "editor" | "texture-painter" | "mosaic-creator";
+  currentPage:
+    | "game"
+    | "editor"
+    | "texture-painter"
+    | "mosaic-creator"
+    | "room-builder";
   className?: string;
 }
 
@@ -21,6 +26,12 @@ const SharedNavigation: React.FC<SharedNavigationProps> = ({
       label: "🔧 3D Editor",
       url: "?editor=true",
       description: "3D Scene Builder",
+    },
+    {
+      id: "room-builder",
+      label: "🏗️ Room Builder",
+      url: "?room-builder=true",
+      description: "Build Rooms from Biomes",
     },
     {
       id: "texture-painter",

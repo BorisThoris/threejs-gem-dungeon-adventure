@@ -45,6 +45,7 @@ import BarrierBiome from "./primitives/game-rooms/BarrierBiome";
 import MazeBiome from "./primitives/game-rooms/MazeBiome";
 import BridgeBiome from "./primitives/game-rooms/BridgeBiome";
 import StatueBiome from "./primitives/game-rooms/StatueBiome";
+import MultiBiomeRoom from "./primitives/game-rooms/MultiBiomeRoom";
 import CrackedBrickDemo from "./primitives/demo-rooms/CrackedBrickDemo";
 
 // Import object components
@@ -119,6 +120,7 @@ interface RoomConfig {
   props?: any;
   editableProps?: any[];
   category: "biome" | "object" | "element";
+  subcategory?: string;
 }
 
 // Static room configurations
@@ -161,6 +163,33 @@ const ROOM_CONFIGS: RoomConfig[] = [
       },
     ],
   },
+  {
+    type: "multi-biome",
+    component: MultiBiomeRoom,
+    title: "Multi-Biome Room",
+    emoji: "🏗️",
+    description: "A room built from multiple biomes",
+    props: {
+      roomSize: 20,
+      biomes: [
+        { type: "bedroom", position: [-6, 0, -6], size: 8 },
+        { type: "kitchen", position: [6, 0, -6], size: 8 },
+        { type: "library", position: [-6, 0, 6], size: 8 },
+        { type: "garden", position: [6, 0, 6], size: 8 },
+      ],
+    },
+    category: "room",
+    editableProps: [
+      {
+        key: "roomSize",
+        label: "Room Size",
+        type: "number",
+        min: 10,
+        max: 40,
+        step: 5,
+      },
+    ],
+  },
 ];
 
 // Biome configurations
@@ -173,6 +202,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Coffee environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "buff",
     editableProps: [
       {
         key: "size",
@@ -192,6 +222,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Meditation environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "buff",
     editableProps: [
       {
         key: "size",
@@ -211,6 +242,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Library environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "resource",
     editableProps: [
       {
         key: "size",
@@ -230,6 +262,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Shop environment biome for rooms",
     props: { size: 10, onShopOpen: () => console.log("Shop opened!") },
     category: "biome",
+    subcategory: "resource",
     editableProps: [
       {
         key: "size",
@@ -249,6 +282,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Treasure environment biome for rooms",
     props: { size: 10, onTreasureOpen: () => console.log("Treasure opened!") },
     category: "biome",
+    subcategory: "resource",
     editableProps: [
       {
         key: "size",
@@ -268,6 +302,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Puzzle environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "puzzle",
     editableProps: [
       {
         key: "size",
@@ -287,6 +322,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Boss environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "combat",
     editableProps: [
       {
         key: "size",
@@ -306,6 +342,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Arena environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "combat",
     editableProps: [
       {
         key: "size",
@@ -325,6 +362,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Enemy environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "combat",
     editableProps: [
       {
         key: "size",
@@ -344,6 +382,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "End environment biome for rooms",
     props: { onVictory: () => console.log("Victory!") },
     category: "biome",
+    subcategory: "special",
     editableProps: [],
   },
   {
@@ -354,6 +393,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Portal environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "transport",
     editableProps: [
       {
         key: "size",
@@ -376,6 +416,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
       items: [],
     },
     category: "biome",
+    subcategory: "special",
     editableProps: [
       {
         key: "roomType",
@@ -398,6 +439,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Challenge environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "combat",
     editableProps: [
       {
         key: "size",
@@ -417,6 +459,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Library upgrade environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "resource",
     editableProps: [
       {
         key: "size",
@@ -436,6 +479,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "A grand colosseum environment biome for epic battles",
     props: { size: 10 },
     category: "biome",
+    subcategory: "special",
     editableProps: [
       {
         key: "size",
@@ -455,6 +499,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "The beginning environment biome of your adventure",
     props: { size: 10 },
     category: "biome",
+    subcategory: "special",
     editableProps: [
       {
         key: "size",
@@ -474,6 +519,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Trap environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "combat",
     editableProps: [
       {
         key: "size",
@@ -493,6 +539,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Crypt environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "combat",
     editableProps: [
       {
         key: "size",
@@ -512,6 +559,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Gym environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "buff",
     editableProps: [
       {
         key: "size",
@@ -531,6 +579,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Bench press environment biome for rooms",
     props: { size: 10 },
     category: "biome",
+    subcategory: "buff",
     editableProps: [
       {
         key: "size",
@@ -550,6 +599,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Stairs environment biome for rooms",
     props: { direction: "up", roomWidth: 8, roomHeight: 6 },
     category: "biome",
+    subcategory: "transport",
     editableProps: [
       {
         key: "direction",
@@ -586,6 +636,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Middle stairs environment biome for rooms",
     props: { position: "middle", roomWidth: 8, roomHeight: 6 },
     category: "biome",
+    subcategory: "transport",
     editableProps: [
       {
         key: "position",
@@ -626,6 +677,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
       onGardenComplete: () => console.log("Garden complete!"),
     },
     category: "biome",
+    subcategory: "buff",
     editableProps: [
       {
         key: "size",
@@ -648,6 +700,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
       onCookingComplete: () => console.log("Cooking complete!"),
     },
     category: "biome",
+    subcategory: "utility",
     editableProps: [
       {
         key: "size",
@@ -667,6 +720,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Bedroom environment biome for rooms",
     props: { size: 10, onRestComplete: () => console.log("Rest complete!") },
     category: "biome",
+    subcategory: "buff",
     editableProps: [
       {
         key: "size",
@@ -689,6 +743,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
       onExperimentComplete: () => console.log("Experiment complete!"),
     },
     category: "biome",
+    subcategory: "resource",
     editableProps: [
       {
         key: "size",
@@ -711,6 +766,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
       onObservationComplete: () => console.log("Observation complete!"),
     },
     category: "biome",
+    subcategory: "puzzle",
     editableProps: [
       {
         key: "size",
@@ -730,6 +786,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Workshop environment biome for rooms",
     props: { size: 10, onCraftComplete: () => console.log("Craft complete!") },
     category: "biome",
+    subcategory: "resource",
     editableProps: [
       {
         key: "size",
@@ -752,6 +809,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
       onPassThrough: () => console.log("Passed through arch!"),
     },
     category: "biome",
+    subcategory: "obstacle",
     editableProps: [
       {
         key: "size",
@@ -774,6 +832,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
       onNavigate: () => console.log("Navigated around pillars!"),
     },
     category: "biome",
+    subcategory: "obstacle",
     editableProps: [
       {
         key: "size",
@@ -793,6 +852,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Barrier obstacle biome with spikes and warnings",
     props: { size: 10, onOvercome: () => console.log("Overcame barrier!") },
     category: "biome",
+    subcategory: "obstacle",
     editableProps: [
       {
         key: "size",
@@ -812,6 +872,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Maze navigation biome with start and end markers",
     props: { size: 15, onNavigate: () => console.log("Navigated maze!") },
     category: "biome",
+    subcategory: "puzzle",
     editableProps: [
       {
         key: "size",
@@ -831,6 +892,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Bridge crossing biome over water or gap",
     props: { size: 30, onCross: () => console.log("Crossed bridge!") },
     category: "biome",
+    subcategory: "transport",
     editableProps: [
       {
         key: "size",
@@ -853,6 +915,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
       onInteract: () => console.log("Interacted with statue!"),
     },
     category: "biome",
+    subcategory: "obstacle",
     editableProps: [
       {
         key: "size",
@@ -2876,6 +2939,7 @@ const AutoThreeDEditor: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<
     "rooms" | "biomes" | "objects" | "elements"
   >("rooms");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("all");
   const [selectedComponent, setSelectedComponent] = useState<RoomConfig | null>(
     null
   );
@@ -3012,20 +3076,34 @@ const AutoThreeDEditor: React.FC = () => {
     );
   }
 
-  // Get current configs based on selected category
+  // Get current configs based on selected category and subcategory
   const getCurrentConfigs = () => {
+    let configs = [];
     switch (selectedCategory) {
       case "rooms":
-        return ROOM_CONFIGS;
+        configs = ROOM_CONFIGS;
+        break;
       case "biomes":
-        return BIOME_CONFIGS;
+        configs = BIOME_CONFIGS;
+        break;
       case "objects":
-        return OBJECT_CONFIGS;
+        configs = OBJECT_CONFIGS;
+        break;
       case "elements":
-        return ELEMENT_CONFIGS;
+        configs = ELEMENT_CONFIGS;
+        break;
       default:
         return ROOM_CONFIGS;
     }
+
+    // Filter by subcategory if not "all"
+    if (selectedCategory === "biomes" && selectedSubcategory !== "all") {
+      return configs.filter(
+        (config) => config.subcategory === selectedSubcategory
+      );
+    }
+
+    return configs;
   };
 
   // Get current selection based on category
@@ -3125,11 +3203,12 @@ const AutoThreeDEditor: React.FC = () => {
             ].map((category) => (
               <button
                 key={category.key}
-                onClick={() =>
+                onClick={() => {
                   handleCategorySelect(
                     category.key as "rooms" | "biomes" | "objects" | "elements"
-                  )
-                }
+                  );
+                  setSelectedSubcategory("all"); // Reset subcategory when changing category
+                }}
                 style={{
                   padding: "8px 12px",
                   background:
@@ -3161,6 +3240,45 @@ const AutoThreeDEditor: React.FC = () => {
               </button>
             ))}
           </div>
+
+          {/* Subcategory Filter for Biomes */}
+          {selectedCategory === "biomes" && (
+            <div style={{ marginBottom: "15px" }}>
+              <label
+                style={{
+                  color: "white",
+                  fontSize: "14px",
+                  marginBottom: "8px",
+                  display: "block",
+                }}
+              >
+                Subcategory:
+              </label>
+              <select
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  background: "#444",
+                  color: "white",
+                  border: "1px solid #666",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
+              >
+                <option value="all">All Biomes</option>
+                <option value="buff">💪 Buff/Healing</option>
+                <option value="resource">💰 Resource/Economy</option>
+                <option value="combat">⚔️ Combat/Challenge</option>
+                <option value="puzzle">🧩 Puzzle/Interaction</option>
+                <option value="transport">🚀 Transportation</option>
+                <option value="obstacle">🚧 Obstacle/Architectural</option>
+                <option value="special">✨ Special/Unique</option>
+                <option value="utility">🔧 Utility</option>
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Current Category Items */}

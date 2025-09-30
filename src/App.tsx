@@ -1,6 +1,7 @@
 import React from "react";
 import StartScreen from "./components/StartScreen";
 import AutoThreeDEditor from "./components/AutoThreeDEditor";
+import RoomBuilderPage from "./pages/RoomBuilderPage";
 import TexturePainterLauncher from "./components/TexturePainterLauncher";
 import MosaicCreatorLauncher from "./components/MosaicCreatorLauncher";
 import TexturePainterExample from "./components/TexturePainterExample";
@@ -19,6 +20,7 @@ function App() {
   // Check URL parameter to show editor or texture painter
   const urlParams = new URLSearchParams(window.location.search);
   const showEditor = urlParams.get("editor") === "true";
+  const showRoomBuilder = urlParams.get("room-builder") === "true";
   const showTexturePainter = urlParams.get("texture-painter") === "true";
   const showMosaicCreator = urlParams.get("mosaic-creator") === "true";
   const showTexturePainterExample =
@@ -45,6 +47,14 @@ function App() {
     return (
       <ThemeProvider>
         <AutoThreeDEditor />
+      </ThemeProvider>
+    );
+  }
+
+  if (showRoomBuilder) {
+    return (
+      <ThemeProvider>
+        <RoomBuilderPage />
       </ThemeProvider>
     );
   }
