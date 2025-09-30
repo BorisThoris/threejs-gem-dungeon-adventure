@@ -7,11 +7,11 @@ import OptimizedPuzzleRouter from "../../OptimizedPuzzleRouter";
 import RoomActionCards from "../../RoomActionCards";
 import { useRoomActions } from "../../../hooks/useRoomActions";
 
-interface LibraryRoomProps {
-  books: Item[];
+interface LibraryBiomeProps {
+  books?: Item[];
 }
 
-const LibraryRoom: React.FC<LibraryRoomProps> = ({ books }) => {
+const LibraryBiome: React.FC<LibraryBiomeProps> = ({ books = [] }) => {
   const [selectedBook, setSelectedBook] = useState<Item | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [showPuzzle, setShowPuzzle] = useState(false);
@@ -39,7 +39,6 @@ const LibraryRoom: React.FC<LibraryRoomProps> = ({ books }) => {
 
   return (
     <group>
-
       {/* Bookshelves */}
       {Array.from({ length: 4 }).map((_, i) => {
         const angle = (i * Math.PI) / 2;
@@ -221,4 +220,4 @@ const LibraryRoom: React.FC<LibraryRoomProps> = ({ books }) => {
   );
 };
 
-export default LibraryRoom;
+export default LibraryBiome;

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import MeditationRoom from "./primitives/game-rooms/MeditationRoom";
-import BenchPressRoom from "./primitives/game-rooms/BenchPressRoom";
-import ShopRoom from "./primitives/game-rooms/ShopRoom";
-import TreasureRoom from "./primitives/game-rooms/TreasureRoom";
-import ChallengeRoom from "./primitives/game-rooms/ChallengeRoom";
-import PuzzleRoom from "./primitives/game-rooms/PuzzleRoom";
-import LibraryRoom from "./primitives/game-rooms/LibraryRoom";
+import MeditationBiome from "./primitives/game-rooms/MeditationBiome";
+import GymBiome from "./primitives/game-rooms/GymBiome";
+import ShopBiome from "./primitives/game-rooms/ShopBiome";
+import TreasureBiome from "./primitives/game-rooms/TreasureBiome";
+import ChallengeBiome from "./primitives/game-rooms/ChallengeBiome";
+import PuzzleBiome from "./primitives/game-rooms/PuzzleBiome";
+import LibraryBiome from "./primitives/game-rooms/LibraryBiome";
 
 type RoomType =
   | "meditation"
@@ -23,30 +23,34 @@ const RoomDemo: React.FC = () => {
     {
       id: "meditation" as RoomType,
       name: "Meditation Room",
-      component: MeditationRoom,
+      component: MeditationBiome,
     },
     {
       id: "benchpress" as RoomType,
       name: "Bench Press Room",
-      component: BenchPressRoom,
+      component: GymBiome,
     },
-    { id: "shop" as RoomType, name: "Shop Room", component: ShopRoom },
+    { id: "shop" as RoomType, name: "Shop Room", component: ShopBiome },
     {
       id: "treasure" as RoomType,
       name: "Treasure Room",
-      component: TreasureRoom,
+      component: TreasureBiome,
     },
     {
       id: "challenge" as RoomType,
       name: "Challenge Room",
-      component: ChallengeRoom,
+      component: ChallengeBiome,
     },
-    { id: "puzzle" as RoomType, name: "Puzzle Room", component: PuzzleRoom },
-    { id: "library" as RoomType, name: "Library Room", component: LibraryRoom },
+    { id: "puzzle" as RoomType, name: "Puzzle Room", component: PuzzleBiome },
+    {
+      id: "library" as RoomType,
+      name: "Library Room",
+      component: LibraryBiome,
+    },
   ];
 
   const CurrentRoomComponent =
-    rooms.find((r) => r.id === currentRoom)?.component || MeditationRoom;
+    rooms.find((r) => r.id === currentRoom)?.component || MeditationBiome;
 
   return (
     <group>
@@ -86,7 +90,7 @@ const RoomDemo: React.FC = () => {
       </group>
 
       {/* Current Room */}
-      <CurrentRoomComponent />
+      <CurrentRoomComponent books={[]} />
 
       {/* Instructions */}
       <group position={[0, -3, 0]}>

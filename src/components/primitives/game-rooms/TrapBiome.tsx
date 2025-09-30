@@ -5,12 +5,12 @@ import SpikeTrap from "../elements/SpikeTrap";
 import Lever from "../objects/Lever";
 import Door from "../elements/Door";
 
-export interface TrapRoomProps {
+export interface TrapBiomeProps {
   size?: number;
   onRoomComplete?: () => void;
 }
 
-const TrapRoom: React.FC<TrapRoomProps> = ({ size = 10, onRoomComplete }) => {
+const TrapBiome: React.FC<TrapBiomeProps> = ({ size = 10, onRoomComplete }) => {
   const [trapsActive, setTrapsActive] = useState(true);
   const [doorOpen, setDoorOpen] = useState(false);
 
@@ -28,40 +28,6 @@ const TrapRoom: React.FC<TrapRoomProps> = ({ size = 10, onRoomComplete }) => {
         <mesh>
           <boxGeometry args={[size, 1, size]} />
           <meshLambertMaterial color="#2C2C2C" />
-        </mesh>
-      </RigidBody>
-
-      {/* Walls */}
-      <RigidBody type="fixed" position={[0, size / 2, size / 2]}>
-        <mesh>
-          <boxGeometry args={[size, size, 1]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[0, size / 2, -size / 2]}>
-        <mesh>
-          <boxGeometry args={[size, size, 1]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[size / 2, size / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1, size, size]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[-size / 2, size / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1, size, size]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-
-      {/* Ceiling */}
-      <RigidBody type="fixed" position={[0, size, 0]}>
-        <mesh>
-          <boxGeometry args={[size, 1, size]} />
-          <meshLambertMaterial color="#0F0F0F" />
         </mesh>
       </RigidBody>
 
@@ -141,4 +107,4 @@ const TrapRoom: React.FC<TrapRoomProps> = ({ size = 10, onRoomComplete }) => {
   );
 };
 
-export default TrapRoom;
+export default TrapBiome;

@@ -8,12 +8,12 @@ import Statue from "../objects/Statue";
 import Switch from "../objects/Switch";
 import Door from "../elements/Door";
 
-export interface BossRoomProps {
+export interface BossBiomeProps {
   size?: number;
   onRoomComplete?: () => void;
 }
 
-const BossRoom: React.FC<BossRoomProps> = ({ size = 15, onRoomComplete }) => {
+const BossBiome: React.FC<BossBiomeProps> = ({ size = 15, onRoomComplete }) => {
   const [bossDefeated, setBossDefeated] = useState(false);
   const [doorsUnlocked, setDoorsUnlocked] = useState(false);
 
@@ -35,40 +35,6 @@ const BossRoom: React.FC<BossRoomProps> = ({ size = 15, onRoomComplete }) => {
         <mesh>
           <boxGeometry args={[size, 1, size]} />
           <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-
-      {/* Walls */}
-      <RigidBody type="fixed" position={[0, size / 2, size / 2]}>
-        <mesh>
-          <boxGeometry args={[size, size, 1]} />
-          <meshLambertMaterial color="#0F0F0F" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[0, size / 2, -size / 2]}>
-        <mesh>
-          <boxGeometry args={[size, size, 1]} />
-          <meshLambertMaterial color="#0F0F0F" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[size / 2, size / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1, size, size]} />
-          <meshLambertMaterial color="#0F0F0F" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[-size / 2, size / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1, size, size]} />
-          <meshLambertMaterial color="#0F0F0F" />
-        </mesh>
-      </RigidBody>
-
-      {/* Ceiling */}
-      <RigidBody type="fixed" position={[0, size, 0]}>
-        <mesh>
-          <boxGeometry args={[size, 1, size]} />
-          <meshLambertMaterial color="#000000" />
         </mesh>
       </RigidBody>
 
@@ -189,4 +155,4 @@ const BossRoom: React.FC<BossRoomProps> = ({ size = 15, onRoomComplete }) => {
   );
 };
 
-export default BossRoom;
+export default BossBiome;

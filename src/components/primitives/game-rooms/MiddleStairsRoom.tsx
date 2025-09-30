@@ -476,46 +476,6 @@ const MiddleStairsRoom: React.FC<MiddleStairsRoomProps> = ({
       {/* Floor Opening - only for middle and top positions */}
       {renderFloorOpening()}
 
-      {/* Custom Ceiling Tiles */}
-      {renderCeilingTiles()}
-
-      {/* Walls */}
-      <RigidBody
-        type="fixed"
-        position={[0, roomDims.height / 2, -roomDims.depth / 2]}
-      >
-        <Box args={[roomDims.width, roomDims.height, 1]}>
-          <meshStandardMaterial color="#333333" roughness={0.7} />
-        </Box>
-      </RigidBody>
-
-      <RigidBody
-        type="fixed"
-        position={[0, roomDims.height / 2, roomDims.depth / 2]}
-      >
-        <Box args={[roomDims.width, roomDims.height, 1]}>
-          <meshStandardMaterial color="#333333" roughness={0.7} />
-        </Box>
-      </RigidBody>
-
-      <RigidBody
-        type="fixed"
-        position={[-roomDims.width / 2, roomDims.height / 2, 0]}
-      >
-        <Box args={[1, roomDims.height, roomDims.depth]}>
-          <meshStandardMaterial color="#333333" roughness={0.7} />
-        </Box>
-      </RigidBody>
-
-      <RigidBody
-        type="fixed"
-        position={[roomDims.width / 2, roomDims.height / 2, 0]}
-      >
-        <Box args={[1, roomDims.height, roomDims.depth]}>
-          <meshStandardMaterial color="#333333" roughness={0.7} />
-        </Box>
-      </RigidBody>
-
       {/* Lighting */}
       <pointLight
         position={[0, roomDims.height - 1, 0]}

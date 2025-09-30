@@ -12,21 +12,21 @@ import { calculateDoorPositionFromEntryPoints } from "../../../utils/doorPositio
 
 // Import all room content components
 import StartRoom from "./StartRoom";
-import MeditationRoom from "./MeditationRoom";
-import BenchPressRoom from "./BenchPressRoom";
-import LibraryRoom from "./LibraryRoom";
-import ShopRoom from "./ShopRoom";
-import TreasureRoom from "./TreasureRoom";
-import PuzzleRoom from "./PuzzleRoom";
-import BossRoom from "./BossRoom";
-import CoffeeRoom from "./CoffeeRoom";
-import ChallengeRoom from "./ChallengeRoom";
-import LibraryUpgradeRoom from "./LibraryUpgradeRoom";
-import PortalRoom from "./PortalRoom";
-import ArenaRoom from "./ArenaRoom";
-import EnemyRoom from "./EnemyRoom";
-import EndRoom from "./EndRoom";
-import SpecialRoom from "./SpecialRoom";
+import MeditationBiome from "./MeditationBiome";
+import GymBiome from "./GymBiome";
+import LibraryBiome from "./LibraryBiome";
+import ShopBiome from "./ShopBiome";
+import TreasureBiome from "./TreasureBiome";
+import PuzzleBiome from "./PuzzleBiome";
+import BossBiome from "./BossBiome";
+import CoffeeBiome from "./CoffeeBiome";
+import ChallengeBiome from "./ChallengeBiome";
+import LibraryUpgradeBiome from "./LibraryUpgradeBiome";
+import PortalBiome from "./PortalBiome";
+import ArenaBiome from "./ArenaBiome";
+import EnemyBiome from "./EnemyBiome";
+import EndBiome from "./EndBiome";
+import SpecialBiome from "./SpecialBiome";
 import CorridorRoom from "./CorridorRoom";
 import ColosseumRoom from "./ColosseumRoom";
 import ShapedShell from "./ShapedShell";
@@ -64,39 +64,39 @@ const ROOM_CONFIGS: RoomConfig[] = [
   },
   {
     type: "meditation",
-    component: MeditationRoom,
-    title: "🧘 MEDITATION ROOM 🧘",
+    component: MeditationBiome,
+    title: "🧘 MEDITATION CONTENT 🧘",
     emoji: "🧘",
   },
   {
     type: "bench-press",
-    component: BenchPressRoom,
-    title: "💪 GYM ROOM 💪",
+    component: GymBiome,
+    title: "💪 GYM CONTENT 💪",
     emoji: "💪",
   },
   {
     type: "library",
-    component: LibraryRoom,
-    title: "📚 LIBRARY 📚",
+    component: LibraryBiome,
+    title: "📚 LIBRARY CONTENT 📚",
     emoji: "📚",
     props: (room) => ({ books: (room as any).books || [] }),
   },
   {
     type: "shop",
-    component: ShopRoom,
-    title: "🛒 SHOP 🛒",
+    component: ShopBiome,
+    title: "🛒 SHOP CONTENT 🛒",
     emoji: "🛒",
   },
   {
     type: "treasure",
-    component: TreasureRoom,
-    title: "💰 TREASURE ROOM 💰",
+    component: TreasureBiome,
+    title: "💰 TREASURE CONTENT 💰",
     emoji: "💰",
   },
   {
     type: "puzzle",
-    component: PuzzleRoom,
-    title: "🧩 PUZZLE ROOM 🧩",
+    component: PuzzleBiome,
+    title: "🧩 PUZZLE CONTENT 🧩",
     emoji: "🧩",
     props: (room) => ({
       puzzle: (room as any).puzzle,
@@ -105,57 +105,57 @@ const ROOM_CONFIGS: RoomConfig[] = [
   },
   {
     type: "boss",
-    component: BossRoom,
-    title: "👹 BOSS ROOM 👹",
+    component: BossBiome,
+    title: "👹 BOSS CONTENT 👹",
     emoji: "👹",
   },
   {
     type: "coffee",
-    component: CoffeeRoom,
-    title: "☕ COFFEE ROOM ☕",
+    component: CoffeeBiome,
+    title: "☕ COFFEE CONTENT ☕",
     emoji: "☕",
   },
   {
     type: "challenge",
-    component: ChallengeRoom,
-    title: "⚔️ CHALLENGE ROOM ⚔️",
+    component: ChallengeBiome,
+    title: "⚔️ CHALLENGE CONTENT ⚔️",
     emoji: "⚔️",
   },
   {
     type: "library-upgrade",
-    component: LibraryUpgradeRoom,
+    component: LibraryUpgradeBiome,
     title: "📖 LIBRARY UPGRADE 📖",
     emoji: "📖",
   },
   {
     type: "portal",
-    component: PortalRoom,
-    title: "🌀 PORTAL ROOM 🌀",
+    component: PortalBiome,
+    title: "🌀 PORTAL CONTENT 🌀",
     emoji: "🌀",
     props: (room) => ({ portalDestination: (room as any).portalDestination }),
   },
   {
     type: "arena",
-    component: ArenaRoom,
-    title: "⚔️ ARENA ROOM ⚔️",
+    component: ArenaBiome,
+    title: "⚔️ ARENA CONTENT ⚔️",
     emoji: "⚔️",
   },
   {
     type: "enemy",
-    component: EnemyRoom,
-    title: "👾 ENEMY ROOM 👾",
+    component: EnemyBiome,
+    title: "👾 ENEMY CONTENT 👾",
     emoji: "👾",
   },
   {
     type: "end",
-    component: EndRoom,
-    title: "🏁 END ROOM 🏁",
+    component: EndBiome,
+    title: "🏁 END CONTENT 🏁",
     emoji: "🏁",
   },
   {
     type: "devil-room",
-    component: SpecialRoom,
-    title: "😈 DEVIL ROOM 😈",
+    component: SpecialBiome,
+    title: "😈 DEVIL CONTENT 😈",
     emoji: "😈",
     props: (room) => ({
       roomType: room.type as any,
@@ -166,8 +166,8 @@ const ROOM_CONFIGS: RoomConfig[] = [
   },
   {
     type: "angel-room",
-    component: SpecialRoom,
-    title: "😇 ANGEL ROOM 😇",
+    component: SpecialBiome,
+    title: "😇 ANGEL CONTENT 😇",
     emoji: "😇",
     props: (room) => ({
       roomType: room.type as any,
@@ -178,8 +178,8 @@ const ROOM_CONFIGS: RoomConfig[] = [
   },
   {
     type: "cursed-room",
-    component: SpecialRoom,
-    title: "💀 CURSED ROOM 💀",
+    component: SpecialBiome,
+    title: "💀 CURSED CONTENT 💀",
     emoji: "💀",
     props: (room) => ({
       roomType: room.type as any,
@@ -190,8 +190,8 @@ const ROOM_CONFIGS: RoomConfig[] = [
   },
   {
     type: "secret",
-    component: SpecialRoom,
-    title: "🔍 SECRET ROOM 🔍",
+    component: SpecialBiome,
+    title: "🔍 SECRET CONTENT 🔍",
     emoji: "🔍",
     props: (room) => ({
       roomType: room.type as any,
@@ -517,7 +517,11 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
       position={[roomPosition.x, roomPosition.y, roomPosition.z]}
     >
       {/* Smart Room Floor - automatically chooses correct floor based on room type */}
-      <RoomFloor room={currentRoom} position={[0, -0.5, 0]} isCollidable={true} />
+      <RoomFloor
+        room={currentRoom}
+        position={[0, -0.5, 0]}
+        isCollidable={true}
+      />
 
       {/* Size-based shell(s): if multi-tile, render a shell per tile position */}
       {currentRoom.isMultiTile &&

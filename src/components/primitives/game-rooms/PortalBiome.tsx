@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 import useGameStore from "../../../store/gameStore";
 
-interface PortalRoomProps {
+interface PortalBiomeProps {
   onRewardClaim?: () => void;
   portalDestination?: string;
 }
 
-const PortalRoom: React.FC<PortalRoomProps> = ({
+const PortalBiome: React.FC<PortalBiomeProps> = ({
   onRewardClaim,
   portalDestination,
 }) => {
@@ -243,4 +243,4 @@ const PortalRoom: React.FC<PortalRoomProps> = ({
   );
 };
 
-export default PortalRoom;
+export default PortalBiome;

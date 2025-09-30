@@ -3,11 +3,11 @@ import { Text } from "@react-three/drei";
 import useGameStore from "../../../store/gameStore";
 import { Candle, Crystal, PotionBottle } from "../elements";
 
-interface LibraryUpgradeRoomProps {
+interface LibraryUpgradeBiomeProps {
   onRewardClaim?: () => void;
 }
 
-const LibraryUpgradeRoom: React.FC<LibraryUpgradeRoomProps> = ({
+const LibraryUpgradeBiome: React.FC<LibraryUpgradeBiomeProps> = ({
   onRewardClaim,
 }) => {
   const { upgradeLuck, addPoints, addExperience } = useGameStore();
@@ -239,4 +239,4 @@ const LibraryUpgradeRoom: React.FC<LibraryUpgradeRoomProps> = ({
   );
 };
 
-export default LibraryUpgradeRoom;
+export default LibraryUpgradeBiome;

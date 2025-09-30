@@ -3,11 +3,11 @@ import { Text } from "@react-three/drei";
 import RoomActionCards from "../../RoomActionCards";
 import { useRoomActions } from "../../../hooks/useRoomActions";
 
-interface ChallengeRoomProps {
+interface ChallengeBiomeProps {
   onChallengeStart?: () => void;
 }
 
-const ChallengeRoom: React.FC<ChallengeRoomProps> = ({ onChallengeStart }) => {
+const ChallengeBiome: React.FC<ChallengeBiomeProps> = ({ onChallengeStart }) => {
   const [challengeActive, setChallengeActive] = useState(false);
   const [challengeCompleted, setChallengeCompleted] = useState(false);
 
@@ -173,4 +173,4 @@ const ChallengeRoom: React.FC<ChallengeRoomProps> = ({ onChallengeStart }) => {
   );
 };
 
-export default ChallengeRoom;
+export default ChallengeBiome;

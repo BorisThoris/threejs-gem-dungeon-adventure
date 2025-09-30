@@ -1,11 +1,11 @@
 import React from "react";
 import { Text } from "@react-three/drei";
 
-interface EndRoomProps {
+interface EndBiomeProps {
   onVictory?: () => void;
 }
 
-const EndRoom: React.FC<EndRoomProps> = ({ onVictory }) => {
+const EndBiome: React.FC<EndBiomeProps> = ({ onVictory }) => {
   return (
     <group>
       <mesh position={[0, -0.5, 0]} receiveShadow>
@@ -70,4 +70,4 @@ const EndRoom: React.FC<EndRoomProps> = ({ onVictory }) => {
   );
 };
 
-export default EndRoom;
+export default EndBiome;

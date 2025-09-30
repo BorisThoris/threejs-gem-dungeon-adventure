@@ -6,10 +6,33 @@ import RoomActionCards, { type ActionCard } from "./RoomActionCards";
 
 // Import room components from new structure
 import StartRoom from "./primitives/game-rooms/StartRoom";
-import CoffeeRoom from "./primitives/game-rooms/CoffeeRoom";
-import MeditationRoom from "./primitives/game-rooms/MeditationRoom";
-import LibraryUpgradeRoom from "./primitives/game-rooms/LibraryUpgradeRoom";
+import CoffeeBiome from "./primitives/game-rooms/CoffeeBiome";
+import MeditationBiome from "./primitives/game-rooms/MeditationBiome";
+import LibraryUpgradeBiome from "./primitives/game-rooms/LibraryUpgradeBiome";
+import LibraryBiome from "./primitives/game-rooms/LibraryBiome";
+import ShopBiome from "./primitives/game-rooms/ShopBiome";
+import TreasureBiome from "./primitives/game-rooms/TreasureBiome";
+import PuzzleBiome from "./primitives/game-rooms/PuzzleBiome";
+import BossBiome from "./primitives/game-rooms/BossBiome";
+import ArenaBiome from "./primitives/game-rooms/ArenaBiome";
+import EnemyBiome from "./primitives/game-rooms/EnemyBiome";
+import EndBiome from "./primitives/game-rooms/EndBiome";
+import PortalBiome from "./primitives/game-rooms/PortalBiome";
+import TrapBiome from "./primitives/game-rooms/TrapBiome";
+import CryptBiome from "./primitives/game-rooms/CryptBiome";
+import SpecialBiome from "./primitives/game-rooms/SpecialBiome";
+import ChallengeBiome from "./primitives/game-rooms/ChallengeBiome";
 import MiddleStairsRoom from "./primitives/game-rooms/MiddleStairsRoom";
+import ItemSprite from "./primitives/objects/ItemSprite";
+import DestructibleWall from "./primitives/objects/DestructibleWall";
+import ParticleSystem from "./primitives/objects/ParticleSystem";
+import MosaicCreator from "./primitives/objects/MosaicCreator";
+import Lever from "./primitives/objects/Lever";
+import Altar from "./primitives/objects/Altar";
+import Skeleton from "./primitives/objects/Skeleton";
+import PressurePlate from "./primitives/objects/PressurePlate";
+import Statue from "./primitives/objects/Statue";
+import Switch from "./primitives/objects/Switch";
 import StairsRoom from "./primitives/game-rooms/StairsRoom";
 import RoomFactory from "./primitives/game-rooms/RoomFactory";
 import ShapedShell from "./primitives/game-rooms/ShapedShell";
@@ -61,9 +84,9 @@ const DEMO_ROOM_CONFIGS: RoomConfig[] = [
   {
     type: "component-showcase",
     component: ComponentShowcaseRoom,
-    title: "Component Showcase Room",
+    title: "Component Showcase Demo",
     emoji: "🎨",
-    description: "A room showcasing various components",
+    description: "A demo showcasing various components",
     props: { size: 10 },
     editableProps: [
       {
@@ -79,9 +102,9 @@ const DEMO_ROOM_CONFIGS: RoomConfig[] = [
   {
     type: "clean-breakable",
     component: CleanBreakableRoom,
-    title: "Clean Breakable Room",
+    title: "Clean Breakable Demo",
     emoji: "💥",
-    description: "A room with clean breakable objects",
+    description: "A demo with clean breakable objects",
     props: { size: 10 },
     editableProps: [
       {
@@ -154,10 +177,10 @@ const GAME_ROOM_CONFIGS: RoomConfig[] = [
   },
   {
     type: "coffee",
-    component: CoffeeRoom,
-    title: "Coffee Room",
+    component: CoffeeBiome,
+    title: "Coffee Biome",
     emoji: "☕",
-    description: "A cozy room with coffee and rewards",
+    description: "Coffee environment biome for rooms",
     props: { size: 10 },
     editableProps: [
       {
@@ -172,10 +195,10 @@ const GAME_ROOM_CONFIGS: RoomConfig[] = [
   },
   {
     type: "meditation",
-    component: MeditationRoom,
-    title: "Meditation Room",
+    component: MeditationBiome,
+    title: "Meditation Biome",
     emoji: "🧘",
-    description: "A peaceful room for reflection",
+    description: "Meditation environment biome for rooms",
     props: { size: 10 },
     editableProps: [
       {
@@ -190,10 +213,10 @@ const GAME_ROOM_CONFIGS: RoomConfig[] = [
   },
   {
     type: "library-upgrade",
-    component: LibraryUpgradeRoom,
-    title: "Library Upgrade Room",
+    component: LibraryUpgradeBiome,
+    title: "Library Upgrade Biome",
     emoji: "📚",
-    description: "A room for upgrading your library",
+    description: "Library upgrade environment biome for rooms",
     props: { size: 10 },
     editableProps: [
       {
@@ -280,8 +303,500 @@ const GAME_ROOM_CONFIGS: RoomConfig[] = [
   },
 ];
 
+// Biome configurations
+const BIOME_CONFIGS: RoomConfig[] = [
+  {
+    type: "coffee",
+    component: CoffeeBiome,
+    title: "Coffee Biome",
+    emoji: "☕",
+    description: "Coffee environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "meditation",
+    component: MeditationBiome,
+    title: "Meditation Biome",
+    emoji: "🧘",
+    description: "Meditation environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "library",
+    component: LibraryBiome,
+    title: "Library Biome",
+    emoji: "📚",
+    description: "Library environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "shop",
+    component: ShopBiome,
+    title: "Shop Biome",
+    emoji: "🛒",
+    description: "Shop environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "treasure",
+    component: TreasureBiome,
+    title: "Treasure Biome",
+    emoji: "💰",
+    description: "Treasure environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "puzzle",
+    component: PuzzleBiome,
+    title: "Puzzle Biome",
+    emoji: "🧩",
+    description: "Puzzle environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "boss",
+    component: BossBiome,
+    title: "Boss Biome",
+    emoji: "👹",
+    description: "Boss environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "arena",
+    component: ArenaBiome,
+    title: "Arena Biome",
+    emoji: "⚔️",
+    description: "Arena environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "enemy",
+    component: EnemyBiome,
+    title: "Enemy Biome",
+    emoji: "👾",
+    description: "Enemy environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "end",
+    component: EndBiome,
+    title: "End Biome",
+    emoji: "🏁",
+    description: "End environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "portal",
+    component: PortalBiome,
+    title: "Portal Biome",
+    emoji: "🌀",
+    description: "Portal environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "trap",
+    component: TrapBiome,
+    title: "Trap Biome",
+    emoji: "⚡",
+    description: "Trap environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "crypt",
+    component: CryptBiome,
+    title: "Crypt Biome",
+    emoji: "⚰️",
+    description: "Crypt environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "special",
+    component: SpecialBiome,
+    title: "Special Biome",
+    emoji: "✨",
+    description: "Special environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "challenge",
+    component: ChallengeBiome,
+    title: "Challenge Biome",
+    emoji: "🎯",
+    description: "Challenge environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "library-upgrade",
+    component: LibraryUpgradeBiome,
+    title: "Library Upgrade Biome",
+    emoji: "📖",
+    description: "Library upgrade environment biome for rooms",
+    props: { size: 10 },
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+];
+
 // Object configurations
 const OBJECT_CONFIGS: RoomConfig[] = [
+  {
+    type: "item-sprite",
+    component: ItemSprite,
+    title: "Item Sprite",
+    emoji: "🎯",
+    description: "Interactive item sprite",
+    props: { position: [0, 0, 0], itemType: "coin" },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+      {
+        key: "itemType",
+        label: "Item Type",
+        type: "select",
+        options: ["coin", "gem", "key", "potion"],
+      },
+    ],
+  },
+  {
+    type: "destructible-wall",
+    component: DestructibleWall,
+    title: "Destructible Wall",
+    emoji: "🧱",
+    description: "A wall that can be broken",
+    props: { position: [0, 0, 0], width: 2, height: 3, depth: 0.2 },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+      {
+        key: "width",
+        label: "Width",
+        type: "number",
+        min: 1,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "height",
+        label: "Height",
+        type: "number",
+        min: 1,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "depth",
+        label: "Depth",
+        type: "number",
+        min: 0.1,
+        max: 2,
+        step: 0.1,
+      },
+    ],
+  },
+  {
+    type: "particle-system",
+    component: ParticleSystem,
+    title: "Particle System",
+    emoji: "✨",
+    description: "Particle effects system",
+    props: { position: [0, 0, 0], particleCount: 100 },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+      {
+        key: "particleCount",
+        label: "Particle Count",
+        type: "number",
+        min: 10,
+        max: 1000,
+        step: 10,
+      },
+    ],
+  },
+  {
+    type: "mosaic-creator",
+    component: MosaicCreator,
+    title: "Mosaic Creator",
+    emoji: "🎨",
+    description: "Create beautiful mosaics",
+    props: { position: [0, 0, 0], size: 5 },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+      {
+        key: "size",
+        label: "Size",
+        type: "number",
+        min: 1,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "lever",
+    component: Lever,
+    title: "Lever",
+    emoji: "🎛️",
+    description: "Interactive lever",
+    props: { position: [0, 0, 0] },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+    ],
+  },
+  {
+    type: "altar",
+    component: Altar,
+    title: "Altar",
+    emoji: "⛩️",
+    description: "Mystical altar",
+    props: { position: [0, 0, 0] },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+    ],
+  },
+  {
+    type: "skeleton",
+    component: Skeleton,
+    title: "Skeleton",
+    emoji: "💀",
+    description: "Animated skeleton",
+    props: { position: [0, 0, 0] },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+    ],
+  },
+  {
+    type: "pressure-plate",
+    component: PressurePlate,
+    title: "Pressure Plate",
+    emoji: "⏹️",
+    description: "Pressure-activated plate",
+    props: { position: [0, 0, 0] },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+    ],
+  },
+  {
+    type: "statue",
+    component: Statue,
+    title: "Statue",
+    emoji: "🗿",
+    description: "Decorative statue",
+    props: { position: [0, 0, 0] },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+    ],
+  },
+  {
+    type: "switch",
+    component: Switch,
+    title: "Switch",
+    emoji: "🔘",
+    description: "Interactive switch",
+    props: { position: [0, 0, 0] },
+    editableProps: [
+      {
+        key: "position",
+        label: "Position",
+        type: "vector3",
+      },
+    ],
+  },
+];
+
+// Element configurations
+const ELEMENT_CONFIGS: RoomConfig[] = [
   {
     type: "tile",
     component: Tile,
@@ -772,7 +1287,7 @@ const GridHelper: React.FC = () => {
 // Editor Scene Component
 const EditorScene: React.FC<{
   selectedType: string;
-  selectedCategory: "rooms" | "objects";
+  selectedCategory: "rooms" | "biomes" | "objects" | "elements";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentProps: any;
   showActionCards: boolean;
@@ -789,7 +1304,11 @@ const EditorScene: React.FC<{
       ? activeTab === "demo"
         ? DEMO_ROOM_CONFIGS
         : GAME_ROOM_CONFIGS
-      : OBJECT_CONFIGS;
+      : selectedCategory === "biomes"
+      ? BIOME_CONFIGS
+      : selectedCategory === "objects"
+      ? OBJECT_CONFIGS
+      : ELEMENT_CONFIGS;
   const selectedConfig = configs.find((config) => config.type === selectedType);
 
   if (!selectedConfig) {
@@ -850,8 +1369,14 @@ const ThreeDEditor: React.FC = () => {
   const [selectedType, setSelectedType] = useState(
     urlParams.get("type") || "start"
   );
-  const [selectedCategory, setSelectedCategory] = useState<"rooms" | "objects">(
-    (urlParams.get("category") as "rooms" | "objects") || "rooms"
+  const [selectedCategory, setSelectedCategory] = useState<
+    "rooms" | "biomes" | "objects" | "elements"
+  >(
+    (urlParams.get("category") as
+      | "rooms"
+      | "biomes"
+      | "objects"
+      | "elements") || "rooms"
   );
   const [activeTab, setActiveTab] = useState<"demo" | "game">(
     (urlParams.get("tab") as "demo" | "game") || "game"
@@ -1115,6 +1640,33 @@ const ThreeDEditor: React.FC = () => {
           </button>
           <button
             onClick={() => {
+              setSelectedCategory("biomes");
+              const firstBiome = BIOME_CONFIGS[0];
+              if (firstBiome) {
+                setSelectedType(firstBiome.type);
+              }
+            }}
+            style={{
+              flex: 1,
+              padding: "16px",
+              background:
+                selectedCategory === "biomes" ? "#4CAF50" : "transparent",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "600",
+              transition: "all 0.2s ease",
+              borderBottom:
+                selectedCategory === "biomes"
+                  ? "3px solid #fff"
+                  : "3px solid transparent",
+            }}
+          >
+            🌍 Biomes
+          </button>
+          <button
+            onClick={() => {
               setSelectedCategory("objects");
               const firstObject = OBJECT_CONFIGS[0];
               if (firstObject) {
@@ -1140,6 +1692,33 @@ const ThreeDEditor: React.FC = () => {
           >
             🎯 Objects
           </button>
+          <button
+            onClick={() => {
+              setSelectedCategory("elements");
+              const firstElement = ELEMENT_CONFIGS[0];
+              if (firstElement) {
+                setSelectedType(firstElement.type);
+              }
+            }}
+            style={{
+              flex: 1,
+              padding: "16px",
+              background:
+                selectedCategory === "elements" ? "#4CAF50" : "transparent",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "600",
+              transition: "all 0.2s ease",
+              borderBottom:
+                selectedCategory === "elements"
+                  ? "3px solid #fff"
+                  : "3px solid transparent",
+            }}
+          >
+            🧱 Elements
+          </button>
         </div>
 
         {/* Search Bar */}
@@ -1149,7 +1728,7 @@ const ThreeDEditor: React.FC = () => {
           </h3>
           <input
             type="text"
-            placeholder="Search rooms, objects, or components..."
+            placeholder="Search rooms, biomes, objects, or elements..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -1167,7 +1746,13 @@ const ThreeDEditor: React.FC = () => {
         {/* Item Selection */}
         <div style={{ marginBottom: "20px" }}>
           <h3 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
-            {selectedCategory === "rooms" ? "🏠 Rooms" : "🎯 Objects"}
+            {selectedCategory === "rooms"
+              ? "🏠 Rooms"
+              : selectedCategory === "biomes"
+              ? "🌍 Biomes"
+              : selectedCategory === "objects"
+              ? "🎯 Objects"
+              : "🧱 Elements"}
           </h3>
           <div style={{ maxHeight: "300px", overflowY: "auto" }}>
             {Object.entries(groupedConfigs).map(([baseType, configs]) => (

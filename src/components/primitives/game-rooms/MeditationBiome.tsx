@@ -9,7 +9,7 @@ import { useRoomActions } from "../../../hooks/useRoomActions";
 // All interactions handled through card system
 type MeditationRoomProps = Record<string, never>;
 
-const MeditationRoom: React.FC<MeditationRoomProps> = () => {
+const MeditationBiome: React.FC<MeditationRoomProps> = () => {
   const { upgradeDefense, addPoints, addExperience, addBuff } = useGameStore();
   const [isMeditating, setIsMeditating] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -260,4 +260,4 @@ const MeditationRoom: React.FC<MeditationRoomProps> = () => {
   );
 };
 
-export default MeditationRoom;
+export default MeditationBiome;

@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 import useGameStore from "../../../store/gameStore";
 
-interface ArenaRoomProps {
+interface ArenaBiomeProps {
   onRewardClaim?: () => void;
 }
 
-const ArenaRoom: React.FC<ArenaRoomProps> = ({ onRewardClaim }) => {
+const ArenaBiome: React.FC<ArenaBiomeProps> = ({ onRewardClaim }) => {
   const { addPoints, addExperience, addBuff } = useGameStore();
   const [isFighting, setIsFighting] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -298,4 +298,4 @@ const ArenaRoom: React.FC<ArenaRoomProps> = ({ onRewardClaim }) => {
   );
 };
 
-export default ArenaRoom;
+export default ArenaBiome;

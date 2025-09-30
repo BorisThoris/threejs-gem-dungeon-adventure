@@ -6,52 +6,21 @@ import Chest from "../elements/Chest";
 import Skeleton from "../objects/Skeleton";
 import Altar from "../objects/Altar";
 
-export interface CryptRoomProps {
+export interface CryptBiomeProps {
   size?: number;
   onRoomComplete?: () => void;
 }
 
-const CryptRoom: React.FC<CryptRoomProps> = ({ size = 10, onRoomComplete }) => {
+const CryptBiome: React.FC<CryptBiomeProps> = ({
+  size = 10,
+  onRoomComplete,
+}) => {
   return (
     <group>
       <RigidBody type="fixed" position={[0, -0.5, 0]}>
         <mesh>
           <boxGeometry args={[size, 1, size]} />
           <meshLambertMaterial color="#2C2C2C" />
-        </mesh>
-      </RigidBody>
-
-      {/* Walls */}
-      <RigidBody type="fixed" position={[0, size / 2, size / 2]}>
-        <mesh>
-          <boxGeometry args={[size, size, 1]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[0, size / 2, -size / 2]}>
-        <mesh>
-          <boxGeometry args={[size, size, 1]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[size / 2, size / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1, size, size]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[-size / 2, size / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1, size, size]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-
-      {/* Ceiling */}
-      <RigidBody type="fixed" position={[0, size, 0]}>
-        <mesh>
-          <boxGeometry args={[size, 1, size]} />
-          <meshLambertMaterial color="#0F0F0F" />
         </mesh>
       </RigidBody>
 
@@ -94,4 +63,4 @@ const CryptRoom: React.FC<CryptRoomProps> = ({ size = 10, onRoomComplete }) => {
   );
 };
 
-export default CryptRoom;
+export default CryptBiome;

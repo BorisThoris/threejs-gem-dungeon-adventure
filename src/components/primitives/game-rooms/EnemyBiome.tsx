@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 
-interface EnemyRoomProps {
+interface EnemyBiomeProps {
   onCombatStart?: () => void;
 }
 
-const EnemyRoom: React.FC<EnemyRoomProps> = ({ onCombatStart }) => {
+const EnemyBiome: React.FC<EnemyBiomeProps> = ({ onCombatStart }) => {
   const [enemyDefeated, setEnemyDefeated] = useState(false);
 
   return (
@@ -98,4 +98,4 @@ const EnemyRoom: React.FC<EnemyRoomProps> = ({ onCombatStart }) => {
   );
 };
 
-export default EnemyRoom;
+export default EnemyBiome;

@@ -10,11 +10,11 @@ import {
   BreakablePotionBottle,
 } from "../elements";
 
-interface CoffeeRoomProps {
+interface CoffeeBiomeProps {
   onRewardClaim?: () => void;
 }
 
-const CoffeeRoom: React.FC<CoffeeRoomProps> = ({ onRewardClaim }) => {
+const CoffeeBiome: React.FC<CoffeeBiomeProps> = ({ onRewardClaim }) => {
   // Use refs instead of React state to prevent re-renders
   const coffeesDrunk = useRef(0);
   const isAnimating = useRef(false);
@@ -175,4 +175,4 @@ const CoffeeRoom: React.FC<CoffeeRoomProps> = ({ onRewardClaim }) => {
   );
 };
 
-export default CoffeeRoom;
+export default CoffeeBiome;

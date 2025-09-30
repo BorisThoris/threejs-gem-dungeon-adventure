@@ -3,11 +3,11 @@ import { Text } from "@react-three/drei";
 import RoomActionCards from "../../RoomActionCards";
 import { useRoomActions } from "../../../hooks/useRoomActions";
 
-interface TreasureRoomProps {
+interface TreasureBiomeProps {
   onTreasureOpen?: () => void;
 }
 
-const TreasureRoom: React.FC<TreasureRoomProps> = ({ onTreasureOpen }) => {
+const TreasureBiome: React.FC<TreasureBiomeProps> = ({ onTreasureOpen }) => {
   const [treasureOpened, setTreasureOpened] = useState(false);
 
   const { cards, isVisible, showCards, hideCards } = useRoomActions({
@@ -139,4 +139,4 @@ const TreasureRoom: React.FC<TreasureRoomProps> = ({ onTreasureOpen }) => {
   );
 };
 
-export default TreasureRoom;
+export default TreasureBiome;

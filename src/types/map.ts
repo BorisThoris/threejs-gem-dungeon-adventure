@@ -53,7 +53,14 @@ export interface Room {
 }
 
 export const RoomType = {
+  // True Rooms - Complete rooms with walls/shells
   START: 'start',
+  CORRIDOR: 'corridor',
+  COLOSSEUM: 'colosseum',
+  STAIRS: 'stairs',
+  MIDDLE_STAIRS: 'middle-stairs',
+  
+  // Biomes - Environmental segments/areas placed inside rooms
   END: 'end',
   NORMAL: 'normal',
   TREASURE: 'treasure',
@@ -61,7 +68,7 @@ export const RoomType = {
   PUZZLE: 'puzzle',
   BOSS: 'boss',
   SECRET: 'secret',
-  // Enhanced room types from React Native game
+  // Enhanced biome types from React Native game
   MEMORY_CHAMBER: 'memory-chamber',
   SHOP: 'shop',
   TRAP: 'trap',
@@ -70,16 +77,14 @@ export const RoomType = {
   CURSED_ROOM: 'cursed-room',
   DEVIL_ROOM: 'devil-room',
   ANGEL_ROOM: 'angel-room',
-  // Upgrade rooms
+  // Upgrade biomes
   BENCH_PRESS: 'bench-press',
   COFFEE: 'coffee',
   LIBRARY_UPGRADE: 'library-upgrade',
   MEDITATION: 'meditation',
-  // New advanced room types
+  // New advanced biome types
   PORTAL: 'portal',
   ARENA: 'arena',
-  CORRIDOR: 'corridor',
-  COLOSSEUM: 'colosseum',
   LABORATORY: 'laboratory',
   OBSERVATORY: 'observatory',
   VAULT: 'vault',

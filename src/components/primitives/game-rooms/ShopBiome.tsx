@@ -3,11 +3,11 @@ import { Text } from "@react-three/drei";
 import RoomActionCards from "../../RoomActionCards";
 import { useRoomActions } from "../../../hooks/useRoomActions";
 
-interface ShopRoomProps {
+interface ShopBiomeProps {
   onShopOpen?: () => void;
 }
 
-const ShopRoom: React.FC<ShopRoomProps> = ({ onShopOpen }) => {
+const ShopBiome: React.FC<ShopBiomeProps> = ({ onShopOpen }) => {
   const [shopOpen, setShopOpen] = useState(false);
 
   const { cards, isVisible, showCards, hideCards } = useRoomActions({
@@ -117,4 +117,4 @@ const ShopRoom: React.FC<ShopRoomProps> = ({ onShopOpen }) => {
   );
 };
 
-export default ShopRoom;
+export default ShopBiome;

@@ -8,12 +8,12 @@ import Switch from "../objects/Switch";
 import Statue from "../objects/Statue";
 import Door from "../elements/Door";
 
-export interface PuzzleRoomProps {
+export interface PuzzleBiomeProps {
   size?: number;
   onRoomComplete?: () => void;
 }
 
-const PuzzleRoom: React.FC<PuzzleRoomProps> = ({
+const PuzzleBiome: React.FC<PuzzleBiomeProps> = ({
   size = 12,
   onRoomComplete,
 }) => {
@@ -68,40 +68,6 @@ const PuzzleRoom: React.FC<PuzzleRoomProps> = ({
         <mesh>
           <boxGeometry args={[size, 1, size]} />
           <meshLambertMaterial color="#2C2C2C" />
-        </mesh>
-      </RigidBody>
-
-      {/* Walls */}
-      <RigidBody type="fixed" position={[0, size / 2, size / 2]}>
-        <mesh>
-          <boxGeometry args={[size, size, 1]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[0, size / 2, -size / 2]}>
-        <mesh>
-          <boxGeometry args={[size, size, 1]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[size / 2, size / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1, size, size]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-      <RigidBody type="fixed" position={[-size / 2, size / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1, size, size]} />
-          <meshLambertMaterial color="#1A1A1A" />
-        </mesh>
-      </RigidBody>
-
-      {/* Ceiling */}
-      <RigidBody type="fixed" position={[0, size, 0]}>
-        <mesh>
-          <boxGeometry args={[size, 1, size]} />
-          <meshLambertMaterial color="#0F0F0F" />
         </mesh>
       </RigidBody>
 
@@ -217,4 +183,4 @@ const PuzzleRoom: React.FC<PuzzleRoomProps> = ({
   );
 };
 
-export default PuzzleRoom;
+export default PuzzleBiome;

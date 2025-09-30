@@ -4,14 +4,14 @@ import { Text } from "@react-three/drei";
 import type { Item } from "../../../types/map";
 import ItemSprite from "../objects/ItemSprite";
 
-interface SpecialRoomProps {
+interface SpecialBiomeProps {
   roomType: "devil-room" | "angel-room" | "cursed-room" | "secret";
   items: Item[];
   onItemInteraction: (item: Item) => void;
   onRoomEnter: () => void;
 }
 
-const SpecialRoom: React.FC<SpecialRoomProps> = ({
+const SpecialBiome: React.FC<SpecialBiomeProps> = ({
   roomType,
   items,
   onItemInteraction,
@@ -426,4 +426,4 @@ const SpecialRoom: React.FC<SpecialRoomProps> = ({
   );
 };
 
-export default SpecialRoom;
+export default SpecialBiome;

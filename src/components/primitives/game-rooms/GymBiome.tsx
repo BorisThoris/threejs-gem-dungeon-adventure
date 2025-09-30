@@ -8,7 +8,7 @@ import { useRoomActions } from "../../../hooks/useRoomActions";
 // All interactions handled through card system
 type BenchPressRoomProps = Record<string, never>;
 
-const BenchPressRoom: React.FC<BenchPressRoomProps> = () => {
+const GymBiome: React.FC<BenchPressRoomProps> = () => {
   const { upgradeStrength, addPoints, addExperience, addBuff } = useGameStore();
   const [hasLifted, setHasLifted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -175,4 +175,4 @@ const BenchPressRoom: React.FC<BenchPressRoomProps> = () => {
   );
 };
 
-export default BenchPressRoom;
+export default GymBiome;

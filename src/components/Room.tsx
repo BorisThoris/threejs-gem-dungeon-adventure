@@ -10,21 +10,21 @@ import type { Room as RoomType, Item } from "../types/map";
 import { RoomType as RoomTypeValues } from "../types/map";
 import ItemSprite from "./primitives/objects/ItemSprite";
 import PuzzleGrid from "./PuzzleGrid";
-import TreasureRoom from "./primitives/game-rooms/TreasureRoom";
-import ShopRoom from "./primitives/game-rooms/ShopRoom";
-import PuzzleRoom from "./primitives/game-rooms/PuzzleRoom";
-import SpecialRoom from "./primitives/game-rooms/SpecialRoom";
-import LibraryRoom from "./primitives/game-rooms/LibraryRoom";
-import BenchPressRoom from "./primitives/game-rooms/BenchPressRoom";
-import CoffeeRoom from "./primitives/game-rooms/CoffeeRoom";
-import LibraryUpgradeRoom from "./primitives/game-rooms/LibraryUpgradeRoom";
-import MeditationRoom from "./primitives/game-rooms/MeditationRoom";
-import PortalRoom from "./primitives/game-rooms/PortalRoom";
-import ArenaRoom from "./primitives/game-rooms/ArenaRoom";
-import BossRoom from "./primitives/game-rooms/BossRoom";
+import TreasureBiome from "./primitives/game-rooms/TreasureBiome";
+import ShopBiome from "./primitives/game-rooms/ShopBiome";
+import PuzzleBiome from "./primitives/game-rooms/PuzzleBiome";
+import SpecialBiome from "./primitives/game-rooms/SpecialBiome";
+import LibraryBiome from "./primitives/game-rooms/LibraryBiome";
+import GymBiome from "./primitives/game-rooms/GymBiome";
+import CoffeeBiome from "./primitives/game-rooms/CoffeeBiome";
+import LibraryUpgradeBiome from "./primitives/game-rooms/LibraryUpgradeBiome";
+import MeditationBiome from "./primitives/game-rooms/MeditationBiome";
+import PortalBiome from "./primitives/game-rooms/PortalBiome";
+import ArenaBiome from "./primitives/game-rooms/ArenaBiome";
+import BossBiome from "./primitives/game-rooms/BossBiome";
 import StartRoom from "./primitives/game-rooms/StartRoom";
-import EndRoom from "./primitives/game-rooms/EndRoom";
-import EnemyRoom from "./primitives/game-rooms/EnemyRoom";
+import EndBiome from "./primitives/game-rooms/EndBiome";
+import EnemyBiome from "./primitives/game-rooms/EnemyBiome";
 import RoomInteraction from "./RoomInteraction";
 // import Door from "./Door"; // DISABLED FOR NOW
 import DestructibleWall from "./primitives/objects/DestructibleWall";
@@ -461,12 +461,12 @@ const Room: React.FC<RoomProps> = ({
       {/* Enhanced Room Features - Always render all specialized rooms */}
       <>
         {/* Specialized Room Types */}
-        {room.type === RoomTypeValues.TREASURE && <TreasureRoom />}
+        {room.type === RoomTypeValues.TREASURE && <TreasureBiome />}
 
-        {room.type === RoomTypeValues.SHOP && <ShopRoom />}
+        {room.type === RoomTypeValues.SHOP && <ShopBiome />}
 
         {room.type === RoomTypeValues.PUZZLE && (room as any).puzzle && (
-          <PuzzleRoom
+          <PuzzleBiome
             puzzle={(room as any).puzzle}
             onPuzzleComplete={() => {
               console.log("Puzzle completed!");
@@ -479,7 +479,7 @@ const Room: React.FC<RoomProps> = ({
           room.type === RoomTypeValues.ANGEL_ROOM ||
           room.type === RoomTypeValues.CURSED_ROOM ||
           room.type === RoomTypeValues.SECRET) && (
-          <SpecialRoom
+          <SpecialBiome
             roomType={room.type as any}
             items={(room as any).items || []}
             onItemInteraction={(item) => {
@@ -494,32 +494,32 @@ const Room: React.FC<RoomProps> = ({
         )}
 
         {room.type === RoomTypeValues.LIBRARY && (
-          <LibraryRoom books={(room as any).books || []} />
+          <LibraryBiome books={(room as any).books || []} />
         )}
 
         {/* Upgrade Rooms - All interactions through card system */}
-        {room.type === RoomTypeValues.BENCH_PRESS && <BenchPressRoom />}
+        {room.type === RoomTypeValues.BENCH_PRESS && <GymBiome />}
 
-        {room.type === RoomTypeValues.COFFEE && <CoffeeRoom />}
+        {room.type === RoomTypeValues.COFFEE && <CoffeeBiome />}
 
-        {room.type === RoomTypeValues.LIBRARY_UPGRADE && <LibraryUpgradeRoom />}
+        {room.type === RoomTypeValues.LIBRARY_UPGRADE && <LibraryUpgradeBiome />}
 
-        {room.type === RoomTypeValues.MEDITATION && <MeditationRoom />}
+        {room.type === RoomTypeValues.MEDITATION && <MeditationBiome />}
 
         {/* New Advanced Room Types - All interactions through card system */}
         {room.type === RoomTypeValues.PORTAL && (
-          <PortalRoom portalDestination={room.portalDestination} />
+          <PortalBiome portalDestination={room.portalDestination} />
         )}
 
-        {room.type === RoomTypeValues.ARENA && <ArenaRoom />}
+        {room.type === RoomTypeValues.ARENA && <ArenaBiome />}
 
-        {room.type === RoomTypeValues.BOSS && <BossRoom />}
+        {room.type === RoomTypeValues.BOSS && <BossBiome />}
 
         {room.type === RoomTypeValues.START && <StartRoom />}
 
-        {room.type === RoomTypeValues.END && <EndRoom />}
+        {room.type === RoomTypeValues.END && <EndBiome />}
 
-        {room.type === RoomTypeValues.ENEMY && <EnemyRoom />}
+        {room.type === RoomTypeValues.ENEMY && <EnemyBiome />}
 
         {/* Fallback for other room types */}
         {![

@@ -3,6 +3,14 @@ import useGameStore from "../store/gameStore";
 import type { ActionCard } from "../components/RoomActionCards";
 
 export type RoomType = 
+  // True Rooms - Complete rooms with walls/shells
+  | "start"
+  | "corridor"
+  | "colosseum"
+  | "stairs"
+  | "middle-stairs"
+  
+  // Biomes - Environmental segments/areas placed inside rooms
   | "meditation" 
   | "benchpress" 
   | "library" 
@@ -12,7 +20,6 @@ export type RoomType =
   | "challenge" 
   | "arena" 
   | "boss"
-  | "start"
   | "end"
   | "normal"
   | "enemy"
