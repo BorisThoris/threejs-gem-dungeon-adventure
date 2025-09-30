@@ -471,7 +471,6 @@ const MiddleStairsRoom: React.FC<MiddleStairsRoomProps> = ({
 
   return (
     <group>
-      {/* Custom Floor Tiles */}
       {renderFloorTiles()}
 
       {/* Floor Opening - only for middle and top positions */}

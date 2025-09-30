@@ -31,7 +31,6 @@ const BossRoom: React.FC<BossRoomProps> = ({ size = 15, onRoomComplete }) => {
 
   return (
     <group>
-      {/* Floor */}
       <RigidBody type="fixed" position={[0, -0.5, 0]}>
         <mesh>
           <boxGeometry args={[size, 1, size]} />

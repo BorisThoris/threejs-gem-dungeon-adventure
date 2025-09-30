@@ -1,6 +1,6 @@
 import React from "react";
 import { RigidBody } from "@react-three/rapier";
-import { Wall, Ceiling, Tile } from "../elements";
+import { Wall, Ceiling, Tile, Floor } from "../elements";
 
 type ShapeType =
   | "square"
@@ -24,24 +24,23 @@ const ShapedShell: React.FC<ShapedShellProps> = ({
   colorWall = "#8B4513",
 }) => {
   if (shape === "circle") {
-    const radius = size * 0.48;
     return (
       <group>
-        {/* Floor (square collider for stability) */}
-        <RigidBody type="fixed" colliders="cuboid">
-          <mesh position={[0, -0.5, 0]} receiveShadow>
-            <boxGeometry args={[size, 1, size]} />
-            <meshLambertMaterial color={colorFloor} />
-          </mesh>
-        </RigidBody>
-        {/* Visual circular top */}
-        <mesh position={[0, 0, 0]} receiveShadow>
-          <cylinderGeometry args={[radius, radius, 0.1, 48]} />
-          <meshStandardMaterial color={colorFloor} />
-        </mesh>
+        {/* Floor using new Floor component */}
+        <Floor
+          position={[0, -0.5, 0]}
+          size={size}
+          height={1}
+          shape="circle"
+          color={colorFloor}
+          material="stone"
+          pattern="smooth"
+          isCollidable={true}
+          receiveShadow={true}
+        />
         {/* Ring wall */}
         <mesh position={[0, 2, 0]} castShadow>
-          <torusGeometry args={[radius, 0.4, 12, 96]} />
+          <torusGeometry args={[size * 0.48, 0.4, 12, 96]} />
           <meshStandardMaterial color={colorWall} />
         </mesh>
       </group>
@@ -68,20 +67,18 @@ const ShapedShell: React.FC<ShapedShellProps> = ({
 
     return (
       <group>
-        {/* Floor collider */}
-        <RigidBody type="fixed" colliders="cuboid">
-          <mesh position={[0, -0.5, 0]} receiveShadow>
-            <boxGeometry args={[size, 1, size]} />
-            <meshLambertMaterial color={colorFloor} />
-          </mesh>
-        </RigidBody>
-        {/* Visual center plate */}
-        <mesh position={[0, 0, 0]} receiveShadow>
-          <cylinderGeometry
-            args={[radius * 0.95, radius * 0.95, 0.1, Math.max(12, sides * 6)]}
-          />
-          <meshStandardMaterial color={colorFloor} />
-        </mesh>
+        {/* Floor using new Floor component */}
+        <Floor
+          position={[0, -0.5, 0]}
+          size={size}
+          height={1}
+          shape={shape as any}
+          color={colorFloor}
+          material="stone"
+          pattern="smooth"
+          isCollidable={true}
+          receiveShadow={true}
+        />
 
         {/* Segmented walls */}
         <RigidBody type="fixed" colliders="cuboid">
@@ -110,15 +107,17 @@ const ShapedShell: React.FC<ShapedShellProps> = ({
   // Default: square room
   return (
     <group>
-      {/* Floor using Tile component */}
-      <Tile
+      {/* Floor using new Floor component */}
+      <Floor
         position={[0, -0.5, 0]}
         size={size}
         height={1}
+        shape="square"
         color={colorFloor}
         material="stone"
         pattern="smooth"
         isCollidable={true}
+        receiveShadow={true}
       />
 
       {/* Walls using Wall component */}

@@ -7,7 +7,7 @@ import { useGameState } from "../../../hooks/useGameState";
 import { gameEvents, GAME_EVENTS } from "../../../utils/gameEvents";
 import { useDoorInteraction } from "../../../hooks/useDoorInteraction";
 import type { Room } from "../../../types/map";
-import { BreakableCeiling } from "../elements";
+import { BreakableCeiling, RoomFloor } from "../elements";
 import { calculateDoorPositionFromEntryPoints } from "../../../utils/doorPositionFromEntryPoint";
 
 // Import all room content components
@@ -516,6 +516,9 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
       ref={roomRef}
       position={[roomPosition.x, roomPosition.y, roomPosition.z]}
     >
+      {/* Smart Room Floor - automatically chooses correct floor based on room type */}
+      <RoomFloor room={currentRoom} position={[0, -0.5, 0]} isCollidable={true} />
+
       {/* Size-based shell(s): if multi-tile, render a shell per tile position */}
       {currentRoom.isMultiTile &&
       currentRoom.tilePositions &&

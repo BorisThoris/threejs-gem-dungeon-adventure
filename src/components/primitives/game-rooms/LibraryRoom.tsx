@@ -39,13 +39,6 @@ const LibraryRoom: React.FC<LibraryRoomProps> = ({ books }) => {
 
   return (
     <group>
-      {/* Library Floor - Simple platform */}
-      <RigidBody type="fixed" colliders="trimesh">
-        <mesh position={[0, -0.5, 0]}>
-          <boxGeometry args={[8, 0.2, 8]} />
-          <meshLambertMaterial color="#8B4513" />
-        </mesh>
-      </RigidBody>
 
       {/* Bookshelves */}
       {Array.from({ length: 4 }).map((_, i) => {

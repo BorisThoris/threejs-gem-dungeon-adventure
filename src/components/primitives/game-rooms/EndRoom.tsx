@@ -8,7 +8,6 @@ interface EndRoomProps {
 const EndRoom: React.FC<EndRoomProps> = ({ onVictory }) => {
   return (
     <group>
-      {/* End Floor */}
       <mesh position={[0, -0.5, 0]} receiveShadow>
         <boxGeometry args={[8, 1, 8]} />
         <meshStandardMaterial color="#F44336" />

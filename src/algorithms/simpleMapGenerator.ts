@@ -7,6 +7,7 @@ import {
   findAvailableEntryPoint,
   connectEntryPoints,
 } from '../utils/entryPointGenerator';
+import { ensureRoomConnectivity, analyzeConnectivity } from '../utils/roomConnectivityValidator';
 
 export interface SimpleMapConfig extends MapConfig {
   useShapedRooms: boolean;
@@ -92,14 +93,28 @@ export class SimpleMapGenerator {
     if ((this.config.useThemes ?? true)) {
       this.assignThemes();
     }
+    
+    // Enhanced connectivity check and repair
     this.ensureConnectivity();
     
     const endRoom = this.rooms.find(room => room.type === RoomType.END) || this.createEndRoom();
     
-    return {
+    // Final connectivity validation using the new system
+    const map = {
+      id: `map_${Date.now()}`,
       rooms: this.rooms,
       startRoomId: this.rooms[0].id,
-      endRoomId: endRoom.id
+      endRoomId: endRoom.id,
+      config: this.config,
+      generatedAt: Date.now(),
+    };
+    
+    const finalMap = ensureRoomConnectivity(map);
+    
+    return {
+      rooms: finalMap.rooms,
+      startRoomId: finalMap.startRoomId,
+      endRoomId: finalMap.endRoomId
     };
   }
 
@@ -352,6 +367,8 @@ export class SimpleMapGenerator {
   }
 
   private ensureConnectivity(): void {
+    console.log('🔗 SimpleMapGenerator: Starting connectivity check...');
+    
     const visited = new Set<string>();
     const queue = [this.rooms[0].id];
     
@@ -371,7 +388,7 @@ export class SimpleMapGenerator {
     
     console.log(`SimpleMapGenerator: Visited ${visited.size} rooms during connectivity check`);
     
-    // Connect unvisited rooms
+    // Connect unvisited rooms with enhanced connection types
     const unvisited = this.rooms.filter(r => !visited.has(r.id));
     console.log(`SimpleMapGenerator: Found ${unvisited.length} unvisited rooms`);
     
@@ -384,20 +401,32 @@ export class SimpleMapGenerator {
           return roomDist < closestDist ? current : closest;
         });
       
+      // Determine connection type based on room properties
+      const connectionType = this.determineConnectionType(room, closestRoom);
+      
       if (!room.connections.includes(closestRoom.id)) {
         room.connections.push(closestRoom.id);
-        console.log(`SimpleMapGenerator: Connected unvisited room ${room.id} to ${closestRoom.id}`);
+        console.log(`SimpleMapGenerator: Connected unvisited room ${room.id} to ${closestRoom.id} (${connectionType})`);
       }
       if (!closestRoom.connections.includes(room.id)) {
         closestRoom.connections.push(room.id);
-        console.log(`SimpleMapGenerator: Connected ${closestRoom.id} to unvisited room ${room.id}`);
+        console.log(`SimpleMapGenerator: Connected ${closestRoom.id} to unvisited room ${room.id} (${connectionType})`);
       }
+      
+      // Update entry points for the connection
+      this.updateEntryPointsForConnection(room, closestRoom, connectionType);
+      
       visited.add(room.id);
     }
     
     // Final connectivity check
     const startRoom = this.rooms[0];
     console.log(`SimpleMapGenerator: Final start room connections:`, startRoom.connections);
+    
+    // Log final connectivity statistics
+    const totalConnections = this.rooms.reduce((sum, room) => sum + room.connections.length, 0);
+    const avgConnections = totalConnections / this.rooms.length;
+    console.log(`SimpleMapGenerator: Average connections per room: ${avgConnections.toFixed(2)}`);
   }
 
   private getGridPosition(position: Position): Position {
@@ -405,6 +434,74 @@ export class SimpleMapGenerator {
       x: Math.round(position.x / this.config.roomSize) + this.startX,
       z: Math.round(position.z / this.config.roomSize) + this.startZ
     };
+  }
+
+  private determineConnectionType(room1: Room, room2: Room): 'door' | 'breakable_wall' | 'portal' | 'corridor' {
+    const room1Type = room1.type.toLowerCase();
+    const room2Type = room2.type.toLowerCase();
+    
+    // Portal connections for mystical or special rooms
+    if (room1Type.includes('portal') || room2Type.includes('portal') ||
+        room1Type.includes('mystical') || room2Type.includes('mystical') ||
+        room1.theme === 'mystical' || room2.theme === 'mystical') {
+      return 'portal';
+    }
+    
+    // Breakable wall for dungeon or challenging rooms
+    if (room1Type.includes('dungeon') || room2Type.includes('dungeon') ||
+        room1Type.includes('challenge') || room2Type.includes('challenge') ||
+        room1Type.includes('boss') || room2Type.includes('boss') ||
+        room1.theme === 'dungeon' || room2.theme === 'dungeon') {
+      return 'breakable_wall';
+    }
+    
+    // Corridor for connecting different areas
+    if (room1Type.includes('corridor') || room2Type.includes('corridor')) {
+      return 'corridor';
+    }
+    
+    // Default to door
+    return 'door';
+  }
+
+  private updateEntryPointsForConnection(
+    room1: Room, 
+    room2: Room, 
+    connectionType: 'door' | 'breakable_wall' | 'portal' | 'corridor'
+  ): void {
+    if (!room1.entryPoints || !room2.entryPoints) return;
+    
+    const direction = this.getDirectionBetweenRooms(room1, room2);
+    const oppositeDirection = getOppositeDirection(direction);
+    
+    // Find entry points in the correct directions
+    const room1Entry = room1.entryPoints.find(ep => ep.direction === direction);
+    const room2Entry = room2.entryPoints.find(ep => ep.direction === oppositeDirection);
+    
+    if (room1Entry && room2Entry) {
+      // Connect the entry points
+      connectEntryPoints(room1Entry, room2Entry);
+      
+      // Set the connection type
+      const entryType = connectionType === 'breakable_wall' ? 'door' : 
+                       connectionType === 'portal' ? 'portal' : 'door';
+      
+      room1Entry.type = entryType;
+      room2Entry.type = entryType;
+      
+      console.log(`SimpleMapGenerator: Updated entry points for ${room1.id} <-> ${room2.id} (${connectionType})`);
+    }
+  }
+
+  private getDirectionBetweenRooms(room1: Room, room2: Room): EntryDirection {
+    const dx = room2.position.x - room1.position.x;
+    const dz = room2.position.z - room1.position.z;
+    
+    if (Math.abs(dx) > Math.abs(dz)) {
+      return dx > 0 ? 'east' : 'west';
+    } else {
+      return dz > 0 ? 'south' : 'north';
+    }
   }
 
   private createRoomAt(x: number, z: number, type: string): Room {

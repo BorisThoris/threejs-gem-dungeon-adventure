@@ -5,6 +5,8 @@ export { default as Wall } from './Wall';
 export { default as Ceiling } from './Ceiling';
 export { default as Stair } from './Stair';
 export { default as Handrail } from './Handrail';
+export { default as Floor } from './Floor';
+export { default as RoomFloor } from './RoomFloor';
 export * from './RoomElements';
 
 // All breakable elements using universal wrapper

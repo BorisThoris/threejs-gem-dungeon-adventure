@@ -455,7 +455,6 @@ const StairsRoom: React.FC<StairsRoomProps> = ({
 
   return (
     <group>
-      {/* Custom Floor Tiles */}
       {renderFloorTiles()}
 
       {/* Custom Ceiling Tiles */}

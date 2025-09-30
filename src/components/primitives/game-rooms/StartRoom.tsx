@@ -10,18 +10,6 @@ interface StartRoomProps {
 const StartRoom: React.FC<StartRoomProps> = ({ onJourneyBegin }) => {
   return (
     <group>
-      {/* Start Floor */}
-      <BreakableTile
-        position={[0, -0.5, 0]}
-        size={8}
-        height={1}
-        color="#4CAF50"
-        material="stone"
-        pattern="smooth"
-        isCollidable={true}
-        enabled={false}
-      />
-
       {/* Start Platform */}
       <BreakableTile
         position={[0, 0.1, 0]}

@@ -10,7 +10,6 @@ const EnemyRoom: React.FC<EnemyRoomProps> = ({ onCombatStart }) => {
 
   return (
     <group>
-      {/* Enemy Floor */}
       <mesh position={[0, -0.5, 0]} receiveShadow>
         <boxGeometry args={[8, 1, 8]} />
         <meshStandardMaterial color="#FF5722" />

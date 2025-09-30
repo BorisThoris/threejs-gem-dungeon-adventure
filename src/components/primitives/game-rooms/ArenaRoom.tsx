@@ -37,7 +37,6 @@ const ArenaRoom: React.FC<ArenaRoomProps> = ({ onRewardClaim }) => {
 
   return (
     <group>
-      {/* Arena Floor */}
       <mesh position={[0, -0.5, 0]} receiveShadow>
         <boxGeometry args={[12, 1, 12]} />
         <meshStandardMaterial color="#2a2a2a" />

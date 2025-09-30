@@ -64,7 +64,6 @@ const PuzzleRoom: React.FC<PuzzleRoomProps> = ({
 
   return (
     <group>
-      {/* Floor */}
       <RigidBody type="fixed" position={[0, -0.5, 0]}>
         <mesh>
           <boxGeometry args={[size, 1, size]} />

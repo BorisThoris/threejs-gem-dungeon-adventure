@@ -20,11 +20,6 @@ const TreasureRoom: React.FC<TreasureRoomProps> = ({ onTreasureOpen }) => {
 
   return (
     <group>
-      {/* Treasure Floor */}
-      <mesh position={[0, -0.5, 0]} receiveShadow>
-        <boxGeometry args={[8, 1, 8]} />
-        <meshStandardMaterial color="#2F4F4F" />
-      </mesh>
 
       {/* Treasure Chest */}
       <group position={[0, 0, 0]}>

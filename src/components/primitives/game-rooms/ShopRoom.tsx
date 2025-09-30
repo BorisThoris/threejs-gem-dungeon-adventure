@@ -20,11 +20,6 @@ const ShopRoom: React.FC<ShopRoomProps> = ({ onShopOpen }) => {
 
   return (
     <group>
-      {/* Shop Floor */}
-      <mesh position={[0, -0.5, 0]} receiveShadow>
-        <boxGeometry args={[8, 1, 8]} />
-        <meshStandardMaterial color="#8B4513" />
-      </mesh>
 
       {/* Shop Counter */}
       <group position={[0, 0, 0]}>

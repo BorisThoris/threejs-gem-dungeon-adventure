@@ -97,7 +97,6 @@ const SpecialRoom: React.FC<SpecialRoomProps> = ({
 
   return (
     <group>
-      {/* Room Floor */}
       <RigidBody type="fixed" colliders="trimesh">
         <mesh position={[0, -0.5, 0]}>
           <boxGeometry args={[10, 0.2, 10]} />
