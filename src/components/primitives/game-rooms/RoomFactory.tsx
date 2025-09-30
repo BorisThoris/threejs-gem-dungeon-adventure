@@ -8,6 +8,7 @@ import { gameEvents, GAME_EVENTS } from "../../../utils/gameEvents";
 import { useDoorInteraction } from "../../../hooks/useDoorInteraction";
 import type { Room } from "../../../types/map";
 import { BreakableCeiling } from "../elements";
+import { calculateDoorPositionFromEntryPoints } from "../../../utils/doorPositionFromEntryPoint";
 
 // Import all room content components
 import StartRoom from "./StartRoom";
@@ -425,21 +426,29 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
   // Prepare door data for keyboard interaction
   const doorData =
     currentRoom?.connections
-      ?.map((connectionId) => {
+      ?.map((connectionId, index) => {
         const targetRoom = currentMap?.rooms.find((r) => r.id === connectionId);
         if (!targetRoom) return null;
 
-        const doorPosition = calculateDoorPosition(
+        // Use entry point system for door position
+        const doorPositionFromEntry = calculateDoorPositionFromEntryPoints(
           currentRoom!,
-          targetRoom,
-          roomSize
+          connectionId,
+          index
         );
-        const spacedPosition = addDoorSpacing(
-          doorPosition,
-          0, // For keyboard interaction, we'll use the first door position
-          currentRoom!.connections.length,
-          roomSize
-        );
+
+        // Fallback to old system if needed
+        const doorPosition =
+          doorPositionFromEntry ||
+          calculateDoorPosition(currentRoom!, targetRoom, roomSize);
+        const spacedPosition = doorPositionFromEntry
+          ? doorPosition
+          : addDoorSpacing(
+              doorPosition,
+              0,
+              currentRoom!.connections.length,
+              roomSize
+            );
 
         return {
           id: connectionId,
@@ -557,20 +566,28 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
               return null;
             }
 
-            // Calculate door position based on relative position of target room
-            const doorPosition = calculateDoorPosition(
+            // Calculate door position using entry points system
+            // This ensures doors align properly with hallways and room connections
+            const doorPositionFromEntry = calculateDoorPositionFromEntryPoints(
               currentRoom,
-              targetRoom,
-              roomSize
+              connectionId,
+              index
             );
 
-            // Add spacing for multiple doors on same wall
-            const spacedPosition = addDoorSpacing(
-              doorPosition,
-              index,
-              currentRoom.connections.length,
-              roomSize
-            );
+            // Fallback to old system if entry points not available
+            const doorPosition =
+              doorPositionFromEntry ||
+              calculateDoorPosition(currentRoom, targetRoom, roomSize);
+
+            // Add spacing for multiple doors on same wall (only if using fallback)
+            const spacedPosition = doorPositionFromEntry
+              ? doorPosition
+              : addDoorSpacing(
+                  doorPosition,
+                  index,
+                  currentRoom.connections.length,
+                  roomSize
+                );
 
             // Debug logging
             console.log(
@@ -582,6 +599,7 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
                 targetPos: `${targetRoom.position.x}, ${targetRoom.position.z}`,
                 doorPos: spacedPosition.pos,
                 doorRot: spacedPosition.rot,
+                usingEntryPoints: !!doorPositionFromEntry,
               }
             );
 

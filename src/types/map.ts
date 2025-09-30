@@ -3,6 +3,19 @@ export interface Position {
   z: number;
 }
 
+// Entry point direction
+export type EntryDirection = 'north' | 'south' | 'east' | 'west';
+
+// Entry point for rooms - defines where doors/hallways can connect
+export interface EntryPoint {
+  id: string; // Unique ID for this entry point
+  direction: EntryDirection; // Which wall/side it's on
+  position: Position; // Local position relative to room center
+  connectedTo?: string; // ID of the entry point it connects to (in another room)
+  type?: 'door' | 'corridor' | 'portal'; // Type of connection
+  isActive?: boolean; // Whether this entry point is currently in use
+}
+
 export interface Room {
   id: string;
   position: Position;
@@ -14,6 +27,8 @@ export interface Room {
   // Enhanced room properties
   items?: Item[]; // Demo items for special rooms
   specialProperties?: Record<string, unknown>; // Special room properties
+  // Entry point system for proper room/hallway alignment
+  entryPoints?: EntryPoint[]; // Available entry/exit points for this room
   // New advanced properties
   shape?: 'square' | 'circle' | 'triangle' | 'hexagon' | 'octagon' | 'diamond' | 'star' | 'cross' | 'spiral';
   width?: number; // For non-square rooms

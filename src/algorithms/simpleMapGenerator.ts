@@ -1,5 +1,12 @@
-import type { Room, Position, MapConfig, Item, ItemEffect } from '../types/map';
+import type { Room, Position, MapConfig, Item, ItemEffect, EntryDirection } from '../types/map';
 import { RoomType } from '../types/map';
+import {
+  generateEntryPoints,
+  getOppositeDirection,
+  getDirectionBetweenRooms,
+  findAvailableEntryPoint,
+  connectEntryPoints,
+} from '../utils/entryPointGenerator';
 
 export interface SimpleMapConfig extends MapConfig {
   useShapedRooms: boolean;
@@ -118,6 +125,8 @@ export class SimpleMapGenerator {
       level: 1,
       items: this.getItemsForRoomType(RoomType.START),
       specialProperties: this.getSpecialPropertiesForRoomType(RoomType.START),
+      // Generate entry points for start room
+      entryPoints: generateEntryPoints('start', RoomType.START, 'circle', this.config.roomSize),
     };
     
     this.rooms.push(startRoom);
@@ -407,8 +416,14 @@ export class SimpleMapGenerator {
     const width = dims.width * scale;
     const height = dims.height * scale;
 
+    const roomId = `room_${this.roomIdCounter++}`;
+    
+    // Assign default shape by type if applicable
+    const typeShape = this.getShapeForType(type);
+    const shape = typeShape || 'square';
+
     const room: Room = {
-      id: `room_${this.roomIdCounter++}`,
+      id: roomId,
       position: { x: (x - this.startX) * this.config.roomSize, z: (z - this.startZ) * this.config.roomSize },
       type,
       connections: [],
@@ -420,10 +435,10 @@ export class SimpleMapGenerator {
       height,
       items: this.getItemsForRoomType(type),
       specialProperties: this.getSpecialPropertiesForRoomType(type),
+      shape: shape as any,
+      // Generate entry points based on room shape and type
+      entryPoints: generateEntryPoints(roomId, type, shape, this.config.roomSize),
     };
-    // Assign default shape by type if applicable
-    const typeShape = this.getShapeForType(type);
-    if (typeShape) room.shape = typeShape as any;
     
     this.rooms.push(room);
     this.grid[x][z] = room;
@@ -479,11 +494,41 @@ export class SimpleMapGenerator {
   }
 
   private connectRooms(room1: Room, room2: Room): void {
+    // Add to connections list (for backward compatibility)
     if (!room1.connections.includes(room2.id)) {
       room1.connections.push(room2.id);
     }
     if (!room2.connections.includes(room1.id)) {
       room2.connections.push(room1.id);
+    }
+
+    // Connect via entry points for proper alignment
+    const room1GridPos = this.getGridPosition(room1.position);
+    const room2GridPos = this.getGridPosition(room2.position);
+    
+    // Determine the direction from room1 to room2
+    const directionToRoom2 = getDirectionBetweenRooms(
+      room1GridPos.x,
+      room1GridPos.z,
+      room2GridPos.x,
+      room2GridPos.z
+    );
+
+    if (directionToRoom2 && room1.entryPoints && room2.entryPoints) {
+      // Find available entry point in room1 facing room2
+      const room1Entry = findAvailableEntryPoint(room1, directionToRoom2);
+      
+      // Find available entry point in room2 facing room1 (opposite direction)
+      const oppositeDirection = getOppositeDirection(directionToRoom2);
+      const room2Entry = findAvailableEntryPoint(room2, oppositeDirection);
+
+      // Connect the entry points if both are available
+      if (room1Entry && room2Entry) {
+        connectEntryPoints(room1Entry, room2Entry);
+        console.log(
+          `Connected entry points: ${room1.id}[${directionToRoom2}] <-> ${room2.id}[${oppositeDirection}]`
+        );
+      }
     }
   }
 
@@ -523,8 +568,9 @@ export class SimpleMapGenerator {
   }
 
   private createEndRoom(): Room {
+    const endRoomId = `room_end_${Date.now()}`;
     const endRoom: Room = {
-      id: `room_end_${Date.now()}`,
+      id: endRoomId,
       position: { x: 0, z: this.config.roomSize * 3 },
       type: RoomType.END,
       connections: [],
@@ -533,6 +579,8 @@ export class SimpleMapGenerator {
       isCurrent: false,
       items: this.getItemsForRoomType(RoomType.END),
       specialProperties: this.getSpecialPropertiesForRoomType(RoomType.END),
+      // Generate entry points for end room
+      entryPoints: generateEntryPoints(endRoomId, RoomType.END, 'square', this.config.roomSize),
     };
     
     this.rooms.push(endRoom);
