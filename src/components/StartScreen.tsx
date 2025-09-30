@@ -11,19 +11,11 @@ import PauseMenu from "./PauseMenu";
 import EventDrivenActionCards from "./EventDrivenActionCards";
 import RoomDetectionDebugger from "./RoomDetectionDebugger";
 import SharedNavigation from "./SharedNavigation";
-import CleanBreakableRoom from "./primitives/demo-rooms/CleanBreakableRoom";
-import OptionalBreakingDemo from "./primitives/demo-rooms/OptionalBreakingDemo";
-import AllBreakableDemo from "./primitives/demo-rooms/AllBreakableDemo";
-import UniversalBreakableDemo from "./primitives/demo-rooms/UniversalBreakableDemo";
 import { ThemeSelector, ThemePreview } from "../themes";
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
 import { uiEvents, UI_EVENTS } from "../utils/uiEvents";
-import {
-  BreakingProvider,
-  useBreakingContext,
-} from "../contexts/BreakingContext";
 
 // First-person controls handled by FirstPersonPlayer component
 
@@ -65,166 +57,8 @@ const SafetyFloor: React.FC = () => {
   );
 };
 
-// Breaking System Demo Component
-const BreakingDemo: React.FC<{
-  showBreakableRoom: boolean;
-  setShowBreakableRoom: (show: boolean) => void;
-  showOptionalBreaking: boolean;
-  setShowOptionalBreaking: (show: boolean) => void;
-  showAllBreakable: boolean;
-  setShowAllBreakable: (show: boolean) => void;
-  showUniversalBreakable: boolean;
-  setShowUniversalBreakable: (show: boolean) => void;
-}> = ({
-  showBreakableRoom,
-  setShowBreakableRoom,
-  showOptionalBreaking,
-  setShowOptionalBreaking,
-  showAllBreakable,
-  setShowAllBreakable,
-  showUniversalBreakable,
-  setShowUniversalBreakable,
-}) => {
-  const { globalBreakingEnabled, toggleGlobalBreaking } = useBreakingContext();
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "20px",
-        left: "20px",
-        background: "rgba(0,0,0,0.8)",
-        color: "white",
-        padding: "15px",
-        borderRadius: "8px",
-        border: "1px solid rgba(255,255,255,0.2)",
-        zIndex: 1000,
-      }}
-    >
-      <h3 style={{ margin: "0 0 10px 0", color: "#4CAF50" }}>
-        💥 Breaking Systems
-      </h3>
-      <p style={{ margin: "0 0 10px 0", fontSize: "12px", color: "#ccc" }}>
-        Try different breaking systems!
-      </p>
-
-      {/* Global Breaking Toggle */}
-      <div
-        style={{
-          marginBottom: "10px",
-          padding: "8px",
-          background: "rgba(255,255,255,0.1)",
-          borderRadius: "4px",
-        }}
-      >
-        <button
-          onClick={toggleGlobalBreaking}
-          style={{
-            padding: "8px 16px",
-            background: globalBreakingEnabled ? "#FF5722" : "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "bold",
-            width: "100%",
-          }}
-        >
-          🌍 Global Breaking: {globalBreakingEnabled ? "ON" : "OFF"}
-        </button>
-        <p
-          style={{
-            margin: "5px 0 0 0",
-            fontSize: "10px",
-            color: "#ccc",
-            textAlign: "center",
-          }}
-        >
-          Toggle breaking for ALL 3D objects in the game
-        </p>
-      </div>
-
-      {/* Breaking System Demo Buttons */}
-      <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-        <button
-          onClick={() => setShowBreakableRoom(!showBreakableRoom)}
-          style={{
-            padding: "5px 10px",
-            background: showBreakableRoom ? "#E91E63" : "#9C27B0",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "11px",
-          }}
-        >
-          {showBreakableRoom
-            ? "🏠 Hide Breakable Room"
-            : "🏠 Show Breakable Room"}
-        </button>
-        <button
-          onClick={() => setShowOptionalBreaking(!showOptionalBreaking)}
-          style={{
-            padding: "5px 10px",
-            background: showOptionalBreaking ? "#FF5722" : "#FF9800",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "11px",
-          }}
-        >
-          {showOptionalBreaking
-            ? "⚙️ Hide Optional Breaking"
-            : "⚙️ Show Optional Breaking"}
-        </button>
-        <button
-          onClick={() => setShowAllBreakable(!showAllBreakable)}
-          style={{
-            padding: "5px 10px",
-            background: showAllBreakable ? "#8BC34A" : "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "11px",
-          }}
-        >
-          {showAllBreakable ? "🏆 Hide All Breakable" : "🏆 Show All Breakable"}
-        </button>
-        <button
-          onClick={() => setShowUniversalBreakable(!showUniversalBreakable)}
-          style={{
-            padding: "5px 10px",
-            background: showUniversalBreakable ? "#9C27B0" : "#673AB7",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "11px",
-          }}
-        >
-          {showUniversalBreakable
-            ? "🌍 Hide Universal Breaking"
-            : "🌍 Show Universal Breaking"}
-        </button>
-      </div>
-    </div>
-  );
-};
-
 // Main Scene Component
-const GhostScene: React.FC<{
-  showBreakableRoom: boolean;
-  showOptionalBreaking: boolean;
-  showAllBreakable: boolean;
-  showUniversalBreakable: boolean;
-}> = ({
-  showBreakableRoom,
-  showOptionalBreaking,
-  showAllBreakable,
-  showUniversalBreakable,
-}) => {
+const GhostScene: React.FC = () => {
   return (
     <>
       {/* Environment */}
@@ -260,34 +94,6 @@ const GhostScene: React.FC<{
 
         {/* Safety catch floor (invisible) */}
         <SafetyFloor />
-
-        {/* Clean Breaking System Demo */}
-        {showBreakableRoom && (
-          <group position={[0, 0, 0]}>
-            <CleanBreakableRoom />
-          </group>
-        )}
-
-        {/* Optional Breaking System Demo */}
-        {showOptionalBreaking && (
-          <group position={[0, 0, 0]}>
-            <OptionalBreakingDemo />
-          </group>
-        )}
-
-        {/* All Breakable Objects Demo */}
-        {showAllBreakable && (
-          <group position={[0, 0, 0]}>
-            <AllBreakableDemo />
-          </group>
-        )}
-
-        {/* Universal Breaking Demo */}
-        {showUniversalBreakable && (
-          <group position={[0, 0, 0]}>
-            <UniversalBreakableDemo />
-          </group>
-        )}
       </Physics>
     </>
   );
@@ -305,11 +111,6 @@ const StartScreenContent: React.FC = () => {
   const { inventory, useItem: consumeItem } = useGameStore();
   const { generateMap, currentMap } = useMapStore();
   const [isPaused, setIsPaused] = React.useState(false);
-  const [showBreakableRoom, setShowBreakableRoom] = React.useState(false);
-  const [showOptionalBreaking, setShowOptionalBreaking] = React.useState(false);
-  const [showAllBreakable, setShowAllBreakable] = React.useState(false);
-  const [showUniversalBreakable, setShowUniversalBreakable] =
-    React.useState(false);
 
   // Initialize DOM UI manager
   React.useEffect(() => {
@@ -481,12 +282,7 @@ const StartScreenContent: React.FC = () => {
                 };
               }}
             >
-              <GhostScene
-                showBreakableRoom={showBreakableRoom}
-                showOptionalBreaking={showOptionalBreaking}
-                showAllBreakable={showAllBreakable}
-                showUniversalBreakable={showUniversalBreakable}
-              />
+              <GhostScene />
             </Canvas>
           );
         })()}
@@ -526,29 +322,13 @@ const StartScreenContent: React.FC = () => {
         <ThemePreview />
       </div>
 
-      {/* Breaking System Demo */}
-      <BreakingDemo
-        showBreakableRoom={showBreakableRoom}
-        setShowBreakableRoom={setShowBreakableRoom}
-        showOptionalBreaking={showOptionalBreaking}
-        setShowOptionalBreaking={setShowOptionalBreaking}
-        showAllBreakable={showAllBreakable}
-        setShowAllBreakable={setShowAllBreakable}
-        showUniversalBreakable={showUniversalBreakable}
-        setShowUniversalBreakable={setShowUniversalBreakable}
-      />
-
       {/* UI is now handled by DOM UI Manager - no React re-renders */}
     </div>
   );
 };
 
 const StartScreen: React.FC = () => {
-  return (
-    <BreakingProvider>
-      <StartScreenContent />
-    </BreakingProvider>
-  );
+  return <StartScreenContent />;
 };
 
 export default StartScreen;
