@@ -30,7 +30,6 @@ import EndBiome from "./primitives/game-rooms/EndBiome";
 import EnemyBiome from "./primitives/game-rooms/EnemyBiome";
 import RoomInteraction from "./RoomInteraction";
 // import Door from "./Door"; // DISABLED FOR NOW
-import DestructibleWall from "./primitives/objects/DestructibleWall";
 import RoomDecorator from "./primitives/elements/RoomDecorator";
 import { loadTextureFromImage } from "../utils/textureUtils";
 
@@ -233,11 +232,11 @@ const Room: React.FC<RoomProps> = ({
     switch (type) {
       case RoomTypeValues.START:
       case RoomTypeValues.END:
-        return 0.2;
+        return 0.5;
       case RoomTypeValues.BOSS:
-        return 0.3;
+        return 0.6;
       default:
-        return 0.1;
+        return 0.4;
     }
   };
 
@@ -799,22 +798,6 @@ const Room: React.FC<RoomProps> = ({
             })}
           </>
         )} */}
-
-        {/* Destructible Walls */}
-        {Math.random() > 0.8 && ( // 20% chance of having destructible walls
-          <>
-            <DestructibleWall
-              position={[4, 1.5, 0]}
-              rotation={[0, Math.PI / 2, 0]}
-              bombRequired={Math.random() > 0.5}
-            />
-            <DestructibleWall
-              position={[-4, 1.5, 0]}
-              rotation={[0, -Math.PI / 2, 0]}
-              bombRequired={Math.random() > 0.5}
-            />
-          </>
-        )}
       </>
     </group>
   );

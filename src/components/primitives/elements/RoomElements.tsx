@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Text } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 // Torch Component
@@ -9,6 +10,18 @@ export const Torch: React.FC<{
   onPrototypeAction?: (action: string, data?: any) => void;
 }> = ({ position, prototypeId, onPrototypeAction }) => {
   const [isLit, setIsLit] = useState(true);
+  const lightRef = useRef<THREE.PointLight>(null);
+
+  // Flickering animation
+  useFrame((state) => {
+    if (isLit && lightRef.current) {
+      const flickerIntensity =
+        1.5 +
+        Math.sin(state.clock.elapsedTime * 15) * 0.3 +
+        Math.sin(state.clock.elapsedTime * 23) * 0.2;
+      lightRef.current.intensity = Math.max(0.5, flickerIntensity);
+    }
+  });
 
   return (
     <group position={position}>
@@ -21,21 +34,59 @@ export const Torch: React.FC<{
       {/* Torch Head */}
       <mesh position={[0, 1.1, 0]} castShadow>
         <sphereGeometry args={[0.15]} />
-        <meshStandardMaterial color="#8B4513" />
+        <meshStandardMaterial
+          color="#8B4513"
+          emissive={isLit ? "#ff4500" : "#000000"}
+          emissiveIntensity={isLit ? 0.2 : 0}
+        />
       </mesh>
 
       {/* Flame */}
       {isLit && (
-        <mesh position={[0, 1.3, 0]}>
-          <coneGeometry args={[0.1, 0.3, 6]} />
-          <meshStandardMaterial
-            color="#FF4500"
-            emissive="#FF4500"
-            emissiveIntensity={0.5}
-            transparent
-            opacity={0.8}
-          />
-        </mesh>
+        <>
+          {/* Inner flame */}
+          <mesh position={[0, 1.3, 0]}>
+            <coneGeometry args={[0.08, 0.25, 6]} />
+            <meshStandardMaterial
+              color="#ffaa00"
+              emissive="#ffaa00"
+              emissiveIntensity={0.8}
+              transparent
+              opacity={0.9}
+            />
+          </mesh>
+
+          {/* Outer flame */}
+          <mesh position={[0, 1.35, 0]}>
+            <coneGeometry args={[0.12, 0.3, 6]} />
+            <meshStandardMaterial
+              color="#ff4500"
+              emissive="#ff4500"
+              emissiveIntensity={0.4}
+              transparent
+              opacity={0.6}
+            />
+          </mesh>
+
+          {/* Flame glow effect */}
+          <mesh position={[0, 1.4, 0]}>
+            <coneGeometry args={[0.15, 0.4, 6]} />
+            <meshStandardMaterial color="#ff6600" transparent opacity={0.3} />
+          </mesh>
+        </>
+      )}
+
+      {/* Point Light for illumination */}
+      {isLit && (
+        <pointLight
+          ref={lightRef}
+          position={[0, 1.2, 0]}
+          color="#ffaa00"
+          intensity={1.5}
+          distance={6}
+          decay={2}
+          castShadow
+        />
       )}
 
       {/* Click to toggle */}
@@ -65,13 +116,29 @@ export const Candle: React.FC<{
   meshRef?: React.RefObject<THREE.Group>;
 }> = ({ position, prototypeId, onPrototypeAction, meshRef }) => {
   const [isLit, setIsLit] = useState(true);
+  const lightRef = useRef<THREE.PointLight>(null);
+
+  // Flickering animation
+  useFrame((state) => {
+    if (isLit && lightRef.current) {
+      const flickerIntensity =
+        0.8 +
+        Math.sin(state.clock.elapsedTime * 12) * 0.2 +
+        Math.sin(state.clock.elapsedTime * 18) * 0.15;
+      lightRef.current.intensity = Math.max(0.3, flickerIntensity);
+    }
+  });
 
   return (
     <group ref={meshRef} position={position}>
       {/* Candle Base */}
       <mesh position={[0, 0.1, 0]} castShadow>
         <cylinderGeometry args={[0.08, 0.08, 0.2]} />
-        <meshStandardMaterial color="#F5F5DC" />
+        <meshStandardMaterial
+          color="#F5F5DC"
+          emissive={isLit ? "#ffaa00" : "#000000"}
+          emissiveIntensity={isLit ? 0.1 : 0}
+        />
       </mesh>
 
       {/* Candle Wick */}
@@ -82,16 +149,50 @@ export const Candle: React.FC<{
 
       {/* Flame */}
       {isLit && (
-        <mesh position={[0, 0.3, 0]}>
-          <sphereGeometry args={[0.03]} />
-          <meshStandardMaterial
-            color="#FFD700"
-            emissive="#FFD700"
-            emissiveIntensity={0.8}
-            transparent
-            opacity={0.9}
-          />
-        </mesh>
+        <>
+          {/* Inner flame */}
+          <mesh position={[0, 0.32, 0]}>
+            <sphereGeometry args={[0.025]} />
+            <meshStandardMaterial
+              color="#ffaa00"
+              emissive="#ffaa00"
+              emissiveIntensity={0.9}
+              transparent
+              opacity={0.95}
+            />
+          </mesh>
+
+          {/* Outer flame */}
+          <mesh position={[0, 0.35, 0]}>
+            <sphereGeometry args={[0.035]} />
+            <meshStandardMaterial
+              color="#ff6600"
+              emissive="#ff6600"
+              emissiveIntensity={0.5}
+              transparent
+              opacity={0.7}
+            />
+          </mesh>
+
+          {/* Flame glow effect */}
+          <mesh position={[0, 0.38, 0]}>
+            <sphereGeometry args={[0.045]} />
+            <meshStandardMaterial color="#ff4400" transparent opacity={0.4} />
+          </mesh>
+        </>
+      )}
+
+      {/* Point Light for illumination */}
+      {isLit && (
+        <pointLight
+          ref={lightRef}
+          position={[0, 0.3, 0]}
+          color="#ffaa00"
+          intensity={0.8}
+          distance={4}
+          decay={2}
+          castShadow
+        />
       )}
 
       {/* Click to toggle */}

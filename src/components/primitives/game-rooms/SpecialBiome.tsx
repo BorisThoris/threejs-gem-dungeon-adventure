@@ -3,6 +3,7 @@ import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import type { Item } from "../../../types/map";
 import ItemSprite from "../objects/ItemSprite";
+import AdvancedMinecraftSign from "../elements/AdvancedMinecraftSign";
 
 interface SpecialBiomeProps {
   roomType: "devil-room" | "angel-room" | "cursed-room" | "secret";
@@ -204,26 +205,16 @@ const SpecialBiome: React.FC<SpecialBiomeProps> = ({
           />
         ))}
 
-      {/* Room Title - Large visible sign with text */}
-      <mesh position={[0, 4, 0]}>
-        <boxGeometry args={[6, 1, 0.5]} />
-        <meshBasicMaterial color={theme.accentColor} />
-      </mesh>
-
-      {/* Room Title Text - Using proper 3D Text component */}
-      <Text
-        position={[0, 4, 0.3]}
-        fontSize={1.5}
-        color="#FFFFFF"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.05}
-        outlineColor="#000000"
-        strokeWidth={0.02}
-        strokeColor="#000000"
-      >
-        {theme.title}
-      </Text>
+      {/* Room Title - Minecraft Style Sign */}
+      <AdvancedMinecraftSign
+        position={[0, 2, 0]}
+        lines={[theme.title]}
+        textColor="#FFFFFF"
+        signColor={theme.accentColor}
+        fontSize={0.4}
+        scale={[1.5, 1.5, 1.5]}
+        glowEffect={true}
+      />
 
       {/* Room Type Indicator - Different shapes for each room type */}
       {roomType === "devil-room" && (

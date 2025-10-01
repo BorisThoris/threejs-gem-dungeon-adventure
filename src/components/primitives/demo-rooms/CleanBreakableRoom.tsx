@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
+import AdvancedMinecraftSign from "../elements/AdvancedMinecraftSign";
 import {
   BreakableTile,
   BreakableWall,
@@ -422,69 +423,58 @@ const CleanBreakableRoom: React.FC<CleanBreakableRoomProps> = ({
         onFragmentClick={handleFragmentClick}
       />
 
-      {/* Instructions */}
-      <group position={[0, 3, 0]}>
-        <Text
-          position={[0, 0, 0]}
-          fontSize={0.3}
-          color="white"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          Controls: Click objects to break them into interactive fragments
-        </Text>
-        <Text
-          position={[0, -0.5, 0]}
-          fontSize={0.25}
-          color="cyan"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          B: toggle breaking | R: reset room | Click fragments to break further
-        </Text>
-        <Text
-          position={[0, -1, 0]}
+      {/* Instructions - Minecraft Style Signs */}
+      <group position={[0, 2, 0]}>
+        <AdvancedMinecraftSign
+          position={[-3, 0, 0]}
+          lines={["CONTROLS:", "Click objects to break", "them into fragments"]}
+          textColor="#FFFFFF"
+          signColor="#8B4513"
           fontSize={0.2}
-          color="yellow"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          Check console for debug info
-        </Text>
+          scale={[1, 1, 1]}
+        />
+
+        <AdvancedMinecraftSign
+          position={[0, 0, 0]}
+          lines={["KEYBOARD:", "B: toggle breaking", "R: reset room"]}
+          textColor="#00FFFF"
+          signColor="#654321"
+          fontSize={0.2}
+          scale={[1, 1, 1]}
+        />
+
+        <AdvancedMinecraftSign
+          position={[3, 0, 0]}
+          lines={["DEBUG:", "Check console for", "debug information"]}
+          textColor="#FFFF00"
+          signColor="#8B7355"
+          fontSize={0.2}
+          scale={[1, 1, 1]}
+        />
       </group>
 
       {brokenObjects.length >= totalObjects && (
-        <Text
+        <AdvancedMinecraftSign
           position={[0, 4, 0]}
-          fontSize={0.6}
-          color="gold"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.05}
-          outlineColor="#000000"
-        >
-          🎉 ROOM COMPLETE! 🎉
-        </Text>
+          lines={["🎉 ROOM COMPLETE! 🎉"]}
+          textColor="#FFD700"
+          signColor="#8B4513"
+          fontSize={0.4}
+          scale={[1.5, 1.5, 1.5]}
+          glowEffect={true}
+        />
       )}
 
       {showResetMessage && (
-        <Text
+        <AdvancedMinecraftSign
           position={[0, 4.5, 0]}
-          fontSize={0.5}
-          color="lime"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.05}
-          outlineColor="#000000"
-        >
-          🔄 ROOM RESET! 🔄
-        </Text>
+          lines={["🔄 ROOM RESET! 🔄"]}
+          textColor="#00FF00"
+          signColor="#654321"
+          fontSize={0.35}
+          scale={[1.3, 1.3, 1.3]}
+          glowEffect={true}
+        />
       )}
 
       {/* Reset Button */}

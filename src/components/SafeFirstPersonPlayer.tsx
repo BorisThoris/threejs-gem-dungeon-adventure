@@ -10,6 +10,7 @@ import { useMouseLook } from "../hooks/useMouseLook";
 import { refBasedGameState } from "../utils/refBasedGameState";
 import { useSimpleSafeSpawn } from "../hooks/useSimpleSafeSpawn";
 import { Text } from "@react-three/drei";
+import usePlayerMovementStore from "../store/playerMovementStore";
 
 interface ArmsRef {
   switchAnimation: (toMagic: boolean) => void;
@@ -30,6 +31,7 @@ export function SafeFirstPersonPlayer({
   const isMouseDown = useRef(false);
   const keys = usePhysicalKeyboard();
   const { camera } = useThree();
+  const { isMovementEnabled, isTransitioning } = usePlayerMovementStore();
   const { findSafeSpawnPosition } = useSimpleSafeSpawn({
     maxAttempts: 100,
     searchRadius: 25,
@@ -120,7 +122,7 @@ export function SafeFirstPersonPlayer({
 
       // Update camera position and rotation
       camera.position.copy(newPosition);
-      camera.position.y += 1.6; // Eye level offset
+      camera.position.y += 1.0; // Eye level offset (reduced from 1.6)
       camera.rotation.copy(newRotation);
       camera.updateMatrixWorld(true);
     };
@@ -141,6 +143,16 @@ export function SafeFirstPersonPlayer({
 
     // Update ref-based game state (no React re-renders)
     refBasedGameState.update();
+
+    // Check if movement is enabled (frozen during transitions)
+    if (!isMovementEnabled) {
+      // Stop any existing movement
+      if (ref.current) {
+        const velocity = ref.current.linvel();
+        ref.current.setLinvel({ x: 0, y: velocity.y, z: 0 }, true);
+      }
+      return;
+    }
 
     const { forward, backward, left, right, dash } = {
       forward: keys["KeyW"] || keys["ArrowUp"] || false,
@@ -202,8 +214,8 @@ export function SafeFirstPersonPlayer({
 
       const armsPosition = new Vector3()
         .copy(camera.position)
-        .add(cameraDirection.multiplyScalar(0.3))
-        .add(new Vector3(0, -0.2, 0));
+        .add(cameraDirection.multiplyScalar(0.2))
+        .add(new Vector3(0, -0.3, 0));
 
       armsRef.current.position.copy(armsPosition);
       armsRef.current.quaternion.copy(camera.quaternion);

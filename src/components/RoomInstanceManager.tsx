@@ -2,8 +2,10 @@ import React, { useEffect } from "react";
 import * as THREE from "three";
 import useRoomManagerStore from "../store/roomManagerStore";
 import useMapStore from "../store/mapStore";
+import usePlayerMovementStore from "../store/playerMovementStore";
 import RoomInstanceRenderer from "./RoomInstanceRenderer";
 import Door from "./Door";
+import RoomTransitionEffect from "./RoomTransitionEffect";
 
 interface RoomInstanceManagerProps {
   playerPosition?: [number, number, number];
@@ -18,6 +20,8 @@ const RoomInstanceManager: React.FC<RoomInstanceManagerProps> = ({
     useRoomManagerStore();
 
   const { currentMap, generateMap } = useMapStore();
+  const { isTransitioning, transitionProgress, fromRoomId, toRoomId } =
+    usePlayerMovementStore();
 
   // Initialize map and load start room
   useEffect(() => {
@@ -38,7 +42,7 @@ const RoomInstanceManager: React.FC<RoomInstanceManagerProps> = ({
         if (startRoom) {
           const roomSize = startRoom.size || 10;
           // Spawn player in center of room, slightly above floor
-          const spawnPosition = new THREE.Vector3(0, 1.6, 0);
+          const spawnPosition = new THREE.Vector3(0, 0.5, 0);
           const spawnRotation = new THREE.Euler(0, 0, 0); // Face forward
 
           // Add a small delay to ensure room is fully loaded
@@ -183,6 +187,14 @@ const RoomInstanceManager: React.FC<RoomInstanceManagerProps> = ({
           />
         );
       })}
+
+      {/* Room Transition Effect */}
+      <RoomTransitionEffect
+        isTransitioning={isTransitioning}
+        fromRoomId={fromRoomId}
+        toRoomId={toRoomId}
+        progress={transitionProgress}
+      />
     </group>
   );
 };

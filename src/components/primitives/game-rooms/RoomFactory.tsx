@@ -9,6 +9,8 @@ import { useDoorInteraction } from "../../../hooks/useDoorInteraction";
 import type { Room } from "../../../types/map";
 import { BreakableCeiling, RoomFloor } from "../elements";
 import { calculateDoorPositionFromEntryPoints } from "../../../utils/doorPositionFromEntryPoint";
+import AdvancedMinecraftSign from "../elements/AdvancedMinecraftSign";
+import MinecraftSign from "../elements/MinecraftSign";
 
 // Import all room content components
 import StartRoom from "./StartRoom";
@@ -375,18 +377,15 @@ const Door: React.FC<{
         {roomConfig?.emoji || "🚪"} DOOR
       </Text>
 
-      {/* Room type text below */}
-      <Text
-        position={[0, 0.8, 0.15]}
-        fontSize={0.2}
-        color="#cccccc"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.01}
-        outlineColor="#000000"
-      >
-        {targetRoomType.toUpperCase()}
-      </Text>
+      {/* Room type sign below */}
+      <MinecraftSign
+        position={[0, 0.5, 0.2]}
+        text={targetRoomType.toUpperCase()}
+        textColor="#FFFFFF"
+        signColor="#654321"
+        fontSize={0.15}
+        scale={[0.8, 0.8, 0.8]}
+      />
     </group>
   );
 };
@@ -631,18 +630,16 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
       {/* Room-specific content - Render actual room components */}
       <roomConfig.component {...roomProps} />
 
-      {/* Room Title */}
-      <Text
-        position={[0, 3, 0]}
-        fontSize={0.8}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.05}
-        outlineColor="#000000"
-      >
-        {roomConfig.title}
-      </Text>
+      {/* Room Title - Minecraft Style Sign */}
+      <AdvancedMinecraftSign
+        position={[0, 2, 0]}
+        lines={[roomConfig.title]}
+        textColor="#FFFFFF"
+        signColor="#8B4513"
+        fontSize={0.3}
+        scale={[1.2, 1.2, 1.2]}
+        glowEffect={true}
+      />
     </group>
   );
 };

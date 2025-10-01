@@ -590,7 +590,7 @@ export class SimpleMapGenerator {
   }
 
   private createEndRoom(): Room {
-    const endRoomId = `room_end_${Date.now()}`;
+    const endRoomId = `room_${this.roomIdCounter++}`;
     const endRoom: Room = {
       id: endRoomId,
       position: { x: 0, z: this.config.roomSize * 3 },

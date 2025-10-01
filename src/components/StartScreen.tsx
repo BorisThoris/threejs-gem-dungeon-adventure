@@ -20,6 +20,7 @@ import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
 import { uiEvents, UI_EVENTS } from "../utils/uiEvents";
+import GameInitializer from "./GameInitializer";
 
 // First-person controls handled by FirstPersonPlayer component
 
@@ -86,7 +87,7 @@ const GhostScene: React.FC = () => {
 
         {/* Safe First Person Player */}
         <SafeFirstPersonPlayer
-          initialSpawnPosition={[0, 1, 0]}
+          initialSpawnPosition={[0, 0.5, 0]}
           showDebugInfo={true}
         />
 
@@ -269,9 +270,11 @@ const StartScreenContent: React.FC = () => {
 
 const StartScreen: React.FC = () => {
   return (
-    <WallToggleProvider>
-      <StartScreenContent />
-    </WallToggleProvider>
+    <GameInitializer>
+      <WallToggleProvider>
+        <StartScreenContent />
+      </WallToggleProvider>
+    </GameInitializer>
   );
 };
 

@@ -35,9 +35,12 @@ const Brazier: React.FC<BrazierProps> = ({
     }
 
     if (isLit && lightRef.current) {
-      // Flickering light intensity
+      // More realistic flickering light intensity
       const flickerIntensity =
-        intensity + Math.sin(state.clock.elapsedTime * 10) * 0.5;
+        intensity +
+        Math.sin(state.clock.elapsedTime * 12) * 0.4 +
+        Math.sin(state.clock.elapsedTime * 19) * 0.3 +
+        Math.sin(state.clock.elapsedTime * 6) * 0.2;
       lightRef.current.intensity = Math.max(0.1, flickerIntensity);
     }
   });
@@ -75,22 +78,49 @@ const Brazier: React.FC<BrazierProps> = ({
           <meshLambertMaterial color={color} />
         </mesh>
 
-        {/* Flame */}
+        {/* Multi-layer flame for better glow */}
         {isLit && (
           <group ref={flameRef} position={[0, 1, 0]}>
+            {/* Inner flame */}
             <mesh>
-              <sphereGeometry args={[0.15, 8, 6]} />
+              <sphereGeometry args={[0.12, 8, 6]} />
+              <meshLambertMaterial
+                color="#ffaa00"
+                emissive="#ffaa00"
+                emissiveIntensity={0.9}
+                transparent
+                opacity={0.95}
+              />
+            </mesh>
+
+            {/* Middle flame */}
+            <mesh position={[0, 0.15, 0]}>
+              <coneGeometry args={[0.08, 0.3, 6]} />
               <meshLambertMaterial
                 color={flameColor}
                 emissive={flameColor}
-                emissiveIntensity={0.5}
+                emissiveIntensity={0.6}
                 transparent
                 opacity={0.8}
               />
             </mesh>
-            <mesh position={[0, 0.2, 0]}>
-              <coneGeometry args={[0.1, 0.4, 6]} />
-              <meshLambertMaterial color="#ffaa00" transparent opacity={0.7} />
+
+            {/* Outer flame */}
+            <mesh position={[0, 0.25, 0]}>
+              <coneGeometry args={[0.12, 0.4, 6]} />
+              <meshLambertMaterial
+                color="#ff6600"
+                emissive="#ff6600"
+                emissiveIntensity={0.4}
+                transparent
+                opacity={0.6}
+              />
+            </mesh>
+
+            {/* Flame glow effect */}
+            <mesh position={[0, 0.35, 0]}>
+              <coneGeometry args={[0.15, 0.5, 6]} />
+              <meshLambertMaterial color="#ff4400" transparent opacity={0.3} />
             </mesh>
           </group>
         )}

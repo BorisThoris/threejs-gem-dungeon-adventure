@@ -23,9 +23,12 @@ const Torch: React.FC<TorchProps> = ({
 
   useFrame((state) => {
     if (flicker && lightRef.current) {
-      // Flickering effect
+      // More realistic flickering effect
       const flickerIntensity =
-        intensity + Math.sin(state.clock.elapsedTime * 10) * 0.3;
+        intensity +
+        Math.sin(state.clock.elapsedTime * 15) * 0.3 +
+        Math.sin(state.clock.elapsedTime * 23) * 0.2 +
+        Math.sin(state.clock.elapsedTime * 7) * 0.1;
       lightRef.current.intensity = Math.max(0.1, flickerIntensity);
     }
   });
@@ -48,10 +51,32 @@ const Torch: React.FC<TorchProps> = ({
         />
       </mesh>
 
-      {/* Flame */}
+      {/* Multi-layer flame for better glow */}
       <mesh position={[0, 1.3, 0]}>
-        <coneGeometry args={[0.1, 0.3, 6]} />
-        <meshLambertMaterial color="#ffaa00" transparent opacity={0.8} />
+        <coneGeometry args={[0.08, 0.25, 6]} />
+        <meshLambertMaterial
+          color="#ffaa00"
+          emissive="#ffaa00"
+          emissiveIntensity={0.8}
+          transparent
+          opacity={0.9}
+        />
+      </mesh>
+
+      <mesh position={[0, 1.35, 0]}>
+        <coneGeometry args={[0.12, 0.3, 6]} />
+        <meshLambertMaterial
+          color="#ff6600"
+          emissive="#ff6600"
+          emissiveIntensity={0.4}
+          transparent
+          opacity={0.6}
+        />
+      </mesh>
+
+      <mesh position={[0, 1.4, 0]}>
+        <coneGeometry args={[0.15, 0.4, 6]} />
+        <meshLambertMaterial color="#ff4400" transparent opacity={0.3} />
       </mesh>
 
       {/* Point light for illumination */}
