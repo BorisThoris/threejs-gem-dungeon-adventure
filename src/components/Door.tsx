@@ -1,134 +1,109 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React from "react";
 import { RigidBody } from "@react-three/rapier";
-import { Text } from "@react-three/drei";
-import useGameStore from "../store/gameStore";
+import useRoomManagerStore from "../store/roomManagerStore";
+import useMapStore from "../store/mapStore";
 
 interface DoorProps {
   position: [number, number, number];
-  rotation?: [number, number, number];
-  keyRequired?: boolean;
-  keyId?: string; // Specific key ID if needed
+  rotation: [number, number, number];
+  targetRoomId: string;
+  direction: "north" | "south" | "east" | "west";
   isLocked?: boolean;
-  onOpen?: () => void;
-  onClose?: () => void;
+  keyRequired?: boolean;
+  keyId?: string;
+  onDoorClick?: (targetRoomId: string, direction: string) => void;
 }
 
 const Door: React.FC<DoorProps> = ({
   position,
-  rotation = [0, 0, 0],
+  rotation,
+  targetRoomId,
+  direction,
+  isLocked = false,
   keyRequired = false,
   keyId,
-  isLocked = false,
-  onOpen,
-  onClose: _onClose,
+  onDoorClick,
 }) => {
-  const { playerStats, inventory } = useGameStore();
-  const [isOpen, setIsOpen] = useState(false);
-  const [canOpen, setCanOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const { startTransition } = useRoomManagerStore();
+  const { currentRoomId } = useMapStore();
 
-  // Check if player can open the door
-  useEffect(() => {
-    if (keyRequired && keyId) {
-      const hasKey =
-        playerStats.keys > 0 ||
-        inventory?.some((item: any) => item.id === keyId);
-      setCanOpen(hasKey && !isLocked);
+  const handleDoorClick = () => {
+    if (!currentRoomId) return;
+
+    console.log(
+      `Door clicked: ${currentRoomId} -> ${targetRoomId} (${direction})`
+    );
+
+    if (onDoorClick) {
+      onDoorClick(targetRoomId, direction);
     } else {
-      setCanOpen(!isLocked);
+      // Default behavior: start room transition
+      startTransition(currentRoomId, targetRoomId, direction);
     }
-  }, [playerStats.keys, inventory, keyRequired, keyId, isLocked]);
-
-  // Create a stable reference for inventory check
-  const hasKeyItem = useMemo(() => {
-    return inventory?.some((item: any) => item.id === keyId) || false;
-  }, [inventory, keyId]);
-
-  const handleOpenDoor = () => {
-    if (!canOpen || isOpen) return;
-
-    if (keyRequired && keyId) {
-      // Use a key
-      if (playerStats.keys > 0) {
-        // This will be handled by the parent component
-        console.log("Using key from player stats");
-      } else if (hasKeyItem) {
-        // This will be handled by the parent component
-        console.log("Using key item:", keyId);
-      }
-    }
-
-    setIsOpen(true);
-    onOpen?.();
   };
 
-  if (isOpen) return null; // Don't render if open
+  const doorColor = isLocked ? "#8B4513" : "#654321";
+  const doorOpacity = isLocked ? 0.8 : 1.0;
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Door Frame */}
+      {/* Door frame */}
       <RigidBody type="fixed" colliders="trimesh">
-        <mesh position={[0, 1.5, 0]}>
-          <boxGeometry args={[0.2, 3, 0.2]} />
+        <mesh position={[0, 1.5, 0]} castShadow>
+          <boxGeometry args={[0.2, 3, 0.1]} />
           <meshLambertMaterial color="#8B4513" />
         </mesh>
       </RigidBody>
 
-      {/* Door Panel - Clickable */}
-      <RigidBody
-        type="fixed"
-        colliders="trimesh"
-        position={isOpen ? [1, 0, 0] : [0, 0, 0]}
-        rotation={isOpen ? [0, -Math.PI / 2, 0] : [0, 0, 0]}
-      >
+      {/* Door panels */}
+      <RigidBody type="fixed" colliders="trimesh">
         <mesh
-          onClick={handleOpenDoor}
-          onPointerOver={() => setIsHovered(true)}
-          onPointerOut={() => setIsHovered(false)}
+          position={[0, 1.5, 0.05]}
+          castShadow
+          onClick={handleDoorClick}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={(e) => {
+            e.stopPropagation();
+            document.body.style.cursor = "default";
+          }}
         >
-          <boxGeometry args={[2, 3, 0.1]} />
+          <boxGeometry args={[1.8, 2.8, 0.1]} />
           <meshLambertMaterial
-            color={
-              isLocked
-                ? "#666666"
-                : canOpen
-                ? isHovered
-                  ? "#A0522D"
-                  : "#8B4513"
-                : "#4B0000"
-            }
+            color={doorColor}
+            transparent
+            opacity={doorOpacity}
           />
         </mesh>
       </RigidBody>
 
-      {/* Interaction Prompt */}
-      {isHovered && (
-        <Text
-          position={[0, 2, 0]}
-          fontSize={0.5}
-          color="white"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.05}
-          outlineColor="#000000"
-        >
-          {isLocked
-            ? "DOOR LOCKED"
-            : keyRequired
-            ? canOpen
-              ? "Click to unlock"
-              : "Key required"
-            : "Click to open"}
-        </Text>
-      )}
+      {/* Door handle */}
+      <mesh position={[0.6, 1.5, 0.1]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshLambertMaterial color="#FFD700" />
+      </mesh>
 
-      {/* Visual indicator when hovered */}
-      {isHovered && canOpen && (
-        <mesh position={[0, 0, 0.1]}>
-          <boxGeometry args={[2.2, 3.2, 0.05]} />
-          <meshBasicMaterial color="#00FF00" transparent opacity={0.3} />
+      {/* Lock indicator */}
+      {isLocked && (
+        <mesh position={[-0.6, 1.5, 0.1]}>
+          <boxGeometry args={[0.1, 0.1, 0.05]} />
+          <meshLambertMaterial color="#FF0000" />
         </mesh>
       )}
+
+      {/* Direction indicator */}
+      <mesh position={[0, 2.2, 0.1]}>
+        <planeGeometry args={[0.5, 0.2]} />
+        <meshBasicMaterial color="#FFFFFF" transparent opacity={0.8} />
+      </mesh>
+
+      {/* Direction text (simplified as geometry) */}
+      <mesh position={[0, 2.2, 0.11]}>
+        <planeGeometry args={[0.3, 0.1]} />
+        <meshBasicMaterial color="#000000" transparent opacity={0.9} />
+      </mesh>
     </group>
   );
 };

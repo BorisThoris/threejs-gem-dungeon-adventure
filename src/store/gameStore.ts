@@ -507,6 +507,12 @@ const useGameStore = create<GameState & GameActions>((set, get) => ({
   // Room system
   enterRoom: (roomId) => {
     set({ currentRoomId: roomId });
+    // Mark room as visited when entering
+    if (!get().completedRooms.includes(roomId)) {
+      set((state) => ({
+        completedRooms: [...state.completedRooms, roomId]
+      }));
+    }
   },
 
   completeRoom: (roomId) => {

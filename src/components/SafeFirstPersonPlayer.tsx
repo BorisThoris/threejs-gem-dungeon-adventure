@@ -107,6 +107,43 @@ export function SafeFirstPersonPlayer({
 
   // No periodic safety checks - safe spawn only works during initial spawn
 
+  // Listen for teleportation events
+  useEffect(() => {
+    const handleTeleport = (event: CustomEvent) => {
+      if (!ref.current) return;
+
+      const { position, rotation } = event.detail;
+      const newPosition = new THREE.Vector3(...position);
+      const newRotation = new THREE.Euler(...rotation);
+
+      console.log("Teleporting player to:", newPosition.toArray());
+      console.log("Player rotation:", newRotation.toArray());
+
+      // Teleport the rigid body
+      ref.current.setTranslation(newPosition, true);
+      ref.current.setRotation(newRotation, true);
+
+      // Stop any existing velocity
+      ref.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      ref.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+
+      // Update camera position and rotation
+      camera.position.copy(newPosition);
+      camera.position.y += 1.6; // Eye level offset
+      camera.rotation.copy(newRotation);
+      camera.updateMatrixWorld(true);
+    };
+
+    window.addEventListener("playerTeleport", handleTeleport as EventListener);
+
+    return () => {
+      window.removeEventListener(
+        "playerTeleport",
+        handleTeleport as EventListener
+      );
+    };
+  }, [camera]);
+
   // Simple movement control
   useFrame(() => {
     if (!isSpawned || !ref.current) return;

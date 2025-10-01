@@ -17,15 +17,12 @@ export interface SimpleMapConfig extends MapConfig {
   shapeChance: number;
   portalChance: number;
   useLiminalSpaces?: boolean;
-  corridorChance?: number;
   useMultiTileRooms?: boolean;
   multiTileChance?: number;
   multiTileMaxSegments?: number;
   // Advanced generation
   roomTypeWeights?: Record<string, number>;
   hubChance?: number; // chance to spawn a hub/atrium (plus/block)
-  corridorRunChance?: number; // chance to extend corridors in a line
-  culDeSacChance?: number; // chance to add a side-room off a corridor
   useThemes?: boolean;
   enabledBiomeCategories?: string[]; // New: categories to use for generation
 }
@@ -42,8 +39,7 @@ export const defaultSimpleConfig: SimpleMapConfig = {
   usePortals: true,
   shapeChance: 0.3,
   portalChance: 0.1,
-  useLiminalSpaces: true,
-  corridorChance: 0.5,
+  useLiminalSpaces: false,
   useMultiTileRooms: true,
   multiTileChance: 0.35,
   multiTileMaxSegments: 4,
@@ -180,90 +176,11 @@ export class SimpleMapGenerator {
           newZ >= 0 && newZ < this.gridSize && 
           !this.grid[newX][newZ]) {
         
-        // Optionally insert a corridor (liminal space) between rooms
-        const useCorridor = this.config.useLiminalSpaces && Math.random() < (this.config.corridorChance ?? 0.5);
-        if (useCorridor) {
-          const corridor = this.createRoomAt(newX, newZ, RoomType.CORRIDOR);
-          this.connectRooms(sourceRoom, corridor);
-          console.log(`SimpleMapGenerator: Inserted corridor ${corridor.id} from ${sourceRoom.id}`);
-
-          // Attempt to place the target room one tile beyond the corridor
-          const targetX = newX + direction.dx;
-          const targetZ = newZ + direction.dz;
-          if (
-            targetX >= 0 && targetX < this.gridSize &&
-            targetZ >= 0 && targetZ < this.gridSize &&
-            !this.grid[targetX][targetZ]
-          ) {
-            const targetType = this.getRandomRoomType();
-            const targetRoom = this.createRoomAt(targetX, targetZ, targetType);
-            this.connectRooms(corridor, targetRoom);
-            console.log(`SimpleMapGenerator: Corridor ${corridor.id} to target ${targetRoom.id}`);
-
-            // Corridor run extension
-            if (Math.random() < (this.config.corridorRunChance ?? 0.4)) {
-              const runLen = 1 + Math.floor(Math.random() * 3); // +1..+3
-              let lastX = targetX;
-              let lastZ = targetZ;
-              for (let r = 0; r < runLen; r++) {
-                const nx = lastX + direction.dx;
-                const nz = lastZ + direction.dz;
-                if (nx < 0 || nx >= this.gridSize || nz < 0 || nz >= this.gridSize || this.grid[nx][nz]) break;
-                const seg = this.createRoomAt(nx, nz, RoomType.CORRIDOR);
-                this.connectRooms(this.grid[lastX][lastZ] as Room, seg);
-                // Optional cul-de-sac side room
-                if (Math.random() < (this.config.culDeSacChance ?? 0.35)) {
-                  const side = Math.random() < 0.5 ? { dx: direction.dz, dz: -direction.dx } : { dx: -direction.dz, dz: direction.dx };
-                  const sx = nx + side.dx;
-                  const sz = nz + side.dz;
-                  if (sx >= 0 && sx < this.gridSize && sz >= 0 && sz < this.gridSize && !this.grid[sx][sz]) {
-                    const sideType = this.getRandomRoomType();
-                    const sideRoom = this.createRoomAt(sx, sz, sideType);
-                    this.connectRooms(seg, sideRoom);
-                  }
-                }
-                lastX = nx;
-                lastZ = nz;
-              }
-            }
-          }
-        } else {
-          // Optionally create a multi-tile room occupying multiple cells
-          const useMulti = this.config.useMultiTileRooms && Math.random() < (this.config.multiTileChance ?? 0.35);
-          if (useMulti) {
-            // Prefer hub/atrium occasionally
-            const pattern = Math.random() < (this.config.hubChance ?? 0.15) ? (Math.random() < 0.5 ? 'plus' : 'block') : this.pickMultiTilePattern();
-            const tiles = this.computePatternTiles(newX, newZ, direction, pattern);
-            // Validate all tiles are in-bounds and empty
-            const valid = tiles.every(({ x, z }) => x >= 0 && x < this.gridSize && z >= 0 && z < this.gridSize && !this.grid[x][z]);
-            if (valid) {
-              const roomType = this.getRandomRoomType();
-              const baseRoom = this.createRoomAt(newX, newZ, roomType);
-              baseRoom.isMultiTile = true;
-              baseRoom.tilePositions = tiles.map(({ x, z }) => ({
-                x: (x - this.startX) * this.config.roomSize,
-                z: (z - this.startZ) * this.config.roomSize,
-              }));
-              // Mark additional tiles in grid to reference the same room
-              tiles.forEach(({ x, z }) => {
-                this.grid[x][z] = baseRoom;
-              });
-              this.connectRooms(sourceRoom, baseRoom);
-              console.log(`SimpleMapGenerator: Created multi-tile room ${baseRoom.id} with ${tiles.length} segments`);
-            } else {
-              const roomType = this.getRandomRoomType();
-              const newRoom = this.createRoomAt(newX, newZ, roomType);
-              this.connectRooms(sourceRoom, newRoom);
-              console.log(`SimpleMapGenerator: Connected ${sourceRoom.id} to ${newRoom.id}`);
-            }
-          } else {
-            const roomType = this.getRandomRoomType();
-            const newRoom = this.createRoomAt(newX, newZ, roomType);
-            // Connect to source room
-            this.connectRooms(sourceRoom, newRoom);
-            console.log(`SimpleMapGenerator: Connected ${sourceRoom.id} to ${newRoom.id}`);
-          }
-        }
+        // Direct room connection (no corridors)
+        const targetType = this.getRandomRoomType();
+        const targetRoom = this.createRoomAt(newX, newZ, targetType);
+        this.connectRooms(sourceRoom, targetRoom);
+        console.log(`SimpleMapGenerator: Direct connection ${sourceRoom.id} to ${targetRoom.id}`);
       }
     }
   }
@@ -556,8 +473,6 @@ export class SimpleMapGenerator {
     base: number
   ): { width: number; height: number } {
     switch (type) {
-      case RoomType.CORRIDOR:
-        return { width: base * 0.5, height: base * 1.0 };
       case RoomType.COLOSSEUM:
       case RoomType.ARENA:
       case RoomType.BOSS:
@@ -592,8 +507,6 @@ export class SimpleMapGenerator {
         return 'hexagon';
       case RoomType.SECRET:
         return 'diamond';
-      case RoomType.CORRIDOR:
-        return 'square';
       default:
         return null;
     }
@@ -670,7 +583,6 @@ export class SimpleMapGenerator {
       RoomType.MEDITATION,
       RoomType.PORTAL,
       RoomType.ARENA,
-      RoomType.CORRIDOR,
       RoomType.COLOSSEUM,
       RoomType.BOSS,
       RoomType.TRAP,

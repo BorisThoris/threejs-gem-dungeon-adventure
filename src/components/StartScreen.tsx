@@ -5,6 +5,11 @@ import { Environment } from "@react-three/drei";
 import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
 import { SafeSpawnArea } from "./SafeSpawnArea";
 import MapContainer from "./MapContainer";
+import RoomInstanceManager from "./RoomInstanceManager";
+import RoomTransitionTest from "./RoomTransitionTest";
+import StoreTest from "./StoreTest";
+import RoomPositionTest from "./RoomPositionTest";
+import CorridorTest from "./CorridorTest";
 import MapUI from "./MapUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
@@ -89,8 +94,8 @@ const GhostScene: React.FC = () => {
           showDebugInfo={true}
         />
 
-        {/* Generated Map - Centered by algorithm */}
-        <MapContainer centerMap={false} />
+        {/* Room Instance Manager - Single room at a time */}
+        <RoomInstanceManager />
 
         {/* Ground */}
         <Ground />
@@ -307,6 +312,18 @@ const StartScreenContent: React.FC = () => {
 
       {/* Room Detection Debugger - Enable with 'D' key */}
       <RoomDetectionDebugger enabled={true} />
+
+      {/* Room Transition Test - Debug component */}
+      <RoomTransitionTest />
+
+      {/* Store Test - Debug component */}
+      <StoreTest />
+
+      {/* Room Position Test - Debug component */}
+      <RoomPositionTest />
+
+      {/* Corridor Test - Debug component */}
+      <CorridorTest />
 
       {/* Shared Navigation */}
       <SharedNavigation currentPage="game" />
