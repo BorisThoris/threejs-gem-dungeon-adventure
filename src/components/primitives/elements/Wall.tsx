@@ -4,6 +4,7 @@ import { Box } from "@react-three/drei";
 import * as THREE from "three";
 import withOptionalBreaking from "../../withOptionalBreaking";
 import { loadTextureFromImage } from "../../../utils/textureUtils";
+import { useWallToggle } from "../../../contexts/WallToggleContext";
 
 export interface WallProps {
   position: [number, number, number];
@@ -56,6 +57,7 @@ const Wall: React.FC<WallProps> = ({
   prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
   onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) => {
+  const { wallsEnabled } = useWallToggle();
   // Load appropriate texture based on material
   const [wallTexture, setWallTexture] = useState<THREE.Texture | null>(null);
 
@@ -209,6 +211,11 @@ const Wall: React.FC<WallProps> = ({
 
     return positions;
   };
+
+  // Don't render if walls are disabled globally
+  if (!wallsEnabled) {
+    return null;
+  }
 
   const wallContent = (
     <group position={position} rotation={rotation}>

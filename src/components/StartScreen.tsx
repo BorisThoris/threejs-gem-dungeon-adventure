@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
@@ -11,7 +11,10 @@ import PauseMenu from "./PauseMenu";
 import EventDrivenActionCards from "./EventDrivenActionCards";
 import RoomDetectionDebugger from "./RoomDetectionDebugger";
 import SharedNavigation from "./SharedNavigation";
+import WallToggleControls from "./WallToggleControls";
+import BiomeCategorySelector from "./BiomeCategorySelector";
 import { ThemeSelector, ThemePreview } from "../themes";
+import { WallToggleProvider } from "../contexts/WallToggleContext";
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
@@ -111,6 +114,9 @@ const StartScreenContent: React.FC = () => {
   const { inventory, useItem: consumeItem } = useGameStore();
   const { generateMap, currentMap } = useMapStore();
   const [isPaused, setIsPaused] = React.useState(false);
+  const [enabledBiomeCategories, setEnabledBiomeCategories] = useState<
+    string[]
+  >([]);
 
   // Initialize DOM UI manager
   React.useEffect(() => {
@@ -132,9 +138,9 @@ const StartScreenContent: React.FC = () => {
   // Generate map on component mount
   React.useEffect(() => {
     if (!currentMap) {
-      generateMap();
+      generateMap({}, enabledBiomeCategories);
     }
-  }, [currentMap, generateMap]);
+  }, [currentMap, generateMap, enabledBiomeCategories]);
 
   // Update UI when inventory changes (throttled)
   React.useEffect(() => {
@@ -305,6 +311,12 @@ const StartScreenContent: React.FC = () => {
       {/* Shared Navigation */}
       <SharedNavigation currentPage="game" />
 
+      {/* Wall Toggle Controls */}
+      <WallToggleControls />
+
+      {/* Biome Category Selector */}
+      <BiomeCategorySelector onCategoriesChange={setEnabledBiomeCategories} />
+
       {/* Theme Selector */}
       <div
         style={{
@@ -328,7 +340,11 @@ const StartScreenContent: React.FC = () => {
 };
 
 const StartScreen: React.FC = () => {
-  return <StartScreenContent />;
+  return (
+    <WallToggleProvider>
+      <StartScreenContent />
+    </WallToggleProvider>
+  );
 };
 
 export default StartScreen;

@@ -8,6 +8,8 @@ import {
   connectEntryPoints,
 } from '../utils/entryPointGenerator';
 import { ensureRoomConnectivity, analyzeConnectivity } from '../utils/roomConnectivityValidator';
+import { getWeightedBiomes, getAllBiomes } from '../types/biomeCategories';
+import { getBiomeWallConfig, hasBiomeWallConfig } from '../types/biomeWalls';
 
 export interface SimpleMapConfig extends MapConfig {
   useShapedRooms: boolean;
@@ -25,6 +27,7 @@ export interface SimpleMapConfig extends MapConfig {
   corridorRunChance?: number; // chance to extend corridors in a line
   culDeSacChance?: number; // chance to add a side-room off a corridor
   useThemes?: boolean;
+  enabledBiomeCategories?: string[]; // New: categories to use for generation
 }
 
 export const defaultSimpleConfig: SimpleMapConfig = {
@@ -505,36 +508,42 @@ export class SimpleMapGenerator {
   }
 
   private createRoomAt(x: number, z: number, type: string): Room {
-    // Random visual scale for room footprint (does not affect grid connectivity)
-    const scale = 0.85 + Math.random() * 0.5; // 0.85x - 1.35x
-
-    // Pick base dims by type, then jitter by scale
-    const dims = this.getDimensionsForType(type, this.config.roomSize);
-    const width = dims.width * scale;
-    const height = dims.height * scale;
-
     const roomId = `room_${this.roomIdCounter++}`;
     
-    // Assign default shape by type if applicable
-    const typeShape = this.getShapeForType(type);
-    const shape = typeShape || 'square';
+    // Check if this room type has a biome wall configuration
+    const hasBiomeConfig = hasBiomeWallConfig(type);
+    const biomeConfig = hasBiomeConfig ? getBiomeWallConfig(type) : null;
+    
+    // Random scale for biome walls (0.8x - 1.2x)
+    const biomeScale: [number, number, number] = hasBiomeConfig 
+      ? [0.8 + Math.random() * 0.4, 0.8 + Math.random() * 0.4, 0.8 + Math.random() * 0.4]
+      : [1, 1, 1];
 
     const room: Room = {
       id: roomId,
       position: { x: (x - this.startX) * this.config.roomSize, z: (z - this.startZ) * this.config.roomSize },
       type,
       connections: [],
-      size: this.config.roomSize,
+      size: this.config.roomSize, // Keep for backward compatibility
       isVisited: false,
       isCurrent: false,
-      // Visual sizing (used by renderer overlays)
-      width,
-      height,
       items: this.getItemsForRoomType(type),
       specialProperties: this.getSpecialPropertiesForRoomType(type),
-      shape: shape as any,
-      // Generate entry points based on room shape and type
-      entryPoints: generateEntryPoints(roomId, type, shape, this.config.roomSize),
+      // Biome-based wall system
+      biomeId: hasBiomeConfig ? type : undefined,
+      useBiomeWalls: hasBiomeConfig,
+      biomeScale: biomeScale,
+      // Generate entry points based on biome config or fallback to shape-based
+      entryPoints: hasBiomeConfig && biomeConfig?.entryPoints
+        ? biomeConfig.entryPoints.map(ep => ({
+            id: `${roomId}-${ep.direction}`,
+            direction: ep.direction,
+            position: ep.position,
+            width: ep.width,
+            height: ep.height,
+            isActive: false,
+          }))
+        : generateEntryPoints(roomId, type, 'square', this.config.roomSize),
     };
     
     this.rooms.push(room);
@@ -630,6 +639,23 @@ export class SimpleMapGenerator {
   }
 
   private getRandomRoomType(): string {
+    // Use biome categories if enabled, otherwise fall back to old system
+    if (this.config.enabledBiomeCategories && this.config.enabledBiomeCategories.length > 0) {
+      const weightedBiomes = getWeightedBiomes(this.config.enabledBiomeCategories);
+      const total = weightedBiomes.reduce((sum, biome) => sum + biome.weight, 0);
+      let r = Math.random() * total;
+      
+      for (const biome of weightedBiomes) {
+        if ((r -= biome.weight) <= 0) {
+          return biome.biome;
+        }
+      }
+      
+      // Fallback to first available biome
+      return weightedBiomes[0]?.biome || RoomType.NORMAL;
+    }
+    
+    // Fallback to old system for backward compatibility
     const weights = this.config.roomTypeWeights || {};
     const pool: Array<{ t: string; w: number }> = [
       RoomType.NORMAL,

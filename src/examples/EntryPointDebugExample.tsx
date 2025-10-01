@@ -73,6 +73,7 @@ export const EntryPointDebugExample: React.FC = () => {
           padding: "10px",
           borderRadius: "5px",
           fontFamily: "monospace",
+          zIndex: 20000, // High z-index to appear above all game UI
         }}
       >
         No map loaded. Generate a map to see entry points.
@@ -94,7 +95,7 @@ export const EntryPointDebugExample: React.FC = () => {
           borderRadius: "5px",
           fontFamily: "monospace",
           fontSize: "12px",
-          zIndex: 1000,
+          zIndex: 20000, // High z-index to appear above all game UI
           minWidth: "250px",
         }}
       >

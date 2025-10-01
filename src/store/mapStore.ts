@@ -22,7 +22,7 @@ const useMapStore = create<MapState & MapActions>((set, get) => ({
   error: null,
 
   // Actions
-  generateMap: (config = {}) => {
+  generateMap: (config = {}, enabledBiomeCategories?: string[]) => {
     set({ isGenerating: true, error: null });
     
     try {
@@ -35,6 +35,7 @@ const useMapStore = create<MapState & MapActions>((set, get) => ({
         minRooms: finalConfig.minRooms,
         maxRooms: finalConfig.maxRooms,
         specialRoomChance: finalConfig.specialRoomChance,
+        enabledBiomeCategories: enabledBiomeCategories,
       });
       
       const result = generator.generateMap();

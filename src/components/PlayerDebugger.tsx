@@ -40,7 +40,7 @@ export function PlayerDebugger({ playerRef }: PlayerDebuggerProps) {
         background: "rgba(0, 0, 0, 0.7)",
         padding: "10px",
         borderRadius: "5px",
-        zIndex: 1000,
+        zIndex: 20000, // High z-index to appear above all game UI
       }}
     />
   );

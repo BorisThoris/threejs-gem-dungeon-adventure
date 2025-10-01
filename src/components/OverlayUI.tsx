@@ -39,7 +39,7 @@ export function OverlayUI({
         width: "100vw",
         height: "100vh",
         pointerEvents: "none", // Allow clicks to pass through to canvas
-        zIndex: 1000,
+        zIndex: 1000, // Keep at 1000 since it's game UI, not debugging
         fontFamily: "'Press Start 2P', cursive",
       }}
     >

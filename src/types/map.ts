@@ -21,7 +21,7 @@ export interface Room {
   position: Position;
   type: string;
   connections: string[]; // IDs of connected rooms
-  size: number; // Room size in units
+  size: number; // Room size in units (deprecated - use biome walls instead)
   isVisited: boolean;
   isCurrent: boolean;
   // Enhanced room properties
@@ -50,6 +50,10 @@ export interface Room {
   temperature?: 'hot' | 'warm' | 'neutral' | 'cool' | 'cold' | 'freezing';
   humidity?: 'dry' | 'normal' | 'humid' | 'wet';
   airQuality?: 'fresh' | 'stale' | 'toxic' | 'magical' | 'ethereal';
+  // Biome-based wall system
+  biomeId?: string; // ID of the biome that defines this room's walls
+  useBiomeWalls?: boolean; // Whether to use biome-based walls instead of fixed size
+  biomeScale?: [number, number, number]; // Scale factor for biome walls
 }
 
 export const RoomType = {

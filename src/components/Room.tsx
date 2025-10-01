@@ -8,6 +8,8 @@ import {
 } from "three";
 import type { Room as RoomType, Item } from "../types/map";
 import { RoomType as RoomTypeValues } from "../types/map";
+import BiomeWallRenderer from "./BiomeWallRenderer";
+import { getBiomeWallConfig } from "../types/biomeWalls";
 import ItemSprite from "./primitives/objects/ItemSprite";
 import PuzzleGrid from "./PuzzleGrid";
 import TreasureBiome from "./primitives/game-rooms/TreasureBiome";
@@ -151,6 +153,12 @@ const Room: React.FC<RoomProps> = ({
   const opacity = isVisited ? 1 : 0.3;
   const scale = isCurrent ? 1.1 : 1;
 
+  // Check if this room uses biome-based walls
+  const biomeConfig =
+    room.useBiomeWalls && room.biomeId
+      ? getBiomeWallConfig(room.biomeId)
+      : null;
+
   const wallThickness = 0.2;
   const wallHeight = 3;
   const doorWidth = 2; // Width of door openings
@@ -252,173 +260,85 @@ const Room: React.FC<RoomProps> = ({
         <meshLambertMaterial color={roomColor} transparent opacity={opacity} />
       </mesh>
 
-      {/* North Wall - Split into segments if there's a door */}
-      {hasNorthConnection ? (
-        <>
-          {/* Left segment */}
-          <RigidBody type="fixed" colliders="trimesh">
-            <mesh
-              position={[-roomSize / 4, wallHeight / 2, -roomSize / 2]}
-              castShadow
-            >
-              <boxGeometry
-                args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
-              />
-              <meshLambertMaterial
-                color="#8B4513"
-                onUpdate={(material) => {
-                  console.log(
-                    "North Wall Left Material created/updated:",
-                    material
-                  );
-                }}
-              />
-            </mesh>
-          </RigidBody>
-          {/* Right segment */}
-          <RigidBody type="fixed" colliders="trimesh">
-            <mesh
-              position={[roomSize / 4, wallHeight / 2, -roomSize / 2]}
-              castShadow
-            >
-              <boxGeometry
-                args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
-              />
-              <meshLambertMaterial
-                color="#8B4513"
-                onUpdate={(material) => {
-                  console.log(
-                    "North Wall Right Material created/updated:",
-                    material
-                  );
-                }}
-              />
-            </mesh>
-          </RigidBody>
-        </>
+      {/* Render walls based on biome config or fallback to traditional walls */}
+      {biomeConfig ? (
+        <BiomeWallRenderer
+          biomeConfig={biomeConfig}
+          position={[0, 0, 0]}
+          rotation={[0, 0, 0]}
+          scale={room.biomeScale || [1, 1, 1]}
+        />
       ) : (
-        <RigidBody type="fixed" colliders="trimesh">
-          <mesh position={[0, wallHeight / 2, -roomSize / 2]} castShadow>
-            <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
-            <meshLambertMaterial
-              color="#8B4513"
-              onUpdate={(material) => {
-                console.log("North Wall Material created/updated:", material);
-              }}
-            />
-          </mesh>
-        </RigidBody>
-      )}
-
-      {/* South Wall - Split into segments if there's a door */}
-      {hasSouthConnection ? (
         <>
-          {/* Left segment */}
-          <RigidBody type="fixed" colliders="trimesh">
-            <mesh
-              position={[-roomSize / 4, wallHeight / 2, roomSize / 2]}
-              castShadow
-            >
-              <boxGeometry
-                args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
-              />
-              <meshLambertMaterial color="#8B4513" />
-            </mesh>
-          </RigidBody>
-          {/* Right segment */}
-          <RigidBody type="fixed" colliders="trimesh">
-            <mesh
-              position={[roomSize / 4, wallHeight / 2, roomSize / 2]}
-              castShadow
-            >
-              <boxGeometry
-                args={[roomSize / 2 - doorWidth / 2, wallHeight, wallThickness]}
-              />
-              <meshLambertMaterial color="#8B4513" />
-            </mesh>
-          </RigidBody>
+          {/* North Wall - Split into segments if there's a door */}
+          {hasNorthConnection ? (
+            <>
+              {/* Left segment */}
+              <RigidBody type="fixed" colliders="trimesh">
+                <mesh
+                  position={[-roomSize / 4, wallHeight / 2, -roomSize / 2]}
+                  castShadow
+                >
+                  <boxGeometry
+                    args={[
+                      roomSize / 2 - doorWidth / 2,
+                      wallHeight,
+                      wallThickness,
+                    ]}
+                  />
+                  <meshLambertMaterial
+                    color="#8B4513"
+                    onUpdate={(material) => {
+                      console.log(
+                        "North Wall Left Material created/updated:",
+                        material
+                      );
+                    }}
+                  />
+                </mesh>
+              </RigidBody>
+              {/* Right segment */}
+              <RigidBody type="fixed" colliders="trimesh">
+                <mesh
+                  position={[roomSize / 4, wallHeight / 2, -roomSize / 2]}
+                  castShadow
+                >
+                  <boxGeometry
+                    args={[
+                      roomSize / 2 - doorWidth / 2,
+                      wallHeight,
+                      wallThickness,
+                    ]}
+                  />
+                  <meshLambertMaterial
+                    color="#8B4513"
+                    onUpdate={(material) => {
+                      console.log(
+                        "North Wall Right Material created/updated:",
+                        material
+                      );
+                    }}
+                  />
+                </mesh>
+              </RigidBody>
+            </>
+          ) : (
+            <RigidBody type="fixed" colliders="trimesh">
+              <mesh position={[0, wallHeight / 2, -roomSize / 2]} castShadow>
+                <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
+                <meshLambertMaterial
+                  color="#8B4513"
+                  onUpdate={(material) => {
+                    console.log(
+                      "North Wall Material created/updated:",
+                      material
+                    );
+                  }}
+                />
+              </mesh>
+            </RigidBody>
+          )}
         </>
-      ) : (
-        <RigidBody type="fixed" colliders="trimesh">
-          <mesh position={[0, wallHeight / 2, roomSize / 2]} castShadow>
-            <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
-            <meshLambertMaterial color="#8B4513" />
-          </mesh>
-        </RigidBody>
-      )}
-
-      {/* East Wall - Split into segments if there's a door */}
-      {hasEastConnection ? (
-        <>
-          {/* Top segment */}
-          <RigidBody type="fixed" colliders="trimesh">
-            <mesh
-              position={[roomSize / 2, wallHeight / 2, -roomSize / 4]}
-              castShadow
-            >
-              <boxGeometry
-                args={[wallThickness, wallHeight, roomSize / 2 - doorWidth / 2]}
-              />
-              <meshLambertMaterial color="#8B4513" />
-            </mesh>
-          </RigidBody>
-          {/* Bottom segment */}
-          <RigidBody type="fixed" colliders="trimesh">
-            <mesh
-              position={[roomSize / 2, wallHeight / 2, roomSize / 4]}
-              castShadow
-            >
-              <boxGeometry
-                args={[wallThickness, wallHeight, roomSize / 2 - doorWidth / 2]}
-              />
-              <meshLambertMaterial color="#8B4513" />
-            </mesh>
-          </RigidBody>
-        </>
-      ) : (
-        <RigidBody type="fixed" colliders="trimesh">
-          <mesh position={[roomSize / 2, wallHeight / 2, 0]} castShadow>
-            <boxGeometry args={[wallThickness, wallHeight, roomSize]} />
-            <meshLambertMaterial color="#8B4513" />
-          </mesh>
-        </RigidBody>
-      )}
-
-      {/* West Wall - Split into segments if there's a door */}
-      {hasWestConnection ? (
-        <>
-          {/* Top segment */}
-          <RigidBody type="fixed" colliders="trimesh">
-            <mesh
-              position={[-roomSize / 2, wallHeight / 2, -roomSize / 4]}
-              castShadow
-            >
-              <boxGeometry
-                args={[wallThickness, wallHeight, roomSize / 2 - doorWidth / 2]}
-              />
-              <meshLambertMaterial color="#8B4513" />
-            </mesh>
-          </RigidBody>
-          {/* Bottom segment */}
-          <RigidBody type="fixed" colliders="trimesh">
-            <mesh
-              position={[-roomSize / 2, wallHeight / 2, roomSize / 4]}
-              castShadow
-            >
-              <boxGeometry
-                args={[wallThickness, wallHeight, roomSize / 2 - doorWidth / 2]}
-              />
-              <meshLambertMaterial color="#8B4513" />
-            </mesh>
-          </RigidBody>
-        </>
-      ) : (
-        <RigidBody type="fixed" colliders="trimesh">
-          <mesh position={[-roomSize / 2, wallHeight / 2, 0]} castShadow>
-            <boxGeometry args={[wallThickness, wallHeight, roomSize]} />
-            <meshLambertMaterial color="#8B4513" />
-          </mesh>
-        </RigidBody>
       )}
 
       {/* Current Room Indicator */}
@@ -502,7 +422,9 @@ const Room: React.FC<RoomProps> = ({
 
         {room.type === RoomTypeValues.COFFEE && <CoffeeBiome />}
 
-        {room.type === RoomTypeValues.LIBRARY_UPGRADE && <LibraryUpgradeBiome />}
+        {room.type === RoomTypeValues.LIBRARY_UPGRADE && (
+          <LibraryUpgradeBiome />
+        )}
 
         {room.type === RoomTypeValues.MEDITATION && <MeditationBiome />}
 

@@ -4,6 +4,7 @@ import { Box } from "@react-three/drei";
 import * as THREE from "three";
 import withOptionalBreaking from "../../withOptionalBreaking";
 import { loadTextureFromImage } from "../../../utils/textureUtils";
+import { useWallToggle } from "../../../contexts/WallToggleContext";
 
 export interface StoneWallProps {
   position: [number, number, number];
@@ -52,6 +53,7 @@ const StoneWall: React.FC<StoneWallProps> = ({
   prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
   onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
 }) => {
+  const { wallsEnabled } = useWallToggle();
   // Load stone texture
   const [stoneTexture, setStoneTexture] = useState(null);
 
@@ -157,6 +159,11 @@ const StoneWall: React.FC<StoneWallProps> = ({
 
     return positions;
   };
+
+  // Don't render if walls are disabled globally
+  if (!wallsEnabled) {
+    return null;
+  }
 
   const wallContent = (
     <group position={position} rotation={rotation}>

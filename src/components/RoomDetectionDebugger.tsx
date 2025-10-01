@@ -73,7 +73,7 @@ const RoomDetectionDebugger: React.FC<RoomDetectionDebuggerProps> = ({
         position: "fixed",
         top: "10px",
         right: "10px",
-        zIndex: 1000,
+        zIndex: 20000, // High z-index to appear above all game UI
       }}
     />
   );
