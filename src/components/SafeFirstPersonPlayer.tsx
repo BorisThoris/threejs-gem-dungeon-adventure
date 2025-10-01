@@ -64,12 +64,6 @@ export function SafeFirstPersonPlayer({
     setIsSpawned(true);
 
     if (showDebugInfo) {
-      console.log("SafeFirstPersonPlayer: Spawn search completed", {
-        originalPosition: initialSpawnPosition,
-        safePosition: safeSpawn.position,
-        isSafe: safeSpawn.isSafe,
-        attempts: safeSpawn.attempts,
-      });
     }
   }, [initialSpawnPosition, findSafeSpawnPosition, showDebugInfo]);
 
@@ -115,9 +109,6 @@ export function SafeFirstPersonPlayer({
       const { position, rotation } = event.detail;
       const newPosition = new THREE.Vector3(...position);
       const newRotation = new THREE.Euler(...rotation);
-
-      console.log("Teleporting player to:", newPosition.toArray());
-      console.log("Player rotation:", newRotation.toArray());
 
       // Teleport the rigid body
       ref.current.setTranslation(newPosition, true);

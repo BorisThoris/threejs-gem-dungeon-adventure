@@ -30,9 +30,6 @@ const RoomTransitionTest: React.FC = () => {
       direction = dz > 0 ? "south" : "north";
     }
 
-    console.log(
-      `Testing transition: ${currentRoomId} -> ${targetRoomId} (${direction})`
-    );
     await startTransition(currentRoomId, targetRoomId, direction);
   };
 

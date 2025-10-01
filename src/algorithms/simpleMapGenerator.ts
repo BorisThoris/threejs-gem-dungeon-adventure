@@ -30,7 +30,7 @@ export interface SimpleMapConfig extends MapConfig {
 export const defaultSimpleConfig: SimpleMapConfig = {
   width: 20,
   height: 20,
-  roomSize: 10,
+  roomSize: 16,
   minRooms: 8,
   maxRooms: 20,
   specialRoomChance: 0.6,
@@ -146,7 +146,6 @@ export class SimpleMapGenerator {
     this.rooms.push(startRoom);
     this.grid[this.startX][this.startZ] = startRoom;
     
-    console.log('SimpleMapGenerator: Created start room with ID:', startRoom.id);
   }
 
   private generateRooms(): void {
@@ -180,7 +179,6 @@ export class SimpleMapGenerator {
         const targetType = this.getRandomRoomType();
         const targetRoom = this.createRoomAt(newX, newZ, targetType);
         this.connectRooms(sourceRoom, targetRoom);
-        console.log(`SimpleMapGenerator: Direct connection ${sourceRoom.id} to ${targetRoom.id}`);
       }
     }
   }
@@ -287,7 +285,6 @@ export class SimpleMapGenerator {
   }
 
   private ensureConnectivity(): void {
-    console.log('🔗 SimpleMapGenerator: Starting connectivity check...');
     
     const visited = new Set<string>();
     const queue = [this.rooms[0].id];
@@ -306,11 +303,9 @@ export class SimpleMapGenerator {
       }
     }
     
-    console.log(`SimpleMapGenerator: Visited ${visited.size} rooms during connectivity check`);
     
     // Connect unvisited rooms with enhanced connection types
     const unvisited = this.rooms.filter(r => !visited.has(r.id));
-    console.log(`SimpleMapGenerator: Found ${unvisited.length} unvisited rooms`);
     
     for (const room of unvisited) {
       const closestRoom = this.rooms
@@ -326,11 +321,9 @@ export class SimpleMapGenerator {
       
       if (!room.connections.includes(closestRoom.id)) {
         room.connections.push(closestRoom.id);
-        console.log(`SimpleMapGenerator: Connected unvisited room ${room.id} to ${closestRoom.id} (${connectionType})`);
       }
       if (!closestRoom.connections.includes(room.id)) {
         closestRoom.connections.push(room.id);
-        console.log(`SimpleMapGenerator: Connected ${closestRoom.id} to unvisited room ${room.id} (${connectionType})`);
       }
       
       // Update entry points for the connection
@@ -341,12 +334,10 @@ export class SimpleMapGenerator {
     
     // Final connectivity check
     const startRoom = this.rooms[0];
-    console.log(`SimpleMapGenerator: Final start room connections:`, startRoom.connections);
     
     // Log final connectivity statistics
     const totalConnections = this.rooms.reduce((sum, room) => sum + room.connections.length, 0);
     const avgConnections = totalConnections / this.rooms.length;
-    console.log(`SimpleMapGenerator: Average connections per room: ${avgConnections.toFixed(2)}`);
   }
 
   private getGridPosition(position: Position): Position {
@@ -409,7 +400,6 @@ export class SimpleMapGenerator {
       room1Entry.type = entryType;
       room2Entry.type = entryType;
       
-      console.log(`SimpleMapGenerator: Updated entry points for ${room1.id} <-> ${room2.id} (${connectionType})`);
     }
   }
 
@@ -544,9 +534,6 @@ export class SimpleMapGenerator {
       // Connect the entry points if both are available
       if (room1Entry && room2Entry) {
         connectEntryPoints(room1Entry, room2Entry);
-        console.log(
-          `Connected entry points: ${room1.id}[${directionToRoom2}] <-> ${room2.id}[${oppositeDirection}]`
-        );
       }
     }
   }

@@ -10,7 +10,6 @@ import {
   BreakablePotionBottle,
   BreakableCrystal,
   BreakableSkull,
-  BreakableFloatingText,
 } from "./index";
 
 interface RoomDecoratorProps {
@@ -51,13 +50,6 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
 
             {/* Welcome chest */}
             <BreakableChest position={[0, 0, -1.5]} />
-
-            {/* Floating welcome text */}
-            <BreakableFloatingText
-              position={[0, 2, 0]}
-              text="Welcome, Adventurer!"
-              color="#00ff00"
-            />
           </>
         );
 
@@ -80,42 +72,20 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
 
             {/* Victory chest */}
             <BreakableChest position={[0, 0, -1.5]} />
-
-            {/* Exit text */}
-            <BreakableFloatingText
-              position={[0, 2.5, 0]}
-              text="EXIT PORTAL"
-              color="#ff00ff"
-            />
           </>
         );
 
       case "normal":
         return (
           <>
-            {/* Random furniture */}
-            {Math.random() > 0.5 && (
-              <BreakableTable
-                position={[Math.random() * 4 - 2, 0, Math.random() * 4 - 2]}
-              />
-            )}
-            {Math.random() > 0.7 && (
-              <BreakableChair
-                position={[Math.random() * 4 - 2, 0, Math.random() * 4 - 2]}
-              />
-            )}
+            {/* Fixed furniture placement */}
+            <BreakableTable position={[0, 0, 0]} />
+            <BreakableChair position={[-1, 0, 0.5]} />
+            <BreakableChair position={[1, 0, 0.5]} />
 
-            {/* Barrels and chests */}
-            {Math.random() > 0.6 && (
-              <BreakableBarrel
-                position={[Math.random() * 4 - 2, 0, Math.random() * 4 - 2]}
-              />
-            )}
-            {Math.random() > 0.8 && (
-              <BreakableChest
-                position={[Math.random() * 4 - 2, 0, Math.random() * 4 - 2]}
-              />
-            )}
+            {/* Fixed barrels and chests */}
+            <BreakableBarrel position={[-2, 0, -2]} />
+            <BreakableChest position={[2, 0, -2]} />
 
             {/* Lighting */}
             <BreakableTorch
@@ -147,18 +117,11 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
             <BreakableChest position={[-1.5, 0, 0]} />
             <BreakableChest position={[1.5, 0, 0]} />
 
-            {/* Gold and gems scattered around */}
-            {Array.from({ length: 8 }).map((_, i) => (
-              <BreakableCrystal
-                key={i}
-                position={[
-                  (Math.random() - 0.5) * 6,
-                  0.1,
-                  (Math.random() - 0.5) * 6,
-                ]}
-                color="#FFD700"
-              />
-            ))}
+            {/* Fixed gold and gems placement */}
+            <BreakableCrystal position={[-1, 0.1, -1]} color="#FFD700" />
+            <BreakableCrystal position={[1, 0.1, -1]} color="#FFD700" />
+            <BreakableCrystal position={[-1, 0.1, 1]} color="#FFD700" />
+            <BreakableCrystal position={[1, 0.1, 1]} color="#FFD700" />
 
             {/* Magical lighting */}
             <BreakableCandle position={[-2, 0.4, -2]} />
@@ -196,12 +159,6 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
             {/* Shop lighting */}
             <BreakableTorch position={[-halfSize + margin, 0, 0]} />
             <BreakableTorch position={[halfSize - margin, 0, 0]} />
-
-            <BreakableFloatingText
-              position={[0, 2, 0]}
-              text="SHOP"
-              color="#00ff00"
-            />
           </>
         );
 
@@ -225,12 +182,6 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
             <BreakableCandle position={[1, 0.4, -1]} />
             <BreakableCandle position={[-1, 0.4, 1]} />
             <BreakableCandle position={[1, 0.4, 1]} />
-
-            <BreakableFloatingText
-              position={[0, 2, 0]}
-              text="PUZZLE CHAMBER"
-              color="#8000ff"
-            />
           </>
         );
 
@@ -253,12 +204,6 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
             {/* Magical lighting */}
             <BreakableCandle position={[-1, 0.4, 0]} />
             <BreakableCandle position={[1, 0.4, 0]} />
-
-            <BreakableFloatingText
-              position={[0, 2, 0]}
-              text="LIBRARY"
-              color="#4169E1"
-            />
           </>
         );
 
@@ -312,12 +257,6 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
             {/* White candles */}
             <BreakableCandle position={[-1, 0.4, 0]} />
             <BreakableCandle position={[1, 0.4, 0]} />
-
-            <BreakableFloatingText
-              position={[0, 2, 0]}
-              text="ANGEL ROOM"
-              color="#FFD700"
-            />
           </>
         );
 
@@ -329,32 +268,17 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
             <BreakableBarrel position={[-1.5, 0, 0]} />
             <BreakableBarrel position={[1.5, 0, 0]} />
 
-            {/* Mysterious crystals */}
-            {Array.from({ length: 6 }).map((_, i) => (
-              <BreakableCrystal
-                key={i}
-                position={[
-                  (Math.random() - 0.5) * 4,
-                  0.2,
-                  (Math.random() - 0.5) * 4,
-                ]}
-                color={
-                  ["#00ffff", "#ff00ff", "#ffff00"][
-                    Math.floor(Math.random() * 3)
-                  ]
-                }
-              />
-            ))}
+            {/* Fixed mysterious crystals */}
+            <BreakableCrystal position={[-1, 0.2, -1]} color="#00ffff" />
+            <BreakableCrystal position={[1, 0.2, -1]} color="#ff00ff" />
+            <BreakableCrystal position={[-1, 0.2, 1]} color="#ffff00" />
+            <BreakableCrystal position={[1, 0.2, 1]} color="#00ffff" />
+            <BreakableCrystal position={[0, 0.2, -1.5]} color="#ff00ff" />
+            <BreakableCrystal position={[0, 0.2, 1.5]} color="#ffff00" />
 
             {/* Dim lighting */}
             <BreakableCandle position={[-2, 0.4, -2]} />
             <BreakableCandle position={[2, 0.4, 2]} />
-
-            <BreakableFloatingText
-              position={[0, 2, 0]}
-              text="SECRET ROOM"
-              color="#800080"
-            />
           </>
         );
 
@@ -387,12 +311,6 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
             <BreakableCandle position={[2, 0.4, -2]} />
             <BreakableCandle position={[-2, 0.4, 2]} />
             <BreakableCandle position={[2, 0.4, 2]} />
-
-            <BreakableFloatingText
-              position={[0, 2, 0]}
-              text="BOSS ARENA"
-              color="#ff0000"
-            />
           </>
         );
 
@@ -436,12 +354,6 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
             {/* Warning candles */}
             <BreakableCandle position={[-1.5, 0.4, -1.5]} />
             <BreakableCandle position={[1.5, 0.4, 1.5]} />
-
-            <BreakableFloatingText
-              position={[0, 2, 0]}
-              text="TRAP ROOM"
-              color="#ff8000"
-            />
           </>
         );
 
@@ -456,16 +368,8 @@ const RoomDecorator: React.FC<RoomDecoratorProps> = ({
               position={[halfSize - margin, 0, halfSize - margin]}
             />
 
-            {Math.random() > 0.5 && (
-              <BreakableBarrel
-                position={[Math.random() * 4 - 2, 0, Math.random() * 4 - 2]}
-              />
-            )}
-            {Math.random() > 0.7 && (
-              <BreakableChest
-                position={[Math.random() * 4 - 2, 0, Math.random() * 4 - 2]}
-              />
-            )}
+            <BreakableBarrel position={[-1, 0, -1]} />
+            <BreakableChest position={[1, 0, 1]} />
           </>
         );
     }

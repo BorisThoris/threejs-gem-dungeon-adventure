@@ -60,27 +60,14 @@ export const useMouseLook = () => {
       let deltaX = event.movementX || 0;
       let deltaY = event.movementY || 0;
 
-      console.log("=== MOUSE MOVE DEBUG ===");
-      console.log("MovementX:", event.movementX);
-      console.log("MovementY:", event.movementY);
-      console.log("ClientX:", event.clientX);
-      console.log("ClientY:", event.clientY);
-      console.log("DeltaX:", deltaX);
-      console.log("DeltaY:", deltaY);
-      console.log("Is Electron:", isElectron);
-
       // Electron fallback: if movementX/Y are not available, use a different approach
       if (isElectron && deltaX === 0 && deltaY === 0) {
-        console.log("Using Electron fallback for mouse movement");
         // In Electron, sometimes movementX/Y are not available
         // We'll use a simpler approach with clientX/Y tracking
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         deltaX = event.clientX - centerX;
         deltaY = event.clientY - centerY;
-
-        console.log("Fallback DeltaX:", deltaX);
-        console.log("Fallback DeltaY:", deltaY);
 
         // Reset cursor to center (this would need to be handled by the main process)
         // For now, we'll just use the delta as-is
@@ -89,8 +76,6 @@ export const useMouseLook = () => {
       // Accumulate rotation changes
       euler.current.y -= deltaX * sensitivity;
       euler.current.x -= deltaY * sensitivity;
-
-      console.log("Euler after update:", euler.current);
 
       // Clamp vertical rotation
       euler.current.x = Math.max(
@@ -109,10 +94,6 @@ export const useMouseLook = () => {
 
       // Electron-specific pointer lock handling
       if (isElectron) {
-        console.log(
-          "Pointer lock changed in Electron:",
-          isPointerLocked.current
-        );
         // Force update camera rotation when pointer lock changes
         if (isPointerLocked.current && isMouseDown.current) {
           updateCameraRotation();
@@ -122,25 +103,16 @@ export const useMouseLook = () => {
 
     // Right mouse button to enable mouse look
     const handleMouseDown = (event: MouseEvent) => {
-      console.log("=== MOUSE DOWN DEBUG ===");
-      console.log("Button:", event.button);
-      console.log("Is Electron:", isElectron);
-      console.log("Pointer locked:", isPointerLocked.current);
-      console.log("Mouse down:", isMouseDown.current);
-
       if (event.button === 2) {
         // Right mouse button
         isMouseDown.current = true;
-        console.log("Right mouse button pressed - enabling mouse look");
 
         if (!isPointerLocked.current) {
           // Try to request pointer lock
-          console.log("Requesting pointer lock...");
           const requestPromise = document.body.requestPointerLock();
 
           // Electron-specific handling
           if (isElectron) {
-            console.log("Requesting pointer lock in Electron");
             requestPromise.catch((error) => {
               console.warn("Pointer lock failed in Electron:", error);
               // Fallback: enable mouse look without pointer lock

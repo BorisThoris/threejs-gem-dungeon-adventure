@@ -10,26 +10,23 @@ export interface TextureDefinition {
   pixels: string[];
 }
 
-// Load texture from image file
-export const loadTextureFromImage = (textureId: string): Promise<Texture> => {
-  return new Promise((resolve, reject) => {
-    const loader = new TextureLoader();
-    const texturePath = `/textures/${textureId}.png`;
+// Create simple procedural textures
+export const loadTextureFromImage = async (textureId: string): Promise<Texture> => {
+  try {
+    console.log(`Creating texture: ${textureId}`);
     
-    loader.load(
-      texturePath,
-      (texture) => {
-        texture.wrapS = texture.wrapT = RepeatWrapping;
-        texture.needsUpdate = true;
-        resolve(texture);
-      },
-      undefined,
-      (error) => {
-        console.error(`Failed to load texture ${textureId}:`, error);
-        reject(error);
-      }
-    );
-  });
+    // Create procedural textures based on textureId
+    const texture = createProceduralTexture(textureId);
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.needsUpdate = true;
+    
+    console.log(`✅ Texture ${textureId} created successfully`);
+    return texture;
+  } catch (error) {
+    console.error(`Failed to create texture ${textureId}:`, error);
+    // Return a fallback texture
+    return createFallbackTexture(textureId);
+  }
 };
 
 // Convert pixel array to canvas texture (fallback)
@@ -88,6 +85,163 @@ export const createTexturedMaterial = (
     roughness,
     metalness,
   };
+};
+
+// Create a fallback texture when loading fails
+const createFallbackTexture = (textureId: string): Texture => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 16;
+  canvas.height = 16;
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Could not get canvas context');
+  
+  // Create a simple colored texture based on textureId
+  let color = '#8B4513'; // Default brown
+  switch (textureId) {
+    case 'wood':
+      color = '#8B4513';
+      break;
+    case 'brick':
+      color = '#B22222';
+      break;
+    case 'cobblestone':
+      color = '#696969';
+      break;
+    default:
+      color = '#8B4513';
+  }
+  
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 16, 16);
+  
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = RepeatWrapping;
+  texture.needsUpdate = true;
+  
+  return texture;
+};
+
+// Create procedural textures
+const createProceduralTexture = (textureId: string): Texture => {
+  const canvas = document.createElement('canvas');
+  const size = 64; // Larger texture for better quality
+  canvas.width = size;
+  canvas.height = size;
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Could not get canvas context');
+  
+  switch (textureId) {
+    case 'wood':
+      createWoodTexture(ctx, size);
+      break;
+    case 'brick':
+      createBrickTexture(ctx, size);
+      break;
+    case 'cobblestone':
+      createCobblestoneTexture(ctx, size);
+      break;
+    default:
+      createWoodTexture(ctx, size);
+  }
+  
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = RepeatWrapping;
+  texture.needsUpdate = true;
+  
+  return texture;
+};
+
+// Create wood grain texture
+const createWoodTexture = (ctx: CanvasRenderingContext2D, size: number) => {
+  // Base wood color
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(0, 0, size, size);
+  
+  // Add wood grain lines
+  ctx.strokeStyle = '#654321';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < size; i += 4) {
+    ctx.beginPath();
+    ctx.moveTo(0, i);
+    ctx.lineTo(size, i + Math.sin(i * 0.1) * 2);
+    ctx.stroke();
+  }
+  
+  // Add darker grain lines
+  ctx.strokeStyle = '#5D2F0A';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i < size; i += 8) {
+    ctx.beginPath();
+    ctx.moveTo(0, i);
+    ctx.lineTo(size, i + Math.sin(i * 0.15) * 1);
+    ctx.stroke();
+  }
+};
+
+// Create brick texture
+const createBrickTexture = (ctx: CanvasRenderingContext2D, size: number) => {
+  // Base brick color
+  ctx.fillStyle = '#B22222';
+  ctx.fillRect(0, 0, size, size);
+  
+  // Add mortar lines
+  ctx.strokeStyle = '#F5F5DC';
+  ctx.lineWidth = 2;
+  
+  // Horizontal mortar lines
+  for (let y = 0; y < size; y += 16) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(size, y);
+    ctx.stroke();
+  }
+  
+  // Vertical mortar lines (offset every other row)
+  for (let y = 0; y < size; y += 32) {
+    for (let x = 0; x < size; x += 32) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + 16);
+      ctx.stroke();
+    }
+    for (let x = 16; x < size; x += 32) {
+      ctx.beginPath();
+      ctx.moveTo(x, y + 16);
+      ctx.lineTo(x, y + 32);
+      ctx.stroke();
+    }
+  }
+};
+
+// Create cobblestone texture
+const createCobblestoneTexture = (ctx: CanvasRenderingContext2D, size: number) => {
+  // Base stone color
+  ctx.fillStyle = '#696969';
+  ctx.fillRect(0, 0, size, size);
+  
+  // Add random stone shapes
+  ctx.fillStyle = '#778899';
+  for (let i = 0; i < 20; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const w = 8 + Math.random() * 8;
+    const h = 8 + Math.random() * 8;
+    
+    ctx.fillRect(x, y, w, h);
+  }
+  
+  // Add darker stones
+  ctx.fillStyle = '#2F4F4F';
+  for (let i = 0; i < 15; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const w = 6 + Math.random() * 6;
+    const h = 6 + Math.random() * 6;
+    
+    ctx.fillRect(x, y, w, h);
+  }
 };
 
 // Predefined texture mappings for building blocks

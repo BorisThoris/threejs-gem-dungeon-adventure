@@ -6,10 +6,6 @@ import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
 import { SafeSpawnArea } from "./SafeSpawnArea";
 import MapContainer from "./MapContainer";
 import RoomInstanceManager from "./RoomInstanceManager";
-import RoomTransitionTest from "./RoomTransitionTest";
-import StoreTest from "./StoreTest";
-import RoomPositionTest from "./RoomPositionTest";
-import CorridorTest from "./CorridorTest";
 import MapUI from "./MapUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
@@ -36,10 +32,10 @@ const Ground: React.FC = () => {
         position={[0, -2, 0]}
         receiveShadow
         onClick={() => {
-          console.log("Floor clicked!");
+          // Floor clicked
         }}
         onPointerOver={() => {
-          console.log("Floor hovered!");
+          // Floor hovered
         }}
       >
         <planeGeometry args={[50, 50]} />
@@ -108,14 +104,6 @@ const GhostScene: React.FC = () => {
 };
 
 const StartScreenContent: React.FC = () => {
-  console.log("=== STARTSCREEN COMPONENT LOADED ===");
-  console.log(
-    "Environment:",
-    window.navigator.userAgent.toLowerCase().includes("electron")
-      ? "Electron"
-      : "Web Browser"
-  );
-
   const { inventory, useItem: consumeItem } = useGameStore();
   const { generateMap, currentMap } = useMapStore();
   const [isPaused, setIsPaused] = React.useState(false);
@@ -185,10 +173,6 @@ const StartScreenContent: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [isPaused]);
 
-  console.log("=== RENDERING STARTSCREEN ===");
-  console.log("Is paused:", isPaused);
-  console.log("Current map:", currentMap ? "exists" : "null");
-
   return (
     <div
       style={{
@@ -206,7 +190,6 @@ const StartScreenContent: React.FC = () => {
     >
       {!isPaused &&
         (() => {
-          console.log("=== RENDERING CANVAS ===");
           return (
             <Canvas
               shadows
@@ -233,64 +216,7 @@ const StartScreenContent: React.FC = () => {
               performance={{ min: 0.5 }}
               frameloop="demand"
               onCreated={({ gl, scene, camera }) => {
-                console.log("=== CANVAS ONCREATED CALLBACK FIRED ===");
-                // Comprehensive debugging
-                console.log("=== THREE.JS CANVAS DEBUG ===");
-                console.log("Three.js Canvas created");
-                console.log("WebGL Context:", gl.getContext());
-                console.log("Renderer Info:", gl.info);
-                console.log("Scene children count:", scene.children.length);
-                console.log("Camera position:", camera.position);
-                console.log("Camera rotation:", camera.rotation);
-
-                // Check if we're in Electron
-                const isElectron = window.navigator.userAgent
-                  .toLowerCase()
-                  .includes("electron");
-                console.log(
-                  "Environment:",
-                  isElectron ? "Electron" : "Web Browser"
-                );
-
-                if (isElectron) {
-                  console.log("=== ELECTRON-SPECIFIC DEBUG ===");
-                  console.log("User Agent:", window.navigator.userAgent);
-                  console.log("WebGL Context:", gl.getContext());
-                  console.log(
-                    "WebGL Extensions:",
-                    gl.getContext().getSupportedExtensions()
-                  );
-
-                  // Test basic WebGL functionality
-                  const canvas = gl.domElement;
-                  const context =
-                    canvas.getContext("webgl") ||
-                    canvas.getContext("experimental-webgl");
-                  if (context) {
-                    console.log("WebGL Test Results:", {
-                      version: context.getParameter(context.VERSION),
-                      vendor: context.getParameter(context.VENDOR),
-                      renderer: context.getParameter(context.RENDERER),
-                      maxTextureSize: context.getParameter(
-                        context.MAX_TEXTURE_SIZE
-                      ),
-                      maxVertexAttribs: context.getParameter(
-                        context.MAX_VERTEX_ATTRIBS
-                      ),
-                    });
-                  }
-                }
-
-                // Monitor scene changes
-                const originalAdd = scene.add.bind(scene);
-                scene.add = function (object) {
-                  console.log(
-                    "Adding object to scene:",
-                    object.type,
-                    object.name || "unnamed"
-                  );
-                  return originalAdd(object);
-                };
+                // Canvas created successfully
               }}
             >
               <GhostScene />
@@ -309,21 +235,6 @@ const StartScreenContent: React.FC = () => {
 
       {/* Pause Menu */}
       <PauseMenu isVisible={isPaused} onUnpause={handleUnpause} />
-
-      {/* Room Detection Debugger - Enable with 'D' key */}
-      <RoomDetectionDebugger enabled={true} />
-
-      {/* Room Transition Test - Debug component */}
-      <RoomTransitionTest />
-
-      {/* Store Test - Debug component */}
-      <StoreTest />
-
-      {/* Room Position Test - Debug component */}
-      <RoomPositionTest />
-
-      {/* Corridor Test - Debug component */}
-      <CorridorTest />
 
       {/* Shared Navigation */}
       <SharedNavigation currentPage="game" />

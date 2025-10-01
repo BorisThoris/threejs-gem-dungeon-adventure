@@ -9,14 +9,6 @@ import { ThemeProvider } from "./themes";
 import "./App.css";
 
 function App() {
-  console.log("=== APP COMPONENT LOADED ===");
-  console.log(
-    "Environment:",
-    window.navigator.userAgent.toLowerCase().includes("electron")
-      ? "Electron"
-      : "Web Browser"
-  );
-
   // Check URL parameter to show editor or texture painter
   const urlParams = new URLSearchParams(window.location.search);
   const showEditor = urlParams.get("editor") === "true";

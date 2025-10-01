@@ -49,20 +49,13 @@ const useMapStore = create<MapState & MapActions>((set, get) => ({
         generatedAt: Date.now(),
       };
       
-      // Debug logging for map generation
-      console.log('MapStore: Generated map with', result.rooms.length, 'rooms');
-      console.log('MapStore: Start room ID:', result.startRoomId);
-      console.log('MapStore: End room ID:', result.endRoomId);
       
       const startRoom = result.rooms.find(r => r.id === result.startRoomId);
       if (startRoom) {
-        console.log('MapStore: Start room connections:', startRoom.connections);
-        console.log('MapStore: Start room type:', startRoom.type);
       }
 
       // Initialize room bounds for optimized collision detection
       playerRoomDetection.initializeRoomBounds(result.rooms);
-      console.log('MapStore: Initialized room bounds for collision detection');
       
       set({
         currentMap: map,

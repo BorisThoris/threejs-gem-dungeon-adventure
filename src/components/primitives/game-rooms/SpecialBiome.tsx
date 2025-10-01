@@ -104,24 +104,29 @@ const SpecialBiome: React.FC<SpecialBiomeProps> = ({
         </mesh>
       </RigidBody>
 
-      {/* Atmospheric Particles */}
-      {Array.from({ length: 20 }).map((_, i) => (
-        <mesh
-          key={i}
-          position={[
-            (Math.random() - 0.5) * 8,
-            Math.random() * 3 + 1,
-            (Math.random() - 0.5) * 8,
-          ]}
-        >
-          <sphereGeometry args={[0.05, 4, 4]} />
-          <meshBasicMaterial
-            color={theme.particles}
-            transparent
-            opacity={0.6}
-          />
-        </mesh>
-      ))}
+      {/* Fixed Atmospheric Particles */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const positions = [
+          [-2, 1.5, -2],
+          [2, 1.5, -2],
+          [-2, 1.5, 2],
+          [2, 1.5, 2],
+          [-1, 2, -1],
+          [1, 2, -1],
+          [-1, 2, 1],
+          [1, 2, 1],
+        ];
+        return (
+          <mesh key={i} position={positions[i] as [number, number, number]}>
+            <sphereGeometry args={[0.05, 4, 4]} />
+            <meshBasicMaterial
+              color={theme.particles}
+              transparent
+              opacity={0.6}
+            />
+          </mesh>
+        );
+      })}
 
       {/* Central Altar/Shrine - Made much larger and more visible */}
       <group position={[0, 0, 0]}>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { RigidBody } from "@react-three/rapier";
 import {
   CircleGeometry,
@@ -6,6 +6,7 @@ import {
   CylinderGeometry,
   OctahedronGeometry,
 } from "three";
+import * as THREE from "three";
 import type { Room as RoomType, Item } from "../types/map";
 import { RoomType as RoomTypeValues } from "../types/map";
 import BiomeWallRenderer from "./BiomeWallRenderer";
@@ -31,6 +32,7 @@ import RoomInteraction from "./RoomInteraction";
 // import Door from "./Door"; // DISABLED FOR NOW
 import DestructibleWall from "./primitives/objects/DestructibleWall";
 import RoomDecorator from "./primitives/elements/RoomDecorator";
+import { loadTextureFromImage } from "../utils/textureUtils";
 
 interface RoomProps {
   room: RoomType;
@@ -53,13 +55,104 @@ const Room: React.FC<RoomProps> = ({
 }) => {
   const roomSize = room.size || 10;
 
-  // Debug logging for room rendering
-  console.log(`=== ROOM DEBUG: ${room.id} (${room.type}) ===`);
-  console.log("Room position:", room.position);
-  console.log("Room size:", roomSize);
-  console.log("Is current:", isCurrent);
-  console.log("Is visited:", isVisited);
-  console.log("Connected rooms:", connectedRooms.length);
+  // Texture loading state
+  const [textures, setTextures] = useState<{
+    wall?: THREE.Texture;
+    floor?: THREE.Texture;
+    roof?: THREE.Texture;
+  }>({});
+
+  // Load textures based on room type
+  useEffect(() => {
+    const loadTextures = async () => {
+      try {
+        const texturePromises: Array<{
+          key: string;
+          promise: Promise<THREE.Texture>;
+        }> = [];
+
+        // Determine textures based on room type
+        let wallTextureId = "brick";
+        let floorTextureId = "wood";
+        let roofTextureId = "wood";
+
+        switch (room.type) {
+          case RoomTypeValues.TREASURE:
+            wallTextureId = "brick";
+            floorTextureId = "wood";
+            roofTextureId = "wood";
+            break;
+          case RoomTypeValues.SHOP:
+            wallTextureId = "brick";
+            floorTextureId = "cobblestone";
+            roofTextureId = "brick";
+            break;
+          case RoomTypeValues.PUZZLE:
+            wallTextureId = "cobblestone";
+            floorTextureId = "wood";
+            roofTextureId = "cobblestone";
+            break;
+          case RoomTypeValues.LIBRARY:
+            wallTextureId = "wood";
+            floorTextureId = "wood";
+            roofTextureId = "wood";
+            break;
+          case RoomTypeValues.BOSS:
+            wallTextureId = "cobblestone";
+            floorTextureId = "cobblestone";
+            roofTextureId = "cobblestone";
+            break;
+          case RoomTypeValues.ENEMY:
+            wallTextureId = "brick";
+            floorTextureId = "cobblestone";
+            roofTextureId = "brick";
+            break;
+          default:
+            wallTextureId = "brick";
+            floorTextureId = "wood";
+            roofTextureId = "wood";
+        }
+
+        // Load wall texture
+        texturePromises.push({
+          key: "wall",
+          promise: loadTextureFromImage(wallTextureId),
+        });
+
+        // Load floor texture
+        texturePromises.push({
+          key: "floor",
+          promise: loadTextureFromImage(floorTextureId),
+        });
+
+        // Load roof texture
+        texturePromises.push({
+          key: "roof",
+          promise: loadTextureFromImage(roofTextureId),
+        });
+
+        const loadedTextures = await Promise.all(
+          texturePromises.map((tp) => tp.promise)
+        );
+
+        const textureMap: { [key: string]: THREE.Texture } = {};
+        texturePromises.forEach((tp, index) => {
+          const texture = loadedTextures[index];
+          // Set texture repeat for better tiling
+          texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(2, 2); // Repeat texture 2x2 times
+          texture.needsUpdate = true;
+          textureMap[tp.key] = texture;
+        });
+
+        setTextures(textureMap);
+      } catch (error) {
+        console.error("❌ Failed to load room textures:", error);
+      }
+    };
+
+    loadTextures();
+  }, [room.type]);
 
   // Compute door placement based on relative position of connected room - DISABLED FOR NOW
   // const getDoorPosition = (self: RoomType, target: RoomType) => {
@@ -160,8 +253,8 @@ const Room: React.FC<RoomProps> = ({
       : null;
 
   const wallThickness = 0.2;
-  const wallHeight = 3;
-  const doorWidth = 2; // Width of door openings
+  const wallHeight = 5;
+  const doorWidth = 3; // Width of door openings
 
   // Check which walls should have doors (connections)
   const hasNorthConnection = connectedRooms.some(
@@ -257,7 +350,14 @@ const Room: React.FC<RoomProps> = ({
         onClick={onClick}
       >
         {getRoomGeometry()}
-        <meshLambertMaterial color={roomColor} transparent opacity={opacity} />
+        <meshLambertMaterial
+          color={roomColor}
+          transparent
+          opacity={opacity}
+          map={textures.floor}
+          roughness={0.8}
+          metalness={0.0}
+        />
       </mesh>
 
       {/* Render walls based on biome config or fallback to traditional walls */}
@@ -288,12 +388,9 @@ const Room: React.FC<RoomProps> = ({
                   />
                   <meshLambertMaterial
                     color="#8B4513"
-                    onUpdate={(material) => {
-                      console.log(
-                        "North Wall Left Material created/updated:",
-                        material
-                      );
-                    }}
+                    map={textures.wall}
+                    roughness={0.8}
+                    metalness={0.0}
                   />
                 </mesh>
               </RigidBody>
@@ -312,12 +409,9 @@ const Room: React.FC<RoomProps> = ({
                   />
                   <meshLambertMaterial
                     color="#8B4513"
-                    onUpdate={(material) => {
-                      console.log(
-                        "North Wall Right Material created/updated:",
-                        material
-                      );
-                    }}
+                    map={textures.wall}
+                    roughness={0.8}
+                    metalness={0.0}
                   />
                 </mesh>
               </RigidBody>
@@ -326,20 +420,207 @@ const Room: React.FC<RoomProps> = ({
             <RigidBody type="fixed" colliders="trimesh">
               <mesh position={[0, wallHeight / 2, -roomSize / 2]} castShadow>
                 <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
-                <meshLambertMaterial
-                  color="#8B4513"
-                  onUpdate={(material) => {
-                    console.log(
-                      "North Wall Material created/updated:",
-                      material
-                    );
-                  }}
-                />
+                <meshLambertMaterial color="#8B4513" />
+              </mesh>
+            </RigidBody>
+          )}
+
+          {/* South Wall - Split into segments if there's a door */}
+          {hasSouthConnection ? (
+            <>
+              {/* Left segment */}
+              <RigidBody type="fixed" colliders="trimesh">
+                <mesh
+                  position={[-roomSize / 4, wallHeight / 2, roomSize / 2]}
+                  castShadow
+                >
+                  <boxGeometry
+                    args={[
+                      roomSize / 2 - doorWidth / 2,
+                      wallHeight,
+                      wallThickness,
+                    ]}
+                  />
+                  <meshLambertMaterial
+                    color="#8B4513"
+                    map={textures.wall}
+                    roughness={0.8}
+                    metalness={0.0}
+                  />
+                </mesh>
+              </RigidBody>
+              {/* Right segment */}
+              <RigidBody type="fixed" colliders="trimesh">
+                <mesh
+                  position={[roomSize / 4, wallHeight / 2, roomSize / 2]}
+                  castShadow
+                >
+                  <boxGeometry
+                    args={[
+                      roomSize / 2 - doorWidth / 2,
+                      wallHeight,
+                      wallThickness,
+                    ]}
+                  />
+                  <meshLambertMaterial
+                    color="#8B4513"
+                    map={textures.wall}
+                    roughness={0.8}
+                    metalness={0.0}
+                  />
+                </mesh>
+              </RigidBody>
+            </>
+          ) : (
+            <RigidBody type="fixed" colliders="trimesh">
+              <mesh position={[0, wallHeight / 2, roomSize / 2]} castShadow>
+                <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
+                <meshLambertMaterial color="#8B4513" />
+              </mesh>
+            </RigidBody>
+          )}
+
+          {/* East Wall - Split into segments if there's a door */}
+          {hasEastConnection ? (
+            <>
+              {/* Top segment */}
+              <RigidBody type="fixed" colliders="trimesh">
+                <mesh
+                  position={[roomSize / 2, wallHeight / 2, -roomSize / 4]}
+                  castShadow
+                >
+                  <boxGeometry
+                    args={[
+                      wallThickness,
+                      wallHeight,
+                      roomSize / 2 - doorWidth / 2,
+                    ]}
+                  />
+                  <meshLambertMaterial
+                    color="#8B4513"
+                    map={textures.wall}
+                    roughness={0.8}
+                    metalness={0.0}
+                  />
+                </mesh>
+              </RigidBody>
+              {/* Bottom segment */}
+              <RigidBody type="fixed" colliders="trimesh">
+                <mesh
+                  position={[roomSize / 2, wallHeight / 2, roomSize / 4]}
+                  castShadow
+                >
+                  <boxGeometry
+                    args={[
+                      wallThickness,
+                      wallHeight,
+                      roomSize / 2 - doorWidth / 2,
+                    ]}
+                  />
+                  <meshLambertMaterial
+                    color="#8B4513"
+                    map={textures.wall}
+                    roughness={0.8}
+                    metalness={0.0}
+                  />
+                </mesh>
+              </RigidBody>
+            </>
+          ) : (
+            <RigidBody type="fixed" colliders="trimesh">
+              <mesh position={[roomSize / 2, wallHeight / 2, 0]} castShadow>
+                <boxGeometry args={[wallThickness, wallHeight, roomSize]} />
+                <meshLambertMaterial color="#8B4513" />
+              </mesh>
+            </RigidBody>
+          )}
+
+          {/* West Wall - Split into segments if there's a door */}
+          {hasWestConnection ? (
+            <>
+              {/* Top segment */}
+              <RigidBody type="fixed" colliders="trimesh">
+                <mesh
+                  position={[-roomSize / 2, wallHeight / 2, -roomSize / 4]}
+                  castShadow
+                >
+                  <boxGeometry
+                    args={[
+                      wallThickness,
+                      wallHeight,
+                      roomSize / 2 - doorWidth / 2,
+                    ]}
+                  />
+                  <meshLambertMaterial
+                    color="#8B4513"
+                    map={textures.wall}
+                    roughness={0.8}
+                    metalness={0.0}
+                  />
+                </mesh>
+              </RigidBody>
+              {/* Bottom segment */}
+              <RigidBody type="fixed" colliders="trimesh">
+                <mesh
+                  position={[-roomSize / 2, wallHeight / 2, roomSize / 4]}
+                  castShadow
+                >
+                  <boxGeometry
+                    args={[
+                      wallThickness,
+                      wallHeight,
+                      roomSize / 2 - doorWidth / 2,
+                    ]}
+                  />
+                  <meshLambertMaterial
+                    color="#8B4513"
+                    map={textures.wall}
+                    roughness={0.8}
+                    metalness={0.0}
+                  />
+                </mesh>
+              </RigidBody>
+            </>
+          ) : (
+            <RigidBody type="fixed" colliders="trimesh">
+              <mesh position={[-roomSize / 2, wallHeight / 2, 0]} castShadow>
+                <boxGeometry args={[wallThickness, wallHeight, roomSize]} />
+                <meshLambertMaterial color="#8B4513" />
               </mesh>
             </RigidBody>
           )}
         </>
       )}
+
+      {/* Roof */}
+      <RigidBody type="fixed" colliders="trimesh">
+        <mesh
+          position={[0, wallHeight, 0]}
+          rotation={[0, 0, 0]}
+          castShadow
+          receiveShadow
+        >
+          <boxGeometry args={[roomSize, 0.2, roomSize]} />
+          <meshLambertMaterial
+            color="#8B7355"
+            map={textures.roof}
+            roughness={0.8}
+            metalness={0.0}
+          />
+        </mesh>
+      </RigidBody>
+
+      {/* Safety Ground Plane - prevents falling through floor */}
+      <RigidBody type="fixed" colliders="trimesh">
+        <mesh
+          position={[0, -roomHeight / 2 - 1, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          receiveShadow
+        >
+          <planeGeometry args={[roomSize * 2, roomSize * 2]} />
+          <meshLambertMaterial color="#4A4A4A" transparent opacity={0.1} />
+        </mesh>
+      </RigidBody>
 
       {/* Current Room Indicator */}
       <mesh position={[0, roomHeight + 0.5, 0]}>
@@ -350,30 +631,6 @@ const Room: React.FC<RoomProps> = ({
           opacity={isCurrent ? 1 : 0.7}
         />
       </mesh>
-
-      {/* Room Type Icon */}
-      {room.type !== RoomTypeValues.NORMAL && (
-        <mesh position={[0, roomHeight + 0.8, 0]}>
-          <boxGeometry args={[0.2, 0.2, 0.2]} />
-          <meshLambertMaterial color="#FFFFFF" />
-        </mesh>
-      )}
-
-      {/* Room Type Label */}
-      <mesh position={[0, roomHeight + 1.2, 0]}>
-        <planeGeometry args={[2, 0.5]} />
-        <meshLambertMaterial color="#FFFFFF" transparent opacity={0.8} />
-      </mesh>
-
-      {/* Simple visual indicator for special rooms */}
-      {room.type !== RoomTypeValues.NORMAL &&
-        room.type !== RoomTypeValues.START &&
-        room.type !== RoomTypeValues.END && (
-          <mesh position={[0, 2, 0]}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshBasicMaterial color={roomColor} />
-          </mesh>
-        )}
 
       {/* Room Decorations - Add elements to all room types */}
       <RoomDecorator roomType={room.type} roomSize={roomSize} />
@@ -389,7 +646,6 @@ const Room: React.FC<RoomProps> = ({
           <PuzzleBiome
             puzzle={(room as any).puzzle}
             onPuzzleComplete={() => {
-              console.log("Puzzle completed!");
               // Handle puzzle completion through card system
             }}
           />
@@ -403,11 +659,9 @@ const Room: React.FC<RoomProps> = ({
             roomType={room.type as any}
             items={(room as any).items || []}
             onItemInteraction={(item) => {
-              console.log(`Interacted with special item: ${item.name}`);
               // Handle special item interaction through card system
             }}
             onRoomEnter={() => {
-              console.log(`Entered ${room.type}`);
               // Handle special room entry through card system
             }}
           />
@@ -480,7 +734,6 @@ const Room: React.FC<RoomProps> = ({
                 }
                 scale={0.5}
                 onClick={() => {
-                  console.log(`Picked up ${item.name}`);
                   // Handle item pickup
                 }}
               />
@@ -491,11 +744,9 @@ const Room: React.FC<RoomProps> = ({
               <PuzzleGrid
                 puzzle={(room as any).puzzle}
                 onTileClick={(tile) => {
-                  console.log(`Clicked tile: ${tile.id}`);
                   // Handle puzzle tile click
                 }}
                 onComplete={() => {
-                  console.log("Puzzle completed!");
                   // Handle puzzle completion
                 }}
               />

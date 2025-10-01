@@ -29,11 +29,9 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     // Check if room is already loaded
     const existingInstance = get().roomInstances.get(roomId);
     if (existingInstance?.isLoaded) {
-      console.log(`Room ${roomId} already loaded`);
       return;
     }
 
-    console.log(`Loading room: ${roomId} (${room.type})`);
     
     set({ isLoading: true, loadingProgress: 0 });
 
@@ -76,7 +74,6 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
       });
 
       clearInterval(progressInterval);
-      console.log(`Room ${roomId} loaded successfully`);
     } catch (error) {
       console.error(`Failed to load room ${roomId}:`, error);
       clearInterval(progressInterval);
@@ -88,7 +85,6 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     const newInstances = new Map(get().roomInstances);
     newInstances.delete(roomId);
     set({ roomInstances: newInstances });
-    console.log(`Unloaded room: ${roomId}`);
   },
 
   setActiveRoom: (roomId: string) => {
@@ -111,11 +107,18 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
       roomInstances: newInstances 
     });
 
-    console.log(`Set active room: ${roomId}`);
   },
 
   startTransition: async (fromRoomId: string, toRoomId: string, direction: 'north' | 'south' | 'east' | 'west') => {
-    console.log(`Starting instant transition: ${fromRoomId} -> ${toRoomId} (${direction})`);
+    
+    // Validate that the target room exists in the map
+    const { currentMap } = useMapStore.getState();
+    const targetRoom = currentMap?.rooms.find(r => r.id === toRoomId);
+    
+    if (!targetRoom) {
+      console.error(`Cannot transition to room ${toRoomId}: Room does not exist in map`);
+      return;
+    }
     
     // Load the target room if not already loaded
     await get().loadRoom(toRoomId);
@@ -124,45 +127,50 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     get().setActiveRoom(toRoomId);
     
     // Emit teleportation event for player to listen to
-    const { currentMap } = useMapStore.getState();
-    const targetRoom = currentMap?.rooms.find(r => r.id === toRoomId);
     if (targetRoom) {
       const roomSize = targetRoom.size || 10;
       
       // Calculate entrance position (room is at origin in room-instance mode)
       const entranceDistance = 2;
+      const roomHalfSize = roomSize / 2;
       let position: THREE.Vector3;
       let rotation: THREE.Euler;
 
       switch (direction) {
         case 'north':
-          position = new THREE.Vector3(0, 1, -roomSize / 2 + entranceDistance);
+          position = new THREE.Vector3(0, 1.6, -roomHalfSize + entranceDistance);
           rotation = new THREE.Euler(0, 0, 0); // Face into room
           break;
         case 'south':
-          position = new THREE.Vector3(0, 1, roomSize / 2 - entranceDistance);
+          position = new THREE.Vector3(0, 1.6, roomHalfSize - entranceDistance);
           rotation = new THREE.Euler(0, Math.PI, 0); // Face into room
           break;
         case 'east':
-          position = new THREE.Vector3(roomSize / 2 - entranceDistance, 1, 0);
+          position = new THREE.Vector3(roomHalfSize - entranceDistance, 1.6, 0);
           rotation = new THREE.Euler(0, -Math.PI / 2, 0); // Face into room
           break;
         case 'west':
-          position = new THREE.Vector3(-roomSize / 2 + entranceDistance, 1, 0);
+          position = new THREE.Vector3(-roomHalfSize + entranceDistance, 1.6, 0);
           rotation = new THREE.Euler(0, Math.PI / 2, 0); // Face into room
           break;
         default:
-          position = new THREE.Vector3(0, 1, roomSize / 2 - entranceDistance);
+          position = new THREE.Vector3(0, 1.6, roomHalfSize - entranceDistance);
           rotation = new THREE.Euler(0, Math.PI, 0);
       }
 
+      // Validate spawn position is within room bounds
+      const isWithinBounds = 
+        Math.abs(position.x) < roomHalfSize - 1 && 
+        Math.abs(position.z) < roomHalfSize - 1;
+      
+      if (!isWithinBounds) {
+        console.warn(`Spawn position ${position.toArray()} is out of bounds for room size ${roomSize}`);
+        // Fallback to center of room
+        position = new THREE.Vector3(0, 1.6, 0);
+        rotation = new THREE.Euler(0, 0, 0);
+      }
+
       // Emit teleportation event
-      console.log('Emitting teleportation event:', {
-        position: position.toArray(),
-        rotation: rotation.toArray(),
-        direction,
-        roomSize
-      });
       
       window.dispatchEvent(new CustomEvent('playerTeleport', {
         detail: { position: position.toArray(), rotation: rotation.toArray() }
@@ -174,14 +182,12 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
       get().unloadRoom(fromRoomId);
     }, 100);
     
-    console.log(`Transition completed: ${fromRoomId} -> ${toRoomId}`);
   },
 
   completeTransition: () => {
     const { transition } = get();
     if (!transition) return;
 
-    console.log(`Completing transition: ${transition.fromRoomId} -> ${transition.toRoomId}`);
     
     // Set new active room
     get().setActiveRoom(transition.toRoomId);
