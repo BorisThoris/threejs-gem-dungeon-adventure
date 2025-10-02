@@ -77,7 +77,7 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
           );
         };
       } catch (error) {
-        console.error("Failed to initialize improved game:", error);
+        // Failed to initialize improved game
       }
     };
 

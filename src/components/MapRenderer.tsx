@@ -58,11 +58,11 @@ const MapRenderer: React.FC = () => {
             connectedRooms={connectedRooms}
             playerPosition={[0, 0, 0]} // This would be actual player position
             onInteraction={(interactionType, roomId) => {
-              console.log(`Interaction: ${interactionType} in room ${roomId}`);
+              // Interaction
             }}
             onClick={() => {
               // Handle room click for navigation
-              console.log(`Clicked room: ${room.id} (${room.type})`);
+              // Clicked room
             }}
           />
         );

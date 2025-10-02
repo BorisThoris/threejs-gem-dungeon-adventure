@@ -413,7 +413,7 @@ export class RoomNavigationSystem extends BrowserEventEmitter {
 
   // Manual door update for debugging
   forceUpdateDoors(): void {
-    console.log('🔧 Force updating doors...');
+    // Force updating doors
     this.updateDoors();
   }
 

@@ -71,11 +71,11 @@ export const useGameState = () => {
   // Subscribe to events for external updates
   useEffect(() => {
     const unsubscribeRoomEnter = gameEvents.on(GAME_EVENTS.ROOM_ENTER, (roomId) => {
-      console.log('Room entered:', roomId);
+      // Room entered
     });
 
     const unsubscribeGamePhase = gameEvents.on(GAME_EVENTS.GAME_PHASE_CHANGE, (phase) => {
-      console.log('Game phase changed:', phase);
+      // Game phase changed
     });
 
     return () => {

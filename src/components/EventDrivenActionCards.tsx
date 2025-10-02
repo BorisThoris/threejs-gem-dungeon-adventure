@@ -72,12 +72,24 @@ const EventDrivenActionCards: React.FC = () => {
   // Memoize callbacks to prevent unnecessary re-renders
   const callbacks = useMemo(
     () => ({
-      onPuzzleStart: () => console.log("Puzzle started!"),
-      onShopOpen: () => console.log("Shop opened!"),
-      onChallengeStart: () => console.log("Challenge started!"),
-      onTreasureOpen: () => console.log("Treasure opened!"),
-      onArenaFight: () => console.log("Arena fight started!"),
-      onBossFight: () => console.log("Boss fight started!"),
+      onPuzzleStart: () => {
+        /* Puzzle started! */
+      },
+      onShopOpen: () => {
+        /* Shop opened! */
+      },
+      onChallengeStart: () => {
+        /* Challenge started! */
+      },
+      onTreasureOpen: () => {
+        /* Treasure opened! */
+      },
+      onArenaFight: () => {
+        /* Arena fight started! */
+      },
+      onBossFight: () => {
+        /* Boss fight started! */
+      },
     }),
     []
   );
@@ -103,7 +115,7 @@ const EventDrivenActionCards: React.FC = () => {
     const unsubscribeRoomEnter = gameEvents.on(
       GAME_EVENTS.ROOM_ENTER,
       (room) => {
-        console.log("Room entered via event:", room);
+        // Room entered via event
         setCurrentRoom(room);
 
         // Show cards after a short delay
@@ -115,7 +127,7 @@ const EventDrivenActionCards: React.FC = () => {
     );
 
     const unsubscribeRoomExit = gameEvents.on(GAME_EVENTS.ROOM_EXIT, (room) => {
-      console.log("Room exited via event:", room);
+      // Room exited via event
       setCurrentRoom(null);
       hideCards();
       setIsVisible(false);
@@ -124,7 +136,7 @@ const EventDrivenActionCards: React.FC = () => {
     const unsubscribeGamePhase = gameEvents.on(
       GAME_EVENTS.GAME_PHASE_CHANGE,
       (phase) => {
-        console.log("Game phase changed via event:", phase);
+        // Game phase changed via event
       }
     );
 
@@ -145,7 +157,7 @@ const EventDrivenActionCards: React.FC = () => {
       cards={cards}
       isVisible={isVisible && cardsVisible}
       onCardClick={(card) => {
-        console.log(`Card clicked: ${card.id} in room ${currentRoom.id}`);
+        // Card clicked
         hideCards();
         setIsVisible(false);
       }}

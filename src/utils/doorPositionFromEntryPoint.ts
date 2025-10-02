@@ -21,11 +21,11 @@ export function getDoorPositionFromEntryPoint(
   });
 
   if (!entryPoint) {
-    console.log(`No active entry point found in ${currentRoom.id} for target ${targetRoomId}`);
+    // No active entry point found
     return null;
   }
 
-  console.log(`Using entry point ${entryPoint.id} (${entryPoint.direction}) for door to ${targetRoomId}`);
+  // Using entry point
   
   // Convert entry point to door position
   return {
@@ -80,7 +80,7 @@ export function calculateDoorPositionFromEntryPoints(
     });
     
     if (targetEntryPoint) {
-      console.log(`Found entry point for ${targetRoomId} at ${targetEntryPoint.direction}: [${targetEntryPoint.position.x}, ${targetEntryPoint.position.z}]`);
+      // Found entry point
       return {
         pos: [targetEntryPoint.position.x, 1.5, targetEntryPoint.position.z],
         rot: getRotationFromDirection(targetEntryPoint.direction),
@@ -91,7 +91,7 @@ export function calculateDoorPositionFromEntryPoints(
     const activeEntryPoints = currentRoom.entryPoints.filter(ep => ep.isActive);
     if (activeEntryPoints.length > 0 && connectionIndex < activeEntryPoints.length) {
       const entryPoint = activeEntryPoints[connectionIndex];
-      console.log(`Using fallback entry point ${connectionIndex} at ${entryPoint.direction}`);
+      // Using fallback entry point
       return {
         pos: [entryPoint.position.x, 1.5, entryPoint.position.z],
         rot: getRotationFromDirection(entryPoint.direction),
@@ -100,7 +100,7 @@ export function calculateDoorPositionFromEntryPoints(
   }
 
   // No entry points available
-  console.log(`No entry points available for ${currentRoom.id} -> ${targetRoomId}`);
+  // No entry points available
   return null;
 }
 

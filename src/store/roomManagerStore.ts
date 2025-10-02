@@ -17,13 +17,13 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
   loadRoom: async (roomId: string) => {
     const { currentMap } = useMapStore.getState();
     if (!currentMap) {
-      console.error('No map available for room loading');
+      // No map available for room loading
       return;
     }
 
     const room = currentMap.rooms.find(r => r.id === roomId);
     if (!room) {
-      console.error(`Room ${roomId} not found in map`);
+      // Room not found in map
       return;
     }
 
@@ -81,7 +81,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
 
       clearInterval(progressInterval);
     } catch (error) {
-      console.error(`Failed to load room ${roomId}:`, error);
+      // Failed to load room
       clearInterval(progressInterval);
       set({ isLoading: false, loadingProgress: 0 });
     }
@@ -98,7 +98,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     const roomInstance = roomInstances.get(roomId);
     
     if (!roomInstance || !roomInstance.isLoaded) {
-      console.error(`Cannot set active room ${roomId}: not loaded`);
+      // Cannot set active room
       return;
     }
 
@@ -122,7 +122,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     const targetRoom = currentMap?.rooms.find(r => r.id === toRoomId);
     
     if (!targetRoom) {
-      console.error(`Cannot transition to room ${toRoomId}: Room does not exist in map`);
+      // Cannot transition to room
       return;
     }
 
@@ -178,7 +178,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
         Math.abs(position.z) < roomHalfSize - 1;
       
       if (!isWithinBounds) {
-        console.warn(`Spawn position ${position.toArray()} is out of bounds for room size ${roomSize}`);
+        // Spawn position is out of bounds
         // Fallback to center of room
         position = new THREE.Vector3(0, 1.6, 0);
         rotation = new THREE.Euler(0, 0, 0);
@@ -216,7 +216,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     const roomInstance = roomInstances.get(roomId);
     
     if (!roomInstance) {
-      console.error(`Room ${roomId} not found for state update`);
+      // Room not found for state update
       return;
     }
 

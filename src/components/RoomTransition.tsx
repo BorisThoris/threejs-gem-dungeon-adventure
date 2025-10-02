@@ -16,14 +16,14 @@ const RoomTransition: React.FC<RoomTransitionProps> = ({
 
   useEffect(() => {
     if (isTransitioning) {
-      console.log("RoomTransition: Starting transition");
+      // RoomTransition: Starting transition
 
       // Immediate fade in
       setFadeOpacity(1);
 
       // Complete transition after duration
       const timer = setTimeout(() => {
-        console.log("RoomTransition: Transition completed");
+        // RoomTransition: Transition completed
         setFadeOpacity(0);
         // Small delay before calling completion to ensure fade out is visible
         setTimeout(() => {

@@ -51,7 +51,7 @@ const WoodenFence: React.FC<WoodenFenceProps> = ({
         const loadedTexture = await loadTextureFromImage("wood");
         setWoodTexture(loadedTexture);
       } catch (error) {
-        console.error("Failed to load wood texture:", error);
+        // Failed to load wood texture
       }
     };
 

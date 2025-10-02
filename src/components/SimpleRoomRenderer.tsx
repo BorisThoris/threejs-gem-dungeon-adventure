@@ -7,7 +7,7 @@ const SimpleRoomRenderer: React.FC = () => {
   const currentRoom = ROOM_DEFINITIONS[currentRoomId];
 
   if (!currentRoom) {
-    console.error(`Room ${currentRoomId} not found!`);
+    // Room not found
     return null;
   }
 

@@ -12,9 +12,9 @@ const PresetTextureGenerator: React.FC = () => {
     try {
       const textures = generateThemeTextures();
       setGeneratedTextures(textures);
-      console.log("Generated theme textures:", textures);
+      // Generated theme textures
     } catch (error) {
-      console.error("Failed to generate textures:", error);
+      // Failed to generate textures
     } finally {
       setIsGenerating(false);
     }
@@ -42,7 +42,7 @@ const PresetTextureGenerator: React.FC = () => {
       await navigator.clipboard.writeText(manifest);
       alert("JSON definitions copied to clipboard!");
     } catch (error) {
-      console.error("Failed to copy manifest:", error);
+      // Failed to copy manifest
     }
   };
 

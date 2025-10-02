@@ -108,7 +108,7 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
           cards={cards}
           isVisible={isVisible}
           onCardClick={(card) => {
-            console.log(`Card clicked: ${card.id} in room ${room.id}`);
+            // Card clicked
             // Handle the actual interaction through the card
             onInteraction(card.id, room.id);
             hideCards();

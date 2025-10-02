@@ -45,7 +45,7 @@ export class EditorConfigGenerator {
     const filePath = path.join(this.outputPath, 'roomConfig.ts');
     fs.writeFileSync(filePath, config);
     
-    console.log(`Generated room configuration with ${rooms.length} rooms`);
+    // Generated room configuration
   }
 
   /**
@@ -59,7 +59,7 @@ export class EditorConfigGenerator {
     const filePath = path.join(this.outputPath, 'objectConfig.ts');
     fs.writeFileSync(filePath, config);
     
-    console.log(`Generated object configuration with ${objects.length} objects`);
+    // Generated object configuration
   }
 
   /**
@@ -73,7 +73,7 @@ export class EditorConfigGenerator {
     const filePath = path.join(this.outputPath, 'elementConfig.ts');
     fs.writeFileSync(filePath, config);
     
-    console.log(`Generated element configuration with ${elements.length} elements`);
+    // Generated element configuration
   }
 
   /**
@@ -87,7 +87,7 @@ export class EditorConfigGenerator {
     const filePath = path.join(this.outputPath, 'editorConfig.ts');
     fs.writeFileSync(filePath, config);
     
-    console.log(`Generated combined configuration with ${allComponents.length} components`);
+    // Generated combined configuration
   }
 
   /**
@@ -282,7 +282,7 @@ export interface PropMetadata {
 export async function generateEditorConfigurations(): Promise<void> {
   const generator = new EditorConfigGenerator();
   await generator.generateAll();
-  console.log('All editor configurations generated successfully!');
+  // All editor configurations generated successfully!
 }
 
 

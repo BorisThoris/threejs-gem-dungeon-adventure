@@ -172,7 +172,7 @@ export function applyConnectionRepairs(map: GameMap, repairs: ConnectionRepair[]
         }
       }
       
-      console.log(`Applied repair: ${room.id} <-> ${targetRoom.id} (${repair.connectionType})`);
+      // Applied repair
     }
   }
   
@@ -186,41 +186,29 @@ export function applyConnectionRepairs(map: GameMap, repairs: ConnectionRepair[]
  * Ensures all rooms in a map have at least one connection
  */
 export function ensureRoomConnectivity(map: GameMap): GameMap {
-  console.log('🔗 Ensuring room connectivity...');
+  // Ensuring room connectivity
   
   const report = analyzeConnectivity(map);
-  console.log('Connectivity report:', {
-    totalRooms: report.totalRooms,
-    connectedRooms: report.connectedRooms,
-    isolatedRooms: report.isolatedRooms.length,
-    components: report.connectedComponents.length,
-    isFullyConnected: report.isFullyConnected
-  });
+  // Connectivity report
   
   if (!report.needsRepair) {
-    console.log('✅ All rooms are already connected');
+    // All rooms are already connected
     return map;
   }
   
   const repairs = generateConnectionRepairs(map, report);
-  console.log(`🔧 Generated ${repairs.length} connection repairs`);
+  // Generated connection repairs
   
   const repairedMap = applyConnectionRepairs(map, repairs);
   
   // Verify the repair worked
   const finalReport = analyzeConnectivity(repairedMap);
-  console.log('Final connectivity report:', {
-    totalRooms: finalReport.totalRooms,
-    connectedRooms: finalReport.connectedRooms,
-    isolatedRooms: finalReport.isolatedRooms.length,
-    components: finalReport.connectedComponents.length,
-    isFullyConnected: finalReport.isFullyConnected
-  });
+  // Final connectivity report
   
   if (finalReport.isFullyConnected) {
-    console.log('✅ All rooms are now connected');
+    // All rooms are now connected
   } else {
-    console.warn('⚠️ Some rooms may still be isolated');
+    // Some rooms may still be isolated
   }
   
   return repairedMap;

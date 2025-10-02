@@ -124,11 +124,11 @@ const EnhancedDoor: React.FC<EnhancedDoorProps> = React.memo(
         event.stopPropagation();
 
         if (isLocked) {
-          console.log(`Door ${id} is locked, requires key: ${keyRequired}`);
+          // Door is locked, requires key
           return;
         }
 
-        console.log(`Door clicked: ${id} -> ${targetRoomId}`);
+        // Door clicked
         onDoorClick(id, targetRoomId);
       },
       [id, targetRoomId, isLocked, keyRequired, onDoorClick]

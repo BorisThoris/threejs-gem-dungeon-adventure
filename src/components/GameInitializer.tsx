@@ -42,7 +42,7 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
       setProgress(0.3);
       setStepComplete("textures", true);
     } catch (error) {
-      console.warn("Failed to preload some textures:", error);
+      // Failed to preload some textures
       // Continue even if texture loading fails
       setProgress(0.3);
       setStepComplete("textures", true);
@@ -75,25 +75,20 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
               (r) => r.id === connectedRoomIds[i]
             );
             if (!roomExists) {
-              console.warn(
-                `Room ${connectedRoomIds[i]} does not exist in map, skipping`
-              );
+              // Room does not exist in map, skipping
               continue;
             }
             await loadRoom(connectedRoomIds[i]);
             setProgress(0.4 + (i / connectedRoomIds.length) * 0.3);
           } catch (error) {
-            console.warn(
-              `Failed to preload room ${connectedRoomIds[i]}:`,
-              error
-            );
+            // Failed to preload room
             // Continue with other rooms
           }
         }
       }
       setStepComplete("rooms", true);
     } catch (error) {
-      console.warn("Failed to preload some rooms:", error);
+      // Failed to preload some rooms
       setStepComplete("rooms", true);
     }
   };
@@ -170,7 +165,7 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
         setComplete(true);
         setInitializing(false); // Mark initialization as complete
       } catch (error) {
-        console.error("Initialization failed:", error);
+        // Initialization failed
         setError(error instanceof Error ? error.message : "Unknown error");
         setInitializing(false); // Mark initialization as complete even on error
       }

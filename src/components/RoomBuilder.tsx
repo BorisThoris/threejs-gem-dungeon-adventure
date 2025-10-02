@@ -298,7 +298,9 @@ const RoomBuilder: React.FC = () => {
             <MultiBiomeRoom
               roomSize={roomSize}
               biomes={currentBiomes}
-              onRoomComplete={() => console.log("Room complete!")}
+              onRoomComplete={() => {
+                /* Room complete! */
+              }}
             />
           </Physics>
 

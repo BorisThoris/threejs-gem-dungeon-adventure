@@ -35,11 +35,9 @@ const CleanBreakableRoom: React.FC<CleanBreakableRoomProps> = ({
     setBrokenObjects((prev) => {
       if (!prev.includes(objectId)) {
         const newBroken = [...prev, objectId];
-        console.log(
-          `Object ${objectId} broken! Total broken: ${newBroken.length}/${totalObjects}`
-        );
+        // Object broken
         if (newBroken.length >= totalObjects) {
-          console.log("All objects broken! Room complete!");
+          // All objects broken! Room complete!
           onRoomComplete?.();
         }
         return newBroken;
@@ -51,11 +49,11 @@ const CleanBreakableRoom: React.FC<CleanBreakableRoomProps> = ({
   const handleFragmentCreated = (newFragments: any[]) => {
     const meshes = newFragments.map((f) => f.mesh);
     setFragments((prev) => [...prev, ...meshes]);
-    console.log(`Added ${newFragments.length} new fragments`);
+    // Added new fragments
   };
 
   const handleFragmentClick = (fragmentId: string) => {
-    console.log(`Fragment ${fragmentId} clicked!`);
+    // Fragment clicked
     // Fragments can be broken further if needed
   };
 
@@ -64,7 +62,7 @@ const CleanBreakableRoom: React.FC<CleanBreakableRoomProps> = ({
     setFragments([]);
     setResetKey((prev) => prev + 1); // Force re-render of all BreakableMesh components
     setShowResetMessage(true);
-    console.log("Room reset! All objects restored.");
+    // Room reset! All objects restored.
 
     // Hide reset message after 2 seconds
     setTimeout(() => {
@@ -81,12 +79,12 @@ const CleanBreakableRoom: React.FC<CleanBreakableRoomProps> = ({
   React.useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "r") {
-        console.log("R key pressed - resetting room!");
+        // R key pressed - resetting room!
         repairAll();
       }
       if (event.key.toLowerCase() === "b") {
         setBreakingEnabled((prev) => !prev);
-        console.log(`Breaking toggled: ${!breakingEnabled ? "ON" : "OFF"}`);
+        // Breaking toggled
       }
     };
 
@@ -482,7 +480,7 @@ const CleanBreakableRoom: React.FC<CleanBreakableRoomProps> = ({
         <mesh
           position={[0, 0, 0]}
           onClick={() => {
-            console.log("Reset button clicked!");
+            // Object broken"Reset button clicked!");
             repairAll();
           }}
           onPointerOver={() => {

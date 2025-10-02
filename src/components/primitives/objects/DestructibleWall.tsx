@@ -51,10 +51,10 @@ const DestructibleWall: React.FC<DestructibleWallProps> = ({
       // Use a bomb
       if (playerStats.bombs > 0) {
         // This will be handled by the parent component
-        console.log("Using bomb from player stats");
+        // Using bomb from player stats
       } else if (hasBombItem) {
         // This will be handled by the parent component
-        console.log("Using bomb item");
+        // Using bomb item
       }
     }
 

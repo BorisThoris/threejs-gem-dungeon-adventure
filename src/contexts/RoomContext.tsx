@@ -128,10 +128,10 @@ export const RoomProvider: React.FC<{ children: ReactNode }> = ({
 
   const navigateToRoom = (roomId: string) => {
     if (ROOM_DEFINITIONS[roomId]) {
-      console.log(`Navigating from ${currentRoomId} to ${roomId}`);
+      // Navigating from room to room
       setCurrentRoomId(roomId);
     } else {
-      console.warn(`Room ${roomId} not found!`);
+      // Room not found
     }
   };
 

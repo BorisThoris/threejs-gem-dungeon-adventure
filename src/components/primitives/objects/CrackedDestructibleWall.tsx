@@ -49,7 +49,9 @@ const CrackedDestructibleWall: React.FC<CrackedDestructibleWallProps> = ({
   useEffect(() => {
     loadTextureFromImage("brick")
       .then(setBrickTexture)
-      .catch((error) => console.error("Failed to load brick texture:", error));
+      .catch((error) => {
+        /* Failed to load brick texture */
+      });
   }, []);
 
   // Check if player can destroy the wall
@@ -128,9 +130,9 @@ const CrackedDestructibleWall: React.FC<CrackedDestructibleWallProps> = ({
     if (bombRequired) {
       // Use a bomb
       if (playerStats.bombs > 0) {
-        console.log("Using bomb from player stats");
+        // Using bomb from player stats
       } else if (hasBombItem) {
-        console.log("Using bomb item");
+        // Using bomb item
       }
     }
 

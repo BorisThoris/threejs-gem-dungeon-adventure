@@ -65,7 +65,7 @@ export const usePlayerTeleportation = () => {
   const teleportToEntrance = useCallback(
     (roomSize: number, direction: "north" | "south" | "east" | "west") => {
       if (!playerRef.current) {
-        console.warn("Player ref not set, cannot teleport");
+        // Player ref not set, cannot teleport
         return;
       }
 
@@ -74,11 +74,7 @@ export const usePlayerTeleportation = () => {
         direction
       );
 
-      console.log(`Teleporting player to entrance:`, {
-        position: position.toArray(),
-        rotation: rotation.toArray(),
-        direction,
-      });
+      // Teleporting player to entrance
 
       // Set teleportation state
       teleportationState.current = {

@@ -47,7 +47,7 @@ export class PlayerRoomDetection {
       this.roomBounds.set(room.id, bounds);
     });
     
-    console.log(`PlayerRoomDetection: Initialized bounds for ${rooms.length} rooms`);
+    // PlayerRoomDetection: Initialized bounds
   }
 
   /**
@@ -91,7 +91,7 @@ export class PlayerRoomDetection {
         playerPosition.y <= bounds.maxY
       ) {
         if (this.currentRoomId !== roomId) {
-          console.log(`PlayerRoomDetection: Player entered room ${roomId}`);
+          // PlayerRoomDetection: Player entered room
           this.currentRoomId = roomId;
         }
         return roomId;
@@ -100,7 +100,7 @@ export class PlayerRoomDetection {
 
     // Player is not in any room
     if (this.currentRoomId !== null) {
-      console.log(`PlayerRoomDetection: Player exited room ${this.currentRoomId}`);
+      // PlayerRoomDetection: Player exited room
       this.currentRoomId = null;
     }
 

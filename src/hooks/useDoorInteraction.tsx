@@ -50,9 +50,7 @@ export const useDoorInteraction = ({
       }
 
       if (closestDoor) {
-        console.log(
-          `Door interaction via keyboard: ${closestDoor.type} (${closestDoor.id})`
-        );
+        // Door interaction via keyboard
         lastInteractionTime.current = now;
         onDoorEnter(closestDoor.id);
       }
@@ -65,15 +63,3 @@ export const useDoorInteraction = ({
     };
   }, [onDoorEnter, doors, interactionDistance, camera]);
 };
-
-
-
-
-
-
-
-
-
-
-
-

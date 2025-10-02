@@ -39,7 +39,7 @@ const InteractionManager: React.FC<InteractionManagerProps> = ({
       });
     }
 
-    console.log("Puzzle completed! You received a reward!");
+    // Puzzle completed! You received a reward!
   };
 
   // Handle puzzle exit

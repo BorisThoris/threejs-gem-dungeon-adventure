@@ -13,7 +13,7 @@ const SimpleDoor: React.FC<SimpleDoorProps> = React.memo(
     const handleClick = useCallback(
       (e: any) => {
         e.stopPropagation();
-        console.log(`🚪 SimpleDoor clicked: ${targetRoomId}`);
+        // SimpleDoor clicked
         onDoorClick();
       },
       [targetRoomId, onDoorClick]

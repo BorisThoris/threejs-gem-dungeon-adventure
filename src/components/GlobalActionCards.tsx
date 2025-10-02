@@ -83,12 +83,24 @@ const GlobalActionCards: React.FC = () => {
   // Memoize callbacks to prevent unnecessary re-renders
   const callbacks = useMemo(
     () => ({
-      onPuzzleStart: () => console.log("Puzzle started!"),
-      onShopOpen: () => console.log("Shop opened!"),
-      onChallengeStart: () => console.log("Challenge started!"),
-      onTreasureOpen: () => console.log("Treasure opened!"),
-      onArenaFight: () => console.log("Arena fight started!"),
-      onBossFight: () => console.log("Boss fight started!"),
+      onPuzzleStart: () => {
+        /* Puzzle started! */
+      },
+      onShopOpen: () => {
+        /* Shop opened! */
+      },
+      onChallengeStart: () => {
+        /* Challenge started! */
+      },
+      onTreasureOpen: () => {
+        /* Treasure opened! */
+      },
+      onArenaFight: () => {
+        /* Arena fight started! */
+      },
+      onBossFight: () => {
+        /* Boss fight started! */
+      },
     }),
     []
   );
@@ -145,7 +157,7 @@ const GlobalActionCards: React.FC = () => {
       cards={cards}
       isVisible={isVisible}
       onCardClick={(card) => {
-        console.log(`Card clicked: ${card.id} in room ${currentRoom.id}`);
+        // Card clicked
         // Handle card actions here
         hideCards();
       }}

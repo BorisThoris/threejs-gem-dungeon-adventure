@@ -57,11 +57,11 @@ const UniversalBreakableDemo: React.FC<UniversalBreakableDemoProps> = ({
   const handleFragmentCreated = (newFragments: any[]) => {
     const meshes = newFragments.map((f) => f.mesh);
     setFragments((prev) => [...prev, ...meshes]);
-    console.log(`Added ${newFragments.length} new fragments`);
+    // Added new fragments
   };
 
   const handleFragmentClick = (fragmentId: string) => {
-    console.log(`Fragment ${fragmentId} clicked!`);
+    // Fragment clicked
   };
 
   const repairAll = () => {
@@ -69,7 +69,7 @@ const UniversalBreakableDemo: React.FC<UniversalBreakableDemoProps> = ({
     setFragments([]);
     setResetKey((prev) => prev + 1);
     setShowResetMessage(true);
-    console.log("Room reset! All objects restored.");
+    // Room reset! All objects restored.
 
     setTimeout(() => {
       setShowResetMessage(false);
@@ -86,10 +86,10 @@ const UniversalBreakableDemo: React.FC<UniversalBreakableDemoProps> = ({
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "b") {
         setBreakingEnabled((prev) => !prev);
-        console.log(`Breaking toggled: ${!breakingEnabled ? "ON" : "OFF"}`);
+        // Breaking toggled
       }
       if (event.key.toLowerCase() === "r") {
-        console.log("R key pressed - resetting room!");
+        // R key pressed - resetting room!
         repairAll();
       }
     };
@@ -493,7 +493,7 @@ const UniversalBreakableDemo: React.FC<UniversalBreakableDemoProps> = ({
         <mesh
           position={[0, 0, 0]}
           onClick={() => {
-            console.log("Reset button clicked!");
+            // Reset button clicked!
             repairAll();
           }}
           onPointerOver={() => {

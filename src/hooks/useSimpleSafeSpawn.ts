@@ -88,7 +88,7 @@ export const useSimpleSafeSpawn = (options: SimpleSafeSpawnOptions = {}) => {
 
       return true; // Position is safe
     } catch (error) {
-      console.warn('useSimpleSafeSpawn: Error checking position safety:', error);
+      // useSimpleSafeSpawn: Error checking position safety
       // Fallback: assume position is safe if we can't check
       return true;
     }

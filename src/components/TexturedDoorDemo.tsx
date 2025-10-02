@@ -47,7 +47,7 @@ const TexturedDoorDemo: React.FC = () => {
   ];
 
   const handleDoorClick = (doorId: string, targetRoomId: string) => {
-    console.log(`Door clicked: ${doorId} -> ${targetRoomId}`);
+    // Door clicked
     alert(`You clicked the ${doorId}! This would take you to ${targetRoomId}.`);
   };
 
@@ -235,4 +235,3 @@ const TexturedDoorDemo: React.FC = () => {
 };
 
 export default TexturedDoorDemo;
-

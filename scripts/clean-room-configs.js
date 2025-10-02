@@ -16,7 +16,7 @@ if (fs.existsSync(filePath)) {
     const startMatch = content.match(startPattern);
     if (!startMatch) {
       console.log('❌ ROOM_CONFIGS array not found');
-      return;
+      process.exit(1);
     }
     
     const startIndex = startMatch.index + startMatch[0].length;

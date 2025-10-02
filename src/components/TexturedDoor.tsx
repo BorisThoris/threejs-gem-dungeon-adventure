@@ -286,11 +286,11 @@ const TexturedDoor: React.FC<TexturedDoorProps> = React.memo(
         event.stopPropagation();
 
         if (isLocked) {
-          console.log(`🔒 Door ${id} is locked, requires key: ${keyRequired}`);
+          // Door is locked, requires key
           return;
         }
 
-        console.log(`🚪 TexturedDoor clicked: ${id} -> ${targetRoomId}`);
+        // TexturedDoor clicked
         onDoorClick(id, targetRoomId);
       },
       [id, targetRoomId, isLocked, keyRequired, onDoorClick]

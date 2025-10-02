@@ -33,7 +33,7 @@ export const useGameInitialization = () => {
       try {
         await loadTextureFromImage(type);
       } catch (error) {
-        console.warn(`Failed to preload texture: ${type}`, error);
+        // Failed to preload texture
       }
     });
     await Promise.all(promises);
@@ -144,7 +144,7 @@ export const useGameInitialization = () => {
         totalProgress += step.weight;
         setProgress(totalProgress / totalWeight);
       } catch (error) {
-        console.error(`Error in step "${step.name}":`, error);
+        // Error in step
         // Continue with next step even if one fails
         totalProgress += step.weight;
         setProgress(totalProgress / totalWeight);

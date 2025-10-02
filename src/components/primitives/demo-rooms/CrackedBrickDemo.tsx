@@ -22,11 +22,9 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
     setBrokenObjects((prev) => {
       if (!prev.includes(objectId)) {
         const newBroken = [...prev, objectId];
-        console.log(
-          `Object ${objectId} broken! Total broken: ${newBroken.length}/${totalObjects}`
-        );
+        // Object broken
         if (newBroken.length >= totalObjects) {
-          console.log("All objects broken! Room complete!");
+          // All objects broken! Room complete!
           onRoomComplete?.();
         }
         return newBroken;
@@ -38,11 +36,11 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
   const handleFragmentCreated = (newFragments: any[]) => {
     const meshes = newFragments.map((f) => f.mesh);
     setFragments((prev) => [...prev, ...meshes]);
-    console.log(`Added ${newFragments.length} new fragments`);
+    // Added new fragments
   };
 
   const handleFragmentClick = (fragmentId: string) => {
-    console.log(`Fragment ${fragmentId} clicked!`);
+    // Fragment clicked
   };
 
   const repairAll = () => {
@@ -50,7 +48,7 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
     setFragments([]);
     setResetKey((prev) => prev + 1);
     setShowResetMessage(true);
-    console.log("Room reset! All objects restored.");
+    // Room reset! All objects restored.
 
     setTimeout(() => {
       setShowResetMessage(false);
@@ -69,7 +67,7 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         repairAll();
       } else if (event.key === "b" || event.key === "B") {
         setBreakingEnabled((prev) => !prev);
-        console.log(`Breaking ${breakingEnabled ? "disabled" : "enabled"}`);
+        // Breaking toggled
       }
     };
 
@@ -135,12 +133,12 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         }}
         onBreak={(impactPoint) => {
           handleObjectBreak("wall-1");
-          console.log("Wall 1 broken at:", impactPoint);
+          // Fragment clicked"Wall 1 broken at:", impactPoint);
         }}
         onFragmentClick={handleFragmentClick}
         onDestroy={() => {
           handleObjectBreak("wall-1");
-          console.log("Wall 1 destroyed!");
+          // Fragment clicked"Wall 1 destroyed!");
         }}
       />
 
@@ -160,12 +158,12 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         }}
         onBreak={(impactPoint) => {
           handleObjectBreak("wall-2");
-          console.log("Wall 2 broken at:", impactPoint);
+          // Fragment clicked"Wall 2 broken at:", impactPoint);
         }}
         onFragmentClick={handleFragmentClick}
         onDestroy={() => {
           handleObjectBreak("wall-2");
-          console.log("Wall 2 destroyed!");
+          // Fragment clicked"Wall 2 destroyed!");
         }}
       />
 
@@ -184,7 +182,7 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         }}
         onBreak={(impactPoint) => {
           handleObjectBreak("brick-1");
-          console.log("Brick 1 broken at:", impactPoint);
+          // Fragment clicked"Brick 1 broken at:", impactPoint);
         }}
         onFragmentClick={handleFragmentClick}
       />
@@ -203,7 +201,7 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         }}
         onBreak={(impactPoint) => {
           handleObjectBreak("brick-2");
-          console.log("Brick 2 broken at:", impactPoint);
+          // Fragment clicked"Brick 2 broken at:", impactPoint);
         }}
         onFragmentClick={handleFragmentClick}
       />
@@ -222,7 +220,7 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         }}
         onBreak={(impactPoint) => {
           handleObjectBreak("brick-3");
-          console.log("Brick 3 broken at:", impactPoint);
+          // Fragment clicked"Brick 3 broken at:", impactPoint);
         }}
         onFragmentClick={handleFragmentClick}
       />
@@ -241,7 +239,7 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         }}
         onBreak={(impactPoint) => {
           handleObjectBreak("brick-4");
-          console.log("Brick 4 broken at:", impactPoint);
+          // Fragment clicked"Brick 4 broken at:", impactPoint);
         }}
         onFragmentClick={handleFragmentClick}
       />
@@ -260,7 +258,7 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         }}
         onBreak={(impactPoint) => {
           handleObjectBreak("brick-5");
-          console.log("Brick 5 broken at:", impactPoint);
+          // Fragment clicked"Brick 5 broken at:", impactPoint);
         }}
         onFragmentClick={handleFragmentClick}
       />
@@ -279,7 +277,7 @@ const CrackedBrickDemo: React.FC<CrackedBrickDemoProps> = ({
         }}
         onBreak={(impactPoint) => {
           handleObjectBreak("brick-6");
-          console.log("Brick 6 broken at:", impactPoint);
+          // Fragment clicked"Brick 6 broken at:", impactPoint);
         }}
         onFragmentClick={handleFragmentClick}
       />
