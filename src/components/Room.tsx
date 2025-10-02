@@ -47,6 +47,7 @@ interface RoomProps {
     toRoomId: string,
     direction: string
   ) => void;
+  disableDoors?: boolean; // New prop to disable internal door rendering
 }
 
 const Room: React.FC<RoomProps> = ({
@@ -58,8 +59,15 @@ const Room: React.FC<RoomProps> = ({
   playerPosition = [0, 0, 0],
   onInteraction,
   onRoomTransition,
+  disableDoors = false,
 }) => {
   const roomSize = room.size || 10;
+
+  console.log(`🚪 Room component rendering room ${room.id}`, {
+    connections: room.connections,
+    connectionsLength: room.connections?.length || 0,
+    disableDoors,
+  });
 
   // Texture loading state
   const [textures, setTextures] = useState<{
@@ -292,11 +300,17 @@ const Room: React.FC<RoomProps> = ({
   );
 
   // Create connections array for segment renderer
+  // In room-instance mode, generate directional connections based on room connections count
   const connections: string[] = [];
-  if (hasNorthConnection) connections.push("north");
-  if (hasSouthConnection) connections.push("south");
-  if (hasEastConnection) connections.push("east");
-  if (hasWestConnection) connections.push("west");
+  const roomConnections = room.connections || [];
+  const directions = ["north", "south", "east", "west"];
+
+  // Create directional connections for each room connection
+  roomConnections.forEach((_, index) => {
+    if (index < directions.length) {
+      connections.push(directions[index]);
+    }
+  });
 
   // Get room shape geometry
   const getRoomGeometry = () => {
@@ -388,21 +402,24 @@ const Room: React.FC<RoomProps> = ({
           wallHeight={wallHeight}
           wallThickness={wallThickness}
           doorWidth={doorWidth}
-          connections={connections}
-          roomConnections={room.connections}
-          onDoorClick={(targetRoomId, direction) => {
-            console.log(`Door clicked: ${direction} -> ${targetRoomId}`);
-            // Trigger room transition
-            onRoomTransition?.(room.id, targetRoomId, direction);
-          }}
+          connections={disableDoors ? [] : connections} // Disable doors if disableDoors is true
+          roomConnections={disableDoors ? [] : room.connections} // Disable room connections if disableDoors is true
+          onDoorClick={
+            disableDoors
+              ? undefined
+              : (targetRoomId, direction) => {
+                  // Trigger room transition
+                  onRoomTransition?.(room.id, targetRoomId, direction);
+                }
+          }
           onSegmentClick={(segmentId) => {
-            console.log(`Wall segment clicked: ${segmentId}`);
+            // Wall segment clicked
           }}
           onSegmentHover={(segmentId) => {
-            console.log(`Wall segment hovered: ${segmentId}`);
+            // Wall segment hovered
           }}
           onSegmentUnhover={(segmentId) => {
-            console.log(`Wall segment unhovered: ${segmentId}`);
+            // Wall segment unhovered
           }}
         />
       )}

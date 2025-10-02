@@ -24,8 +24,6 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     const room = currentMap.rooms.find(r => r.id === roomId);
     if (!room) {
       console.error(`Room ${roomId} not found in map`);
-      console.log('Available room IDs:', currentMap.rooms.map(r => r.id));
-      console.log('Map has', currentMap.rooms.length, 'rooms');
       return;
     }
 

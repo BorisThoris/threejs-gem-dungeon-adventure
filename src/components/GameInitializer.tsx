@@ -68,7 +68,6 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
       );
       if (startRoom && startRoom.connections) {
         const connectedRoomIds = startRoom.connections.slice(0, 3);
-        console.log("Preloading connected rooms:", connectedRoomIds);
         for (let i = 0; i < connectedRoomIds.length; i++) {
           try {
             // Check if room exists in map before trying to load
@@ -192,12 +191,6 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
   ]);
 
   // Debug logging
-  console.log("GameInitializer render:", {
-    isInitializing,
-    showGame,
-    progress,
-    status,
-  });
 
   // Show loading screen while initializing
   if (isInitializing || !showGame) {
@@ -206,7 +199,6 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
         progress={progress}
         status={status}
         onComplete={() => {
-          console.log("GameLoadingScreen onComplete called");
           setShowGame(true);
         }}
       />

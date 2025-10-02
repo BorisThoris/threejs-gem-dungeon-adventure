@@ -8,26 +8,30 @@ import * as THREE from "three";
 import ImprovedRoomManager from "./ImprovedRoomManager";
 import NavigationHistory from "./NavigationHistory";
 import RoomPerformanceMonitor from "./RoomPerformanceMonitor";
-import SafeFirstPersonPlayer from "./SafeFirstPersonPlayer";
+import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
 import GameUI from "./GameUI";
+import DoorStyleSelector, { type DoorStyle } from "./DoorStyleSelector";
 import { roomNavigationSystem } from "../systems/RoomNavigationSystem";
 
 interface ImprovedGameProps {
   showDebugInfo?: boolean;
   showPerformanceMonitor?: boolean;
   showNavigationHistory?: boolean;
+  showDoorStyleSelector?: boolean;
 }
 
 const ImprovedGame: React.FC<ImprovedGameProps> = ({
   showDebugInfo = false,
   showPerformanceMonitor = false,
   showNavigationHistory = true,
+  showDoorStyleSelector = true,
 }) => {
   const [playerPosition, setPlayerPosition] = useState<
     [number, number, number]
   >([0, 0, 0]);
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [doorStyle, setDoorStyle] = useState<DoorStyle>("wooden");
 
   // Initialize the game
   useEffect(() => {
@@ -40,18 +44,15 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
           currentRoomId: string;
         }) => {
           setCurrentRoomId(roomId);
-          console.log(`Game: Room changed to ${roomId}`);
         };
 
-        const handleTransitionStarted = (transition: any) => {
-          console.log(
-            `Game: Transition started from ${transition.fromRoomId} to ${transition.toRoomId}`
-          );
-        };
+        const handleTransitionStarted = (transition: any) => {};
 
-        const handleTransitionCompleted = ({ roomId }: { roomId: string }) => {
-          console.log(`Game: Transition completed to ${roomId}`);
-        };
+        const handleTransitionCompleted = ({
+          roomId,
+        }: {
+          roomId: string;
+        }) => {};
 
         // Add event listeners
         roomNavigationSystem.on("roomChanged", handleRoomChanged);
@@ -85,20 +86,22 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
 
   // Handle room changes
   const handleRoomChange = (roomId: string) => {
-    console.log(`Game: Room change requested: ${roomId}`);
     setCurrentRoomId(roomId);
   };
 
   // Handle door hover
   const handleDoorHover = (doorId: string, isHovered: boolean) => {
     if (showDebugInfo) {
-      console.log(`Door ${doorId} hover: ${isHovered}`);
     }
   };
 
   // Handle navigation history selection
-  const handleRoomSelect = (roomId: string) => {
-    console.log(`Game: Room selected from history: ${roomId}`);
+  const handleRoomSelect = (roomId: string) => {};
+
+  // Handle door style change
+  const handleDoorStyleChange = (style: DoorStyle) => {
+    setDoorStyle(style);
+    roomNavigationSystem.setDefaultDoorStyle(style);
   };
 
   if (!isInitialized) {
@@ -220,6 +223,16 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
           show={true}
           position="top-right"
           updateInterval={1000}
+        />
+      )}
+
+      {/* Door Style Selector */}
+      {showDoorStyleSelector && (
+        <DoorStyleSelector
+          currentStyle={doorStyle}
+          onStyleChange={handleDoorStyleChange}
+          show={true}
+          position="bottom-left"
         />
       )}
 

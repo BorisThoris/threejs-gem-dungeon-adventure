@@ -12,7 +12,6 @@ const SimpleRoomManager: React.FC = () => {
   const availableDoors = getAllConnectedRooms();
 
   // Debug: Room connections
-  // console.log(`SimpleRoomManager: Current room ${currentRoomId}, available doors:`, availableDoors);
 
   if (!currentRoom) {
     return null;

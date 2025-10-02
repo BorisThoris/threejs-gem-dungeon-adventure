@@ -49,6 +49,17 @@ const RoomSegmentRenderer: React.FC<RoomSegmentRendererProps> = ({
         roomConnections
       );
     }
+
+    console.log(
+      `🚪 RoomSegmentRenderer: Generated ${roomSegments.doors.length} doors for room ${roomId}`,
+      {
+        connections,
+        roomConnections,
+        connectionsLength: connections?.length || 0,
+        roomConnectionsLength: roomConnections?.length || 0,
+      }
+    );
+
     setSegments(roomSegments);
 
     // Cleanup function
@@ -56,7 +67,15 @@ const RoomSegmentRenderer: React.FC<RoomSegmentRendererProps> = ({
       // Clean up segments when component unmounts or room changes
       segmentManager.clearRoomSegments(roomId);
     };
-  }, [roomId, roomSize, wallHeight, wallThickness, doorWidth, connections]);
+  }, [
+    roomId,
+    roomSize,
+    wallHeight,
+    wallThickness,
+    doorWidth,
+    connections,
+    roomConnections,
+  ]);
 
   if (!segments) {
     return null;
@@ -84,12 +103,15 @@ const RoomSegmentRenderer: React.FC<RoomSegmentRendererProps> = ({
           targetRoomId={
             doorSegment.targetRoomId || `room_${doorSegment.direction}`
           }
-          onDoorClick={() =>
+          onDoorClick={() => {
+            console.log(
+              `🚪 RoomSegmentRenderer: Door clicked ${doorSegment.direction} -> ${doorSegment.targetRoomId}`
+            );
             onDoorClick?.(
               doorSegment.targetRoomId || `room_${doorSegment.direction}`,
               doorSegment.direction
-            )
-          }
+            );
+          }}
         />
       ))}
 

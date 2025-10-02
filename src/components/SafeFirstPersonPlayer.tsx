@@ -112,11 +112,6 @@ export function SafeFirstPersonPlayer({
       const newPosition = new THREE.Vector3(...position);
       const newRotation = new THREE.Euler(...rotation);
 
-      console.log("Teleporting player:", {
-        position: newPosition.toArray(),
-        rotation: newRotation.toArray(),
-      });
-
       // Teleport the rigid body
       ref.current.setTranslation(newPosition, true);
       ref.current.setRotation(newRotation, true);
@@ -136,11 +131,6 @@ export function SafeFirstPersonPlayer({
       camera.rotation.z = newRotation.z;
 
       camera.updateMatrixWorld(true);
-
-      console.log("Camera updated:", {
-        position: camera.position.toArray(),
-        rotation: camera.rotation.toArray(),
-      });
     };
 
     window.addEventListener("playerTeleport", handleTeleport as EventListener);

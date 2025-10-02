@@ -13,7 +13,7 @@ const SimpleDoor: React.FC<SimpleDoorProps> = React.memo(
     const handleClick = useCallback(
       (e: any) => {
         e.stopPropagation();
-        console.log(`Door clicked: ${targetRoomId}`);
+        console.log(`🚪 SimpleDoor clicked: ${targetRoomId}`);
         onDoorClick();
       },
       [targetRoomId, onDoorClick]
@@ -41,7 +41,7 @@ const SimpleDoor: React.FC<SimpleDoorProps> = React.memo(
         <RigidBody type="fixed" sensor>
           <mesh
             position={[0, 1.5, 0.1]}
-            onClick={handleClick}
+            onPointerDown={handleClick}
             onPointerOver={handlePointerOver}
             onPointerOut={handlePointerOut}
           >

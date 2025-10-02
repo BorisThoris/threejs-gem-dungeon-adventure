@@ -152,9 +152,6 @@ const RoomInstanceManager: React.FC<RoomInstanceManagerProps> = ({
         playerPosition={playerPosition}
         onInteraction={onInteraction}
         onRoomTransition={(fromRoomId, toRoomId, direction) => {
-          console.log(
-            `Room transition requested: ${fromRoomId} -> ${toRoomId} (${direction})`
-          );
           // Trigger room transition using the room manager store
           const { startTransition } = useRoomManagerStore.getState();
           startTransition(fromRoomId, toRoomId, direction);

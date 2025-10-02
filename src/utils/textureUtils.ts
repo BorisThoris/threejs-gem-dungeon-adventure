@@ -13,14 +13,14 @@ export interface TextureDefinition {
 // Create simple procedural textures
 export const loadTextureFromImage = async (textureId: string): Promise<Texture> => {
   try {
-    console.log(`Creating texture: ${textureId}`);
+
     
     // Create procedural textures based on textureId
     const texture = createProceduralTexture(textureId);
     texture.wrapS = texture.wrapT = RepeatWrapping;
     texture.needsUpdate = true;
     
-    console.log(`✅ Texture ${textureId} created successfully`);
+
     return texture;
   } catch (error) {
     console.error(`Failed to create texture ${textureId}:`, error);

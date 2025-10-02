@@ -24,18 +24,12 @@ const RoomManager: React.FC<RoomManagerProps> = ({ onRoomChange }) => {
       const startRoom = currentMap.rooms.find((room) => room.type === "start");
       if (startRoom) {
         setCurrentRoomId(startRoom.id);
-        console.log(`RoomManager: Initialized with start room ${startRoom.id}`);
       }
     }
   }, [currentMap, currentRoomId]);
 
   // Handle room transitions
   const handleRoomChange = (newRoomId: string) => {
-    console.log(`RoomManager: handleRoomChange called with ${newRoomId}`);
-    console.log(
-      `RoomManager: Current state - isTransitioning: ${isTransitioning}, currentRoomId: ${currentRoomId}`
-    );
-
     // Validate roomId
     if (!newRoomId || typeof newRoomId !== "string") {
       console.warn(`RoomManager: Invalid roomId received:`, newRoomId);
@@ -44,7 +38,6 @@ const RoomManager: React.FC<RoomManagerProps> = ({ onRoomChange }) => {
 
     // If we're stuck in transitioning state, force reset it
     if (isTransitioning && !pendingRoomId) {
-      console.log(`RoomManager: Force resetting stuck transition state`);
       setIsTransitioning(false);
     }
 

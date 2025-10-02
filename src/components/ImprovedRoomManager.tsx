@@ -5,7 +5,7 @@ import {
   roomNavigationSystem,
   type DoorInfo,
 } from "../systems/RoomNavigationSystem";
-import EnhancedDoor from "./EnhancedDoor";
+import TexturedDoor from "./TexturedDoor";
 import EnhancedRoomTransition from "./EnhancedRoomTransition";
 import Room from "./Room";
 import useMapStore from "../store/mapStore";
@@ -55,6 +55,14 @@ const ImprovedRoomManager: React.FC<ImprovedRoomManagerProps> = ({
     };
 
     const handleDoorsUpdated = (doorList: DoorInfo[]) => {
+      console.log("ImprovedRoomManager: Doors updated event received", {
+        doorCount: doorList.length,
+        doors: doorList.map((d) => ({
+          id: d.id,
+          targetRoomId: d.targetRoomId,
+          direction: d.direction,
+        })),
+      });
       setDoors(doorList);
     };
 
@@ -106,7 +114,7 @@ const ImprovedRoomManager: React.FC<ImprovedRoomManagerProps> = ({
   // Handle door click
   const handleDoorClick = useCallback(
     (doorId: string, targetRoomId: string) => {
-      console.log(`Door clicked: ${doorId} -> ${targetRoomId}`);
+      console.log(`🚪 Door clicked: ${doorId} -> ${targetRoomId}`);
 
       // Get door info to determine direction
       const door = roomNavigationSystem.getDoor(doorId);
@@ -131,6 +139,19 @@ const ImprovedRoomManager: React.FC<ImprovedRoomManagerProps> = ({
     ? roomNavigationSystem.getRoom(currentRoomId)
     : null;
 
+  console.log(
+    `🚪 ImprovedRoomManager: Rendering ${doors.length} doors for room ${currentRoomId}`,
+    {
+      currentRoom: currentRoom
+        ? {
+            id: currentRoom.id,
+            connections: currentRoom.connections,
+            connectionsLength: currentRoom.connections?.length || 0,
+          }
+        : null,
+    }
+  );
+
   // Render room at origin (room-instance mode)
   const roomAtOrigin = currentRoom
     ? {
@@ -145,6 +166,17 @@ const ImprovedRoomManager: React.FC<ImprovedRoomManagerProps> = ({
 
   return (
     <group>
+      {/* Debug button to force door update */}
+      {process.env.NODE_ENV === "development" && (
+        <mesh
+          position={[0, 2, 0]}
+          onClick={() => roomNavigationSystem.forceUpdateDoors()}
+        >
+          <boxGeometry args={[0.5, 0.5, 0.1]} />
+          <meshBasicMaterial color="red" />
+        </mesh>
+      )}
+
       {/* Render current room */}
       <Room
         room={roomAtOrigin}
@@ -152,12 +184,13 @@ const ImprovedRoomManager: React.FC<ImprovedRoomManagerProps> = ({
         isVisited={true}
         connectedRooms={[]} // Doors are handled separately
         playerPosition={playerPosition}
-        onRoomTransition={handleDoorClick}
+        disableDoors={true} // Disable internal door rendering - we use TexturedDoor instead
+        // Don't pass onRoomTransition - we handle doors separately with TexturedDoor
       />
 
       {/* Render doors */}
       {doors.map((door) => (
-        <EnhancedDoor
+        <TexturedDoor
           key={door.id}
           id={door.id}
           position={door.position}
@@ -171,6 +204,7 @@ const ImprovedRoomManager: React.FC<ImprovedRoomManagerProps> = ({
           playerPosition={playerPosition}
           interactionDistance={3}
           showLabel={true}
+          doorStyle={door.style || "wooden"}
         />
       ))}
 
