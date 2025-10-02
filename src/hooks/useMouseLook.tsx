@@ -25,15 +25,37 @@ export const useMouseLook = () => {
       camera.updateProjectionMatrix();
     }
 
-    // Set initial camera rotation to look straight ahead
+    // Set camera rotation order but don't override existing rotation
     camera.rotation.order = "YXZ";
-    camera.rotation.x = 0; // Look straight ahead (not down)
-    camera.rotation.y = -Math.PI / 2; // Face forward
-    camera.rotation.z = 0;
 
-    // Initialize euler refs to match camera rotation
-    euler.current.x = 0;
-    euler.current.y = -Math.PI / 2;
+    // Only set default rotation if camera hasn't been positioned yet
+    if (camera.position.length() === 0) {
+      camera.rotation.x = 0; // Look straight ahead (not down)
+      camera.rotation.y = -Math.PI / 2; // Face forward
+      camera.rotation.z = 0;
+
+      // Initialize euler refs to match camera rotation
+      euler.current.x = 0;
+      euler.current.y = -Math.PI / 2;
+    } else {
+      // Use existing camera rotation
+      euler.current.x = camera.rotation.x;
+      euler.current.y = camera.rotation.y;
+    }
+
+    // Listen for camera rotation changes from teleportation
+    const handleCameraUpdate = () => {
+      // Sync euler refs with current camera rotation
+      euler.current.x = camera.rotation.x;
+      euler.current.y = camera.rotation.y;
+    };
+
+    // Listen for teleportation events to sync rotation
+    const handleTeleport = () => {
+      setTimeout(handleCameraUpdate, 50); // Small delay to ensure camera is updated
+    };
+
+    window.addEventListener("playerTeleport", handleTeleport);
 
     // Smooth camera update function using requestAnimationFrame
     const updateCameraRotation = () => {
@@ -164,6 +186,7 @@ export const useMouseLook = () => {
       document.removeEventListener("mousedown", handleMouseDown);
       document.removeEventListener("mouseup", handleMouseUp);
       document.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("playerTeleport", handleTeleport);
 
       // Cleanup animation frame
       if (animationFrameRef.current) {

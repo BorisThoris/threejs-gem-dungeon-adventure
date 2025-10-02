@@ -22,7 +22,7 @@ interface SafeFirstPersonPlayerProps {
 }
 
 export function SafeFirstPersonPlayer({
-  initialSpawnPosition = [0, 1, 0],
+  initialSpawnPosition = [0, 0.5, 0],
   showDebugInfo = false,
 }: SafeFirstPersonPlayerProps) {
   const ref = useRef<RapierRigidBody>(null);
@@ -35,7 +35,7 @@ export function SafeFirstPersonPlayer({
   const { findSafeSpawnPosition } = useSimpleSafeSpawn({
     maxAttempts: 100,
     searchRadius: 25,
-    searchHeight: 15,
+    searchHeight: 5, // Reduced from 15 to 5
     playerRadius: 0.8,
     playerHeight: 1.6,
     stepSize: 0.5,
@@ -112,6 +112,11 @@ export function SafeFirstPersonPlayer({
       const newPosition = new THREE.Vector3(...position);
       const newRotation = new THREE.Euler(...rotation);
 
+      console.log("Teleporting player:", {
+        position: newPosition.toArray(),
+        rotation: newRotation.toArray(),
+      });
+
       // Teleport the rigid body
       ref.current.setTranslation(newPosition, true);
       ref.current.setRotation(newRotation, true);
@@ -123,8 +128,19 @@ export function SafeFirstPersonPlayer({
       // Update camera position and rotation
       camera.position.copy(newPosition);
       camera.position.y += 1.0; // Eye level offset (reduced from 1.6)
-      camera.rotation.copy(newRotation);
+
+      // Set camera rotation order and apply rotation
+      camera.rotation.order = "YXZ";
+      camera.rotation.x = newRotation.x;
+      camera.rotation.y = newRotation.y;
+      camera.rotation.z = newRotation.z;
+
       camera.updateMatrixWorld(true);
+
+      console.log("Camera updated:", {
+        position: camera.position.toArray(),
+        rotation: camera.rotation.toArray(),
+      });
     };
 
     window.addEventListener("playerTeleport", handleTeleport as EventListener);

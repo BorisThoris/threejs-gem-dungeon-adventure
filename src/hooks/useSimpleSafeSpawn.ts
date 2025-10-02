@@ -168,10 +168,10 @@ export const useSimpleSafeSpawn = (options: SimpleSafeSpawnOptions = {}) => {
       }
     }
 
-    // Last resort: spawn above the center
+    // Last resort: spawn at ground level in center
     const fallbackPosition = new THREE.Vector3(
       center.x,
-      center.y + searchHeight + playerHeight,
+      0.5, // Ground level instead of high in air
       center.z
     );
 

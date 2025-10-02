@@ -188,6 +188,33 @@ export class SimpleMapGenerator {
     return patterns[Math.floor(Math.random() * patterns.length)];
   }
 
+  private getRandomDirection(): { dx: number; dz: number } {
+    const directions = [
+      { dx: 1, dz: 0 },   // East
+      { dx: -1, dz: 0 },  // West
+      { dx: 0, dz: 1 },   // South
+      { dx: 0, dz: -1 },  // North
+    ];
+    return directions[Math.floor(Math.random() * directions.length)];
+  }
+
+  private getShapeForPattern(pattern: 'line' | 'L' | 'T' | 'plus' | 'block'): 'square' | 'circle' | 'triangle' | 'hexagon' | 'octagon' | 'diamond' | 'star' | 'cross' | 'spiral' {
+    switch (pattern) {
+      case 'line':
+        return 'square';
+      case 'L':
+        return 'diamond';
+      case 'T':
+        return 'cross';
+      case 'plus':
+        return 'cross';
+      case 'block':
+        return 'square';
+      default:
+        return 'square';
+    }
+  }
+
   private computePatternTiles(
     startX: number,
     startZ: number,
@@ -426,6 +453,23 @@ export class SimpleMapGenerator {
       ? [0.8 + Math.random() * 0.4, 0.8 + Math.random() * 0.4, 0.8 + Math.random() * 0.4]
       : [1, 1, 1];
 
+    // Check if this should be a multi-tile room
+    const shouldBeMultiTile = this.config.useMultiTileRooms && 
+      Math.random() < (this.config.multiTileChance || 0.35) &&
+      type !== 'start' && type !== 'end'; // Don't make start/end rooms multi-tile
+
+    let isMultiTile = false;
+    let tilePositions: Array<{ x: number; z: number }> = [];
+    let shape: 'square' | 'circle' | 'triangle' | 'hexagon' | 'octagon' | 'diamond' | 'star' | 'cross' | 'spiral' = 'square';
+
+    if (shouldBeMultiTile) {
+      isMultiTile = true;
+      const pattern = this.pickMultiTilePattern();
+      const direction = this.getRandomDirection();
+      tilePositions = this.computePatternTiles(x, z, direction, pattern);
+      shape = this.getShapeForPattern(pattern);
+    }
+
     const room: Room = {
       id: roomId,
       position: { x: (x - this.startX) * this.config.roomSize, z: (z - this.startZ) * this.config.roomSize },
@@ -436,6 +480,13 @@ export class SimpleMapGenerator {
       isCurrent: false,
       items: this.getItemsForRoomType(type),
       specialProperties: this.getSpecialPropertiesForRoomType(type),
+      // Multi-tile room properties
+      isMultiTile,
+      tilePositions: isMultiTile ? tilePositions.map(pos => ({
+        x: (pos.x - this.startX) * this.config.roomSize,
+        z: (pos.z - this.startZ) * this.config.roomSize
+      })) : undefined,
+      shape: isMultiTile ? shape : 'square',
       // Biome-based wall system
       biomeId: hasBiomeConfig ? type : undefined,
       useBiomeWalls: hasBiomeConfig,
@@ -450,7 +501,7 @@ export class SimpleMapGenerator {
             height: ep.height,
             isActive: false,
           }))
-        : generateEntryPoints(roomId, type, 'square', this.config.roomSize),
+        : generateEntryPoints(roomId, type, isMultiTile ? shape : 'square', this.config.roomSize),
     };
     
     this.rooms.push(room);

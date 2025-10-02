@@ -20,7 +20,7 @@ import Plank from "./Plank";
 import Stair from "./Stair";
 import Handrail from "./Handrail";
 import DestructibleWall from "../objects/DestructibleWall";
-import Door from "./Door";
+import SimpleDoor from "../../SimpleDoor";
 import ItemSprite from "../objects/ItemSprite";
 
 // Create breakable versions of all RoomElements components
@@ -57,7 +57,7 @@ export const BreakableDestructibleWall = createBreakableComponent(
   DestructibleWall,
   "large"
 );
-export const BreakableDoor = createBreakableComponent(Door, "medium");
+export const BreakableDoor = createBreakableComponent(SimpleDoor, "medium");
 export const BreakableItemSprite = createBreakableComponent(
   ItemSprite,
   "small"

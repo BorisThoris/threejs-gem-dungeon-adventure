@@ -4,7 +4,7 @@ import useRoomManagerStore from "../store/roomManagerStore";
 import useMapStore from "../store/mapStore";
 import usePlayerMovementStore from "../store/playerMovementStore";
 import RoomInstanceRenderer from "./RoomInstanceRenderer";
-import Door from "./Door";
+import SimpleDoor from "./SimpleDoor";
 import RoomTransitionEffect from "./RoomTransitionEffect";
 
 interface RoomInstanceManagerProps {
@@ -41,9 +41,10 @@ const RoomInstanceManager: React.FC<RoomInstanceManagerProps> = ({
         );
         if (startRoom) {
           const roomSize = startRoom.size || 10;
-          // Spawn player in center of room, slightly above floor
-          const spawnPosition = new THREE.Vector3(0, 0.5, 0);
-          const spawnRotation = new THREE.Euler(0, 0, 0); // Face forward
+          // Spawn player at entrance of start room, facing inward
+          // Start room typically has doors on the south wall
+          const spawnPosition = new THREE.Vector3(0, 0.5, roomSize / 2 - 1.5);
+          const spawnRotation = new THREE.Euler(0, Math.PI, 0); // Face north (into room)
 
           // Add a small delay to ensure room is fully loaded
           setTimeout(() => {
@@ -150,43 +151,17 @@ const RoomInstanceManager: React.FC<RoomInstanceManagerProps> = ({
       <RoomInstanceRenderer
         playerPosition={playerPosition}
         onInteraction={onInteraction}
+        onRoomTransition={(fromRoomId, toRoomId, direction) => {
+          console.log(
+            `Room transition requested: ${fromRoomId} -> ${toRoomId} (${direction})`
+          );
+          // Trigger room transition using the room manager store
+          const { startTransition } = useRoomManagerStore.getState();
+          startTransition(fromRoomId, toRoomId, direction);
+        }}
       />
 
-      {/* Render doors for connected rooms */}
-      {connectedRooms.map((targetRoom) => {
-        if (!targetRoom) return null;
-
-        const direction = getDoorDirection(currentRoom, targetRoom);
-        const doorPos = getDoorPosition(currentRoom, targetRoom, direction);
-
-        // Validate that the target room exists and is accessible
-        const targetRoomExists = currentMap.rooms.some(
-          (room) => room.id === targetRoom.id
-        );
-        if (!targetRoomExists) {
-          console.warn(
-            `Door target room ${targetRoom.id} does not exist in map`
-          );
-          return null;
-        }
-
-        // Check if door should be locked
-        const isLocked = targetRoom.isLocked || false;
-        const keyRequired = targetRoom.requiredItem ? true : false;
-
-        return (
-          <Door
-            key={`door-${targetRoom.id}`}
-            position={doorPos.position}
-            rotation={doorPos.rotation}
-            targetRoomId={targetRoom.id}
-            direction={direction}
-            isLocked={isLocked}
-            keyRequired={keyRequired}
-            keyId={targetRoom.requiredItem}
-          />
-        );
-      })}
+      {/* Doors are now handled by RoomSegmentRenderer in the Room component */}
 
       {/* Room Transition Effect */}
       <RoomTransitionEffect

@@ -1,16 +1,11 @@
-import React, { useRef, useEffect } from "react";
-import { RigidBody } from "@react-three/rapier";
-import { Text } from "@react-three/drei";
-import * as THREE from "three";
+import React from "react";
 import useMapStore from "../../../store/mapStore";
 import { useGameState } from "../../../hooks/useGameState";
 import { gameEvents, GAME_EVENTS } from "../../../utils/gameEvents";
 import { useDoorInteraction } from "../../../hooks/useDoorInteraction";
 import type { Room } from "../../../types/map";
 import { BreakableCeiling, RoomFloor } from "../elements";
-import { calculateDoorPositionFromEntryPoints } from "../../../utils/doorPositionFromEntryPoint";
-import AdvancedMinecraftSign from "../elements/AdvancedMinecraftSign";
-import MinecraftSign from "../elements/MinecraftSign";
+import SimpleDoor from "../../SimpleDoor";
 
 // Import all room content components
 import StartRoom from "./StartRoom";
@@ -209,185 +204,36 @@ const getRoomConfig = (roomType: string): RoomConfig | null => {
   return ROOM_CONFIGS.find((config) => config.type === roomType) || null;
 };
 
-// Calculate door position based on relative position of target room
-const calculateDoorPosition = (
-  currentRoom: Room,
-  targetRoom: Room,
-  roomSize: number
-) => {
-  const dx = targetRoom.position.x - currentRoom.position.x;
-  const dz = targetRoom.position.z - currentRoom.position.z;
+// Simple door positioning helper
+const getDoorPosition = (room: Room, targetRoom: Room, roomSize: number) => {
+  const dx = targetRoom.position.x - room.position.x;
+  const dz = targetRoom.position.z - room.position.z;
 
-  // Determine which wall the door should be on based on relative position
   if (Math.abs(dx) > Math.abs(dz)) {
-    // East/West connection
-    if (dx > 0) {
-      // Target is to the East (right), door on East wall
-      return {
-        pos: [roomSize / 2, 1.5, 0] as [number, number, number],
-        rot: [0, Math.PI / 2, 0] as [number, number, number],
-      };
-    } else {
-      // Target is to the West (left), door on West wall
-      return {
-        pos: [-roomSize / 2, 1.5, 0] as [number, number, number],
-        rot: [0, -Math.PI / 2, 0] as [number, number, number],
-      };
-    }
+    // East or West
+    return {
+      pos: [dx > 0 ? roomSize / 2 : -roomSize / 2, 0.5, 0] as [
+        number,
+        number,
+        number
+      ],
+      rot: [0, dx > 0 ? Math.PI / 2 : -Math.PI / 2, 0] as [
+        number,
+        number,
+        number
+      ],
+    };
   } else {
-    // North/South connection
-    if (dz > 0) {
-      // Target is to the South (front), door on South wall
-      return {
-        pos: [0, 1.5, roomSize / 2] as [number, number, number],
-        rot: [0, Math.PI, 0] as [number, number, number],
-      };
-    } else {
-      // Target is to the North (back), door on North wall
-      return {
-        pos: [0, 1.5, -roomSize / 2] as [number, number, number],
-        rot: [0, 0, 0] as [number, number, number],
-      };
-    }
+    // North or South
+    return {
+      pos: [0, 0.5, dz > 0 ? roomSize / 2 : -roomSize / 2] as [
+        number,
+        number,
+        number
+      ],
+      rot: [0, dz > 0 ? Math.PI : 0, 0] as [number, number, number],
+    };
   }
-};
-
-// Add spacing for multiple doors on the same wall
-const addDoorSpacing = (
-  doorPosition: {
-    pos: [number, number, number];
-    rot: [number, number, number];
-  },
-  index: number,
-  totalDoors: number,
-  roomSize: number
-) => {
-  const { pos, rot } = doorPosition;
-  const [x, y, z] = pos;
-
-  // If there are multiple doors, space them out
-  if (totalDoors > 1) {
-    const spacing = roomSize / (totalDoors + 1);
-    const offset = (index + 1) * spacing - roomSize / 2;
-
-    // Determine which axis to offset based on wall orientation
-    if (Math.abs(rot[1]) === Math.PI / 2) {
-      // East/West walls - offset Z
-      return {
-        pos: [x, y, offset] as [number, number, number],
-        rot: rot,
-      };
-    } else {
-      // North/South walls - offset X
-      return {
-        pos: [offset, y, z] as [number, number, number],
-        rot: rot,
-      };
-    }
-  }
-
-  return doorPosition;
-};
-
-// Door component
-const Door: React.FC<{
-  position: [number, number, number];
-  rotation: [number, number, number];
-  targetRoomId: string;
-  targetRoomType: string;
-  onDoorEnter: () => void;
-}> = ({ position, rotation, targetRoomId, targetRoomType, onDoorEnter }) => {
-  const doorRef = useRef<THREE.Mesh>(null);
-  const roomConfig = getRoomConfig(targetRoomType);
-
-  return (
-    <group position={position} rotation={rotation}>
-      {/* Door frame - Black rectangle */}
-      <mesh position={[0, 0, 0]} castShadow>
-        <boxGeometry args={[2, 3, 0.2]} />
-        <meshLambertMaterial color="#000000" />
-      </mesh>
-
-      {/* Door outline for better visibility */}
-      <mesh position={[0, 0, 0.11]}>
-        <boxGeometry args={[2.1, 3.1, 0.02]} />
-        <meshLambertMaterial color="#333333" />
-      </mesh>
-
-      {/* Door collision detector - Larger invisible area for easier clicking */}
-      <RigidBody type="fixed" sensor>
-        <mesh
-          ref={doorRef}
-          position={[0, 1.5, 0]}
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            console.log(`Door clicked: ${targetRoomType} (${targetRoomId})`);
-            onDoorEnter();
-          }}
-          onPointerOver={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            document.body.style.cursor = "pointer";
-            console.log(`Door hover: ${targetRoomType} (${targetRoomId})`);
-          }}
-          onPointerOut={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            document.body.style.cursor = "default";
-          }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            console.log(
-              `Door pointer down: ${targetRoomType} (${targetRoomId})`
-            );
-            // Also trigger on pointer down for better responsiveness
-            onDoorEnter();
-          }}
-          onPointerUp={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            console.log(`Door pointer up: ${targetRoomType} (${targetRoomId})`);
-          }}
-          onDoubleClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            console.log(
-              `Door double-clicked: ${targetRoomType} (${targetRoomId})`
-            );
-            onDoorEnter();
-          }}
-        >
-          <boxGeometry args={[3, 4, 0.5]} />
-          <meshBasicMaterial color="#000000" transparent opacity={0.1} />
-        </mesh>
-      </RigidBody>
-
-      {/* Door label with room type emoji */}
-      <Text
-        position={[0, 1.5, 0.15]}
-        fontSize={0.4}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        {roomConfig?.emoji || "🚪"} DOOR
-      </Text>
-
-      {/* Room type sign below */}
-      <MinecraftSign
-        position={[0, 0.5, 0.2]}
-        text={targetRoomType.toUpperCase()}
-        textColor="#FFFFFF"
-        signColor="#654321"
-        fontSize={0.15}
-        scale={[0.8, 0.8, 0.8]}
-      />
-    </group>
-  );
 };
 
 // Main Room Factory Component
@@ -425,33 +271,19 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
   // Prepare door data for keyboard interaction
   const doorData =
     currentRoom?.connections
-      ?.map((connectionId, index) => {
+      ?.map((connectionId) => {
         const targetRoom = currentMap?.rooms.find((r) => r.id === connectionId);
         if (!targetRoom) return null;
 
-        // Use entry point system for door position
-        const doorPositionFromEntry = calculateDoorPositionFromEntryPoints(
+        const doorPosition = getDoorPosition(
           currentRoom!,
-          connectionId,
-          index
+          targetRoom,
+          roomSize
         );
-
-        // Fallback to old system if needed
-        const doorPosition =
-          doorPositionFromEntry ||
-          calculateDoorPosition(currentRoom!, targetRoom, roomSize);
-        const spacedPosition = doorPositionFromEntry
-          ? doorPosition
-          : addDoorSpacing(
-              doorPosition,
-              0,
-              currentRoom!.connections.length,
-              roomSize
-            );
 
         return {
           id: connectionId,
-          position: spacedPosition.pos,
+          position: doorPosition.pos,
           type: targetRoom.type,
         };
       })
@@ -560,63 +392,25 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
       {/* Doors - Black rectangle doors that trigger room changes */}
       {currentRoom.connections && currentRoom.connections.length > 0 ? (
         <group key={`doors-${currentRoom.id}`}>
-          {/* RoomFactory: Rendering doors for room */}
-          {currentRoom.connections.map((connectionId, index) => {
+          {currentRoom.connections.map((connectionId) => {
             const targetRoom = currentMap?.rooms.find(
               (r) => r.id === connectionId
             );
-            if (!targetRoom) {
-              console.warn(
-                `RoomFactory: Target room ${connectionId} not found!`
-              );
-              return null;
-            }
+            if (!targetRoom) return null;
 
-            // Calculate door position using entry points system
-            // This ensures doors align properly with hallways and room connections
-            const doorPositionFromEntry = calculateDoorPositionFromEntryPoints(
+            const doorPosition = getDoorPosition(
               currentRoom,
-              connectionId,
-              index
-            );
-
-            // Fallback to old system if entry points not available
-            const doorPosition =
-              doorPositionFromEntry ||
-              calculateDoorPosition(currentRoom, targetRoom, roomSize);
-
-            // Add spacing for multiple doors on same wall (only if using fallback)
-            const spacedPosition = doorPositionFromEntry
-              ? doorPosition
-              : addDoorSpacing(
-                  doorPosition,
-                  index,
-                  currentRoom.connections.length,
-                  roomSize
-                );
-
-            // Debug logging
-            console.log(
-              `Door ${index + 1}/${currentRoom.connections.length}: ${
-                currentRoom.type
-              } -> ${targetRoom.type}`,
-              {
-                currentPos: `${currentRoom.position.x}, ${currentRoom.position.z}`,
-                targetPos: `${targetRoom.position.x}, ${targetRoom.position.z}`,
-                doorPos: spacedPosition.pos,
-                doorRot: spacedPosition.rot,
-                usingEntryPoints: !!doorPositionFromEntry,
-              }
+              targetRoom,
+              roomSize
             );
 
             return (
-              <Door
+              <SimpleDoor
                 key={`door-${connectionId}`}
-                position={spacedPosition.pos}
-                rotation={spacedPosition.rot}
+                position={doorPosition.pos}
+                rotation={doorPosition.rot}
                 targetRoomId={connectionId}
-                targetRoomType={targetRoom.type}
-                onDoorEnter={() => onRoomChange?.(connectionId)}
+                onDoorClick={() => onRoomChange?.(connectionId)}
               />
             );
           })}

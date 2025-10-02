@@ -1,15 +1,22 @@
 import React from "react";
 import useRoomManagerStore from "../store/roomManagerStore";
+import useMapStore from "../store/mapStore";
 import Room from "./Room";
 
 interface RoomInstanceRendererProps {
   playerPosition?: [number, number, number];
   onInteraction?: (interactionType: string, roomId: string) => void;
+  onRoomTransition?: (
+    fromRoomId: string,
+    toRoomId: string,
+    direction: string
+  ) => void;
 }
 
 const RoomInstanceRenderer: React.FC<RoomInstanceRendererProps> = ({
   playerPosition = [0, 0, 0],
   onInteraction,
+  onRoomTransition,
 }) => {
   const { currentRoomId, roomInstances } = useRoomManagerStore();
 
@@ -36,9 +43,19 @@ const RoomInstanceRenderer: React.FC<RoomInstanceRendererProps> = ({
         room={roomAtOrigin}
         isCurrent={true}
         isVisited={true}
-        connectedRooms={[]} // We'll handle connections differently in room-instance mode
+        connectedRooms={
+          currentRoom.connections
+            ?.map((connectionId) =>
+              // Find connected room from map
+              useMapStore
+                .getState()
+                .currentMap?.rooms.find((r) => r.id === connectionId)
+            )
+            .filter(Boolean) || []
+        }
         playerPosition={playerPosition}
         onInteraction={onInteraction}
+        onRoomTransition={onRoomTransition}
       />
     </group>
   );

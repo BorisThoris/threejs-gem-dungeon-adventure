@@ -142,30 +142,35 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
       const roomSize = targetRoom.size || 10;
       
       // Calculate entrance position (room is at origin in room-instance mode)
-      const entranceDistance = 2;
+      // Spawn player at door position, facing inward into the room
+      const entranceDistance = 1.5; // Closer to door
       const roomHalfSize = roomSize / 2;
       let position: THREE.Vector3;
       let rotation: THREE.Euler;
 
       switch (direction) {
         case 'north':
-          position = new THREE.Vector3(0, 1.6, -roomHalfSize + entranceDistance);
-          rotation = new THREE.Euler(0, 0, 0); // Face into room
+          // Entering from north, spawn at north wall, face south (into room)
+          position = new THREE.Vector3(0, 0.5, -roomHalfSize + entranceDistance);
+          rotation = new THREE.Euler(0, 0, 0); // Face south (into room)
           break;
         case 'south':
-          position = new THREE.Vector3(0, 1.6, roomHalfSize - entranceDistance);
-          rotation = new THREE.Euler(0, Math.PI, 0); // Face into room
+          // Entering from south, spawn at south wall, face north (into room)
+          position = new THREE.Vector3(0, 0.5, roomHalfSize - entranceDistance);
+          rotation = new THREE.Euler(0, Math.PI, 0); // Face north (into room)
           break;
         case 'east':
-          position = new THREE.Vector3(roomHalfSize - entranceDistance, 1.6, 0);
-          rotation = new THREE.Euler(0, -Math.PI / 2, 0); // Face into room
+          // Entering from east, spawn at east wall, face west (into room)
+          position = new THREE.Vector3(roomHalfSize - entranceDistance, 0.5, 0);
+          rotation = new THREE.Euler(0, -Math.PI / 2, 0); // Face west (into room)
           break;
         case 'west':
-          position = new THREE.Vector3(-roomHalfSize + entranceDistance, 1.6, 0);
-          rotation = new THREE.Euler(0, Math.PI / 2, 0); // Face into room
+          // Entering from west, spawn at west wall, face east (into room)
+          position = new THREE.Vector3(-roomHalfSize + entranceDistance, 0.5, 0);
+          rotation = new THREE.Euler(0, Math.PI / 2, 0); // Face east (into room)
           break;
         default:
-          position = new THREE.Vector3(0, 1.6, roomHalfSize - entranceDistance);
+          position = new THREE.Vector3(0, 0.5, roomHalfSize - entranceDistance);
           rotation = new THREE.Euler(0, Math.PI, 0);
       }
 

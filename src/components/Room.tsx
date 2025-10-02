@@ -29,8 +29,9 @@ import StartRoom from "./primitives/game-rooms/StartRoom";
 import EndBiome from "./primitives/game-rooms/EndBiome";
 import EnemyBiome from "./primitives/game-rooms/EnemyBiome";
 import RoomInteraction from "./RoomInteraction";
-// import Door from "./Door"; // DISABLED FOR NOW
+import SimpleDoor from "./SimpleDoor";
 import RoomDecorator from "./primitives/elements/RoomDecorator";
+import RoomSegmentRenderer from "./primitives/elements/RoomSegmentRenderer";
 import { loadTextureFromImage } from "../utils/textureUtils";
 
 interface RoomProps {
@@ -41,6 +42,11 @@ interface RoomProps {
   onClick?: () => void;
   playerPosition?: [number, number, number];
   onInteraction?: (interactionType: string, roomId: string) => void;
+  onRoomTransition?: (
+    fromRoomId: string,
+    toRoomId: string,
+    direction: string
+  ) => void;
 }
 
 const Room: React.FC<RoomProps> = ({
@@ -51,6 +57,7 @@ const Room: React.FC<RoomProps> = ({
   onClick,
   playerPosition = [0, 0, 0],
   onInteraction,
+  onRoomTransition,
 }) => {
   const roomSize = room.size || 10;
 
@@ -284,6 +291,13 @@ const Room: React.FC<RoomProps> = ({
       room.position.z === connectedRoom.position.z
   );
 
+  // Create connections array for segment renderer
+  const connections: string[] = [];
+  if (hasNorthConnection) connections.push("north");
+  if (hasSouthConnection) connections.push("south");
+  if (hasEastConnection) connections.push("east");
+  if (hasWestConnection) connections.push("west");
+
   // Get room shape geometry
   const getRoomGeometry = () => {
     const width = room.width || room.size;
@@ -368,227 +382,29 @@ const Room: React.FC<RoomProps> = ({
           scale={room.biomeScale || [1, 1, 1]}
         />
       ) : (
-        <>
-          {/* North Wall - Split into segments if there's a door */}
-          {hasNorthConnection ? (
-            <>
-              {/* Left segment */}
-              <RigidBody type="fixed" colliders="trimesh">
-                <mesh
-                  position={[-roomSize / 4, wallHeight / 2, -roomSize / 2]}
-                  castShadow
-                >
-                  <boxGeometry
-                    args={[
-                      roomSize / 2 - doorWidth / 2,
-                      wallHeight,
-                      wallThickness,
-                    ]}
-                  />
-                  <meshLambertMaterial
-                    color="#8B4513"
-                    map={textures.wall}
-                    roughness={0.8}
-                    metalness={0.0}
-                  />
-                </mesh>
-              </RigidBody>
-              {/* Right segment */}
-              <RigidBody type="fixed" colliders="trimesh">
-                <mesh
-                  position={[roomSize / 4, wallHeight / 2, -roomSize / 2]}
-                  castShadow
-                >
-                  <boxGeometry
-                    args={[
-                      roomSize / 2 - doorWidth / 2,
-                      wallHeight,
-                      wallThickness,
-                    ]}
-                  />
-                  <meshLambertMaterial
-                    color="#8B4513"
-                    map={textures.wall}
-                    roughness={0.8}
-                    metalness={0.0}
-                  />
-                </mesh>
-              </RigidBody>
-            </>
-          ) : (
-            <RigidBody type="fixed" colliders="trimesh">
-              <mesh position={[0, wallHeight / 2, -roomSize / 2]} castShadow>
-                <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
-                <meshLambertMaterial color="#8B4513" />
-              </mesh>
-            </RigidBody>
-          )}
-
-          {/* South Wall - Split into segments if there's a door */}
-          {hasSouthConnection ? (
-            <>
-              {/* Left segment */}
-              <RigidBody type="fixed" colliders="trimesh">
-                <mesh
-                  position={[-roomSize / 4, wallHeight / 2, roomSize / 2]}
-                  castShadow
-                >
-                  <boxGeometry
-                    args={[
-                      roomSize / 2 - doorWidth / 2,
-                      wallHeight,
-                      wallThickness,
-                    ]}
-                  />
-                  <meshLambertMaterial
-                    color="#8B4513"
-                    map={textures.wall}
-                    roughness={0.8}
-                    metalness={0.0}
-                  />
-                </mesh>
-              </RigidBody>
-              {/* Right segment */}
-              <RigidBody type="fixed" colliders="trimesh">
-                <mesh
-                  position={[roomSize / 4, wallHeight / 2, roomSize / 2]}
-                  castShadow
-                >
-                  <boxGeometry
-                    args={[
-                      roomSize / 2 - doorWidth / 2,
-                      wallHeight,
-                      wallThickness,
-                    ]}
-                  />
-                  <meshLambertMaterial
-                    color="#8B4513"
-                    map={textures.wall}
-                    roughness={0.8}
-                    metalness={0.0}
-                  />
-                </mesh>
-              </RigidBody>
-            </>
-          ) : (
-            <RigidBody type="fixed" colliders="trimesh">
-              <mesh position={[0, wallHeight / 2, roomSize / 2]} castShadow>
-                <boxGeometry args={[roomSize, wallHeight, wallThickness]} />
-                <meshLambertMaterial color="#8B4513" />
-              </mesh>
-            </RigidBody>
-          )}
-
-          {/* East Wall - Split into segments if there's a door */}
-          {hasEastConnection ? (
-            <>
-              {/* Top segment */}
-              <RigidBody type="fixed" colliders="trimesh">
-                <mesh
-                  position={[roomSize / 2, wallHeight / 2, -roomSize / 4]}
-                  castShadow
-                >
-                  <boxGeometry
-                    args={[
-                      wallThickness,
-                      wallHeight,
-                      roomSize / 2 - doorWidth / 2,
-                    ]}
-                  />
-                  <meshLambertMaterial
-                    color="#8B4513"
-                    map={textures.wall}
-                    roughness={0.8}
-                    metalness={0.0}
-                  />
-                </mesh>
-              </RigidBody>
-              {/* Bottom segment */}
-              <RigidBody type="fixed" colliders="trimesh">
-                <mesh
-                  position={[roomSize / 2, wallHeight / 2, roomSize / 4]}
-                  castShadow
-                >
-                  <boxGeometry
-                    args={[
-                      wallThickness,
-                      wallHeight,
-                      roomSize / 2 - doorWidth / 2,
-                    ]}
-                  />
-                  <meshLambertMaterial
-                    color="#8B4513"
-                    map={textures.wall}
-                    roughness={0.8}
-                    metalness={0.0}
-                  />
-                </mesh>
-              </RigidBody>
-            </>
-          ) : (
-            <RigidBody type="fixed" colliders="trimesh">
-              <mesh position={[roomSize / 2, wallHeight / 2, 0]} castShadow>
-                <boxGeometry args={[wallThickness, wallHeight, roomSize]} />
-                <meshLambertMaterial color="#8B4513" />
-              </mesh>
-            </RigidBody>
-          )}
-
-          {/* West Wall - Split into segments if there's a door */}
-          {hasWestConnection ? (
-            <>
-              {/* Top segment */}
-              <RigidBody type="fixed" colliders="trimesh">
-                <mesh
-                  position={[-roomSize / 2, wallHeight / 2, -roomSize / 4]}
-                  castShadow
-                >
-                  <boxGeometry
-                    args={[
-                      wallThickness,
-                      wallHeight,
-                      roomSize / 2 - doorWidth / 2,
-                    ]}
-                  />
-                  <meshLambertMaterial
-                    color="#8B4513"
-                    map={textures.wall}
-                    roughness={0.8}
-                    metalness={0.0}
-                  />
-                </mesh>
-              </RigidBody>
-              {/* Bottom segment */}
-              <RigidBody type="fixed" colliders="trimesh">
-                <mesh
-                  position={[-roomSize / 2, wallHeight / 2, roomSize / 4]}
-                  castShadow
-                >
-                  <boxGeometry
-                    args={[
-                      wallThickness,
-                      wallHeight,
-                      roomSize / 2 - doorWidth / 2,
-                    ]}
-                  />
-                  <meshLambertMaterial
-                    color="#8B4513"
-                    map={textures.wall}
-                    roughness={0.8}
-                    metalness={0.0}
-                  />
-                </mesh>
-              </RigidBody>
-            </>
-          ) : (
-            <RigidBody type="fixed" colliders="trimesh">
-              <mesh position={[-roomSize / 2, wallHeight / 2, 0]} castShadow>
-                <boxGeometry args={[wallThickness, wallHeight, roomSize]} />
-                <meshLambertMaterial color="#8B4513" />
-              </mesh>
-            </RigidBody>
-          )}
-        </>
+        <RoomSegmentRenderer
+          roomId={room.id}
+          roomSize={roomSize}
+          wallHeight={wallHeight}
+          wallThickness={wallThickness}
+          doorWidth={doorWidth}
+          connections={connections}
+          roomConnections={room.connections}
+          onDoorClick={(targetRoomId, direction) => {
+            console.log(`Door clicked: ${direction} -> ${targetRoomId}`);
+            // Trigger room transition
+            onRoomTransition?.(room.id, targetRoomId, direction);
+          }}
+          onSegmentClick={(segmentId) => {
+            console.log(`Wall segment clicked: ${segmentId}`);
+          }}
+          onSegmentHover={(segmentId) => {
+            console.log(`Wall segment hovered: ${segmentId}`);
+          }}
+          onSegmentUnhover={(segmentId) => {
+            console.log(`Wall segment unhovered: ${segmentId}`);
+          }}
+        />
       )}
 
       {/* Roof */}
@@ -787,12 +603,12 @@ const Room: React.FC<RoomProps> = ({
               if (!target) return null;
               const doorPosition = getDoorPosition(room, target);
               return (
-                <Door
+                <SimpleDoor
                   key={`door-${connectionId}`}
                   position={doorPosition.position}
                   rotation={doorPosition.rotation}
-                  keyRequired={Math.random() > 0.7}
-                  keyId="master-key"
+                  targetRoomId={connectionId}
+                  onDoorClick={() => onRoomChange?.(connectionId)}
                 />
               );
             })}

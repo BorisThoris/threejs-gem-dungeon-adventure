@@ -57,7 +57,7 @@ function getDefaultDoorPosition(
 ): { pos: [number, number, number]; rot: [number, number, number] } {
   const roomSize = room.size || 10;
   return {
-    pos: [0, 1.5, roomSize / 2],
+    pos: [0, 0.5, roomSize / 2], // Position door at appropriate height above floor
     rot: [0, Math.PI, 0],
   };
 }

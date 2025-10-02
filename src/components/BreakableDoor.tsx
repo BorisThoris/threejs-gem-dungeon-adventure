@@ -2,7 +2,7 @@ import React from "react";
 import withOptionalBreaking from "./withOptionalBreaking";
 import type { BreakingOptions } from "../hooks/useBreaking";
 import * as THREE from "three";
-import Door from "./Door";
+import SimpleDoor from "./SimpleDoor";
 
 // Structural breaking options (more durable)
 const structuralBreakingOptions: BreakingOptions = {
@@ -29,7 +29,7 @@ export interface BreakableDoorProps {
   hoverColor?: string;
 }
 
-const BreakableDoor = withOptionalBreaking(Door, {
+const BreakableDoor = withOptionalBreaking(SimpleDoor, {
   breakingOptions: structuralBreakingOptions,
 });
 

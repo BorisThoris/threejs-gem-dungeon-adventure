@@ -6,7 +6,7 @@ import Pillar from "../elements/Pillar";
 import Chain from "../elements/Chain";
 import Statue from "../objects/Statue";
 import Switch from "../objects/Switch";
-import Door from "../elements/Door";
+import SimpleDoor from "../../SimpleDoor";
 
 export interface BossBiomeProps {
   size?: number;
@@ -118,12 +118,11 @@ const BossBiome: React.FC<BossBiomeProps> = ({ size = 15, onRoomComplete }) => {
       />
 
       {/* Exit doors */}
-      <Door
-        position={[0, 0, size / 2]}
-        isOpen={doorsUnlocked}
-        isLocked={!doorsUnlocked}
-        keyRequired="boss_defeated"
-        onUnlock={(key) => key === "boss_defeated"}
+      <SimpleDoor
+        position={[0, 0.5, size / 2]}
+        rotation={[0, 0, 0]}
+        targetRoomId="next_room"
+        onDoorClick={() => setDoorsUnlocked(true)}
       />
 
       {/* Victory platform */}
