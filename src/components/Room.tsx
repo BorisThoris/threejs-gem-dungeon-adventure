@@ -607,7 +607,7 @@ const Room: React.FC<RoomProps> = memo(
             />
           )}
 
-          {/* Room Collision Detection - Now handled by PlayerRoomManager */}
+          {/* Room Collision Detection - Now handled by UnifiedRoomManager */}
 
           {/* Doors - DISABLED FOR NOW */}
           {/* {room.connections && room.connections.length > 0 && (

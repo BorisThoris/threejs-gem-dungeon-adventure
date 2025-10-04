@@ -4,7 +4,7 @@ import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
 // Import unified room store - updated at 2025-01-04 12:25
 import { useRoomStore } from "../store/roomStore";
-import SimpleRoomManager from "./SimpleRoomManager";
+import UnifiedRoomManager from "./UnifiedRoomManager";
 import { Player } from "./Player";
 
 const SimpleRoomDemo: React.FC = () => {
@@ -19,7 +19,7 @@ const SimpleRoomDemo: React.FC = () => {
 
         <Physics gravity={[0, -9.81, 0]}>
           {/* Render current room and doors */}
-          <SimpleRoomManager />
+          <UnifiedRoomManager mode="simple" showDebugInfo={true} />
 
           {/* Player */}
           <Player />

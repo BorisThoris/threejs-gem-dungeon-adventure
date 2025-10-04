@@ -3,7 +3,7 @@ import useMapStore from "../store/mapStore";
 import Room from "./Room";
 import ConnectionLine from "./ConnectionLine";
 import InteractionManager from "./InteractionManager";
-import PlayerRoomManager from "./PlayerRoomManager";
+import UnifiedRoomManager from "./UnifiedRoomManager";
 
 const MapRenderer: React.FC = () => {
   const { currentMap, currentRoomId, visitedRooms, generateMap } =
@@ -68,8 +68,9 @@ const MapRenderer: React.FC = () => {
         );
       })}
 
-      {/* Centralized Player Room Manager */}
-      <PlayerRoomManager
+      {/* Centralized Room Management */}
+      <UnifiedRoomManager
+        mode="instance"
         onRoomEnter={(_roomId) => {
           // console.log(`Entered room: ${_roomId}`);
         }}

@@ -5,7 +5,7 @@ import { Environment } from "@react-three/drei";
 import { Player } from "./Player";
 import { SafeSpawnArea } from "./SafeSpawnArea";
 import MapContainer from "./MapContainer";
-import RoomInstanceManager from "./RoomInstanceManager";
+import UnifiedRoomManager from "./UnifiedRoomManager";
 import MapUI from "./MapUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
@@ -89,7 +89,7 @@ const GhostScene: React.FC = () => {
         <Player initialSpawnPosition={[0, 1.5, 0]} showDebugInfo={true} />
 
         {/* Room Instance Manager - Single room at a time */}
-        <RoomInstanceManager />
+        <UnifiedRoomManager mode="instance" />
 
         {/* Ground */}
         <Ground />

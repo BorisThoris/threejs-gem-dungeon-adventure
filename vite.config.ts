@@ -1,21 +1,24 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 // @ts-ignore
-import eslint from 'vite-plugin-eslint'
+// import eslint from 'vite-plugin-eslint'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
-    eslint({
-      cache: false,
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: ['node_modules', 'dist'],
-      failOnError: false, // Don't fail build on lint errors
-      failOnWarning: false, // Don't fail build on warnings
-    })
+    react({
+      jsxRuntime: 'automatic'
+    }),
+    // eslint({
+    //   cache: false,
+    //   include: ['src/**/*.{ts,tsx}'],
+    //   exclude: ['node_modules', 'dist'],
+    //   failOnError: false, // Don't fail build on lint errors
+    //   failOnWarning: false, // Don't fail build on warnings
+    // })
   ],
   base: './', // Important for Electron
+  root: '.',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

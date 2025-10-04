@@ -6,7 +6,7 @@ import { OrbitControls, Sky, Environment } from "@react-three/drei";
 // Import improved components
 import { Player } from "./Player";
 import GameUI from "./GameUI";
-import RoomManager from "./RoomManager";
+import UnifiedRoomManager from "./UnifiedRoomManager";
 
 interface ImprovedGameProps {
   showDebugInfo?: boolean;
@@ -110,7 +110,11 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
         {/* Physics World */}
         <Physics gravity={[0, -9.81, 0]} debug={showDebugInfo}>
           {/* Simple Room Manager */}
-          <RoomManager onRoomChange={handleRoomChange} />
+          <UnifiedRoomManager
+            mode="full"
+            onRoomChange={handleRoomChange}
+            showDebugInfo={showDebugInfo}
+          />
 
           {/* Player */}
           <Player
@@ -183,7 +187,7 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
             {playerPosition.map((p) => p.toFixed(2)).join(", ")}
           </div>
           <div>Navigation System: ✅ Active</div>
-          <div>Room System: ✅ SimpleRoomManager Active</div>
+          <div>Room System: ✅ UnifiedRoomManager Active</div>
         </div>
       )}
 
