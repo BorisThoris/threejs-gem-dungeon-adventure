@@ -1,5 +1,5 @@
 import React from "react";
-import useRoomManagerStore from "../store/roomManagerStore";
+import { useConsolidatedGameStore } from "../store/consolidatedGameStore";
 import useMapStore from "../store/mapStore";
 import Room from "./Room";
 
@@ -18,7 +18,7 @@ const RoomInstanceRenderer: React.FC<RoomInstanceRendererProps> = ({
   onInteraction,
   onRoomTransition,
 }) => {
-  const { currentRoomId, roomInstances } = useRoomManagerStore();
+  const { currentRoomId, roomInstances } = useConsolidatedGameStore();
 
   // Get current room instance
   const currentRoomInstance = currentRoomId

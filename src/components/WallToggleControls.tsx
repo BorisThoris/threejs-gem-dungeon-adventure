@@ -1,5 +1,8 @@
 import React from "react";
-import { useWallsEnabled, useToggleWalls } from "../store/wallToggleStore";
+import {
+  useWallsEnabled,
+  useConsolidatedGameStore,
+} from "../store/consolidatedGameStore";
 
 interface WallToggleControlsProps {
   style?: React.CSSProperties;
@@ -11,7 +14,7 @@ const WallToggleControls: React.FC<WallToggleControlsProps> = ({
   showLabel = true,
 }) => {
   const wallsEnabled = useWallsEnabled();
-  const toggleWalls = useToggleWalls();
+  const { toggleWalls } = useConsolidatedGameStore();
 
   const defaultStyle: React.CSSProperties = {
     position: "fixed",

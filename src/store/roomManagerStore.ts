@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import type { RoomInstance, RoomManagerState, RoomManagerActions, RoomTransition } from '../types/roomInstance';
 import type { Room } from '../types/map';
 import useMapStore from './mapStore';
-import usePlayerMovementStore from './playerMovementStore';
+// Note: playerMovementStore functionality moved to consolidatedGameStore
 import { calculatePlayerSpawnPosition } from '../utils/doorUtils';
 import * as THREE from 'three';
 
@@ -43,8 +43,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
       const currentProgress = get().loadingProgress;
       if (currentProgress < 0.9) {
         set({ loadingProgress: currentProgress + 0.1 });
-        // Update transition progress in player movement store
-        usePlayerMovementStore.getState().updateTransitionProgress(currentProgress + 0.1);
+        // Note: Player movement transition progress is now handled by consolidatedGameStore
       }
     }, 100);
 
@@ -79,7 +78,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
       });
 
       // Update final transition progress
-      usePlayerMovementStore.getState().updateTransitionProgress(1.0);
+      // Note: Player movement transition progress is now handled by consolidatedGameStore
 
       clearInterval(progressInterval);
     } catch (error) {
@@ -129,7 +128,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     }
 
     // Start transition and freeze player movement
-    usePlayerMovementStore.getState().startTransition(fromRoomId, toRoomId);
+    // Note: Player movement transition is now handled by consolidatedGameStore
     
     // Load the target room if not already loaded
     await get().loadRoom(toRoomId);
@@ -165,7 +164,7 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     
     // Complete transition and re-enable movement after a delay
     setTimeout(() => {
-      usePlayerMovementStore.getState().completeTransition();
+      // Note: Player movement transition completion is now handled by consolidatedGameStore
       get().unloadRoom(fromRoomId);
     }, 1500); // Longer delay to show transition effect
     

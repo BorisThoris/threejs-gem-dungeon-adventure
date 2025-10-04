@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useRoomStore } from "../store/roomStore";
+import { useConsolidatedGameStore } from "../store/consolidatedGameStore";
 import { useDoorProgressionStore } from "../store/doorProgressionStore";
 import type { DoorState, DoorType } from "./Door";
 
@@ -12,7 +12,7 @@ const DoorDebugger: React.FC<DoorDebuggerProps> = ({
   showDebugger = false,
   playerPosition = [0, 0, 0],
 }) => {
-  const { currentRoomId, rooms } = useRoomStore();
+  const { currentRoomId, roomInstances } = useConsolidatedGameStore();
   const {
     unlockedDoors,
     doorStates,

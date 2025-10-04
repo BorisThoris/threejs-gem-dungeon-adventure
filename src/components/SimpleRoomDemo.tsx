@@ -2,8 +2,8 @@ import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
-// Import unified room store - updated at 2025-01-04 12:25
-import { useRoomStore } from "../store/roomStore";
+// Import consolidated game store
+import { useConsolidatedGameStore } from "../store/consolidatedGameStore";
 import UnifiedRoomManager from "./UnifiedRoomManager";
 import { Player } from "./Player";
 
@@ -59,13 +59,20 @@ const SimpleRoomDemo: React.FC = () => {
 
 // Component to show current room info
 const SimpleRoomInfo: React.FC = () => {
-  const { currentRoomId, setCurrentRoom } = useRoomStore();
+  const { currentRoomId } = useConsolidatedGameStore();
 
-  // Get room data from store
-  const currentRoom = useRoomStore.getState().rooms[currentRoomId];
-  const doors = Object.values(useRoomStore.getState().rooms).filter(
-    (room) => room && room.connections.includes(currentRoomId)
-  );
+  // Get room data from consolidated store
+  const { roomInstances } = useConsolidatedGameStore();
+  const currentRoomInstance = currentRoomId
+    ? roomInstances.get(currentRoomId)
+    : null;
+  const currentRoom = currentRoomInstance?.room;
+  const doors = Array.from(roomInstances.values())
+    .filter(
+      (instance) =>
+        instance.room && instance.room.connections.includes(currentRoomId || "")
+    )
+    .map((instance) => instance.room);
 
   return (
     <div>

@@ -2,16 +2,10 @@ import React, { memo, useEffect, useCallback, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
-// Store imports - only import what we need
-import {
-  useRoomStore,
-  getCurrentRoom,
-  getConnectedRooms,
-} from "../store/roomStore";
+// Store imports - consolidated
+import { useConsolidatedGameStore } from "../store/consolidatedGameStore";
 import { useDoorProgressionStore } from "../store/doorProgressionStore";
-import useRoomManagerStore from "../store/roomManagerStore";
 import useMapStore from "../store/mapStore";
-import usePlayerMovementStore from "../store/playerMovementStore";
 import { useGameState } from "../hooks/useGameState";
 
 // Component imports
@@ -82,8 +76,8 @@ const calculateDoorPosition = (
   } else {
     // Instance/full mode: use proper door positioning based on room positions
     if (currentRoom && targetRoom) {
-      const dx = targetRoom.position.x - currentRoom.position.x;
-      const dz = targetRoom.position.z - currentRoom.position.z;
+      const dx = (targetRoom.position?.x || 0) - (currentRoom.position?.x || 0);
+      const dz = (targetRoom.position?.z || 0) - (currentRoom.position?.z || 0);
 
       const roomHalfSize = roomSize / 2;
 
@@ -134,9 +128,9 @@ const calculateDoorPosition = (
 // Memoized room data getter
 const useRoomData = (
   mode: string,
-  activeRoomId: string,
-  roomInstances: Map<string, any>,
-  currentMap: any
+  activeRoomId: string | null,
+  currentMap: any,
+  roomInstances: Map<string, any>
 ) => {
   return useMemo(() => {
     if (mode === "instance") {
@@ -152,11 +146,18 @@ const useRoomData = (
           .filter(Boolean) || [];
       return { room, connectedRooms };
     } else {
-      const room = getCurrentRoom();
-      const connectedRooms = getConnectedRooms(activeRoomId);
+      const room = currentMap?.rooms.find(
+        (r: RoomData) => r.id === activeRoomId
+      );
+      const connectedRooms =
+        room?.connections
+          ?.map((connectionId: string) =>
+            currentMap?.rooms.find((r: RoomData) => r.id === connectionId)
+          )
+          .filter(Boolean) || [];
       return { room, connectedRooms };
     }
-  }, [mode, activeRoomId, roomInstances, currentMap]);
+  }, [mode, activeRoomId, currentMap, roomInstances]);
 };
 
 const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
@@ -169,31 +170,27 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
     onInteraction,
     showDebugInfo = false,
   }) => {
-    // Store hooks - only subscribe to what we need
-    const roomStore = useRoomStore();
+    // Store hooks - consolidated
+    const consolidatedStore = useConsolidatedGameStore();
     const doorStore = useDoorProgressionStore();
-    const roomManagerStore = useRoomManagerStore();
     const mapStore = useMapStore();
-    const playerMovementStore = usePlayerMovementStore();
     const gameState = useGameState();
     const { camera } = useThree();
 
     // Extract only the values we need
-    const { currentRoomId, isTransitioning, transitionProgress } = roomStore;
-    const { isDoorUnlocked, getDoorState, getDoorType, unlockDoor } = doorStore;
     const {
-      currentRoomId: instanceRoomId,
+      currentRoomId,
+      isTransitioning,
+      transitionProgress,
       roomInstances,
+      startTransition,
       loadRoom,
       setActiveRoom,
-    } = roomManagerStore;
-    const { currentMap, generateMap } = mapStore;
-    const {
-      isTransitioning: playerTransitioning,
-      transitionProgress: playerProgress,
       fromRoomId,
       toRoomId,
-    } = playerMovementStore;
+    } = consolidatedStore;
+    const { isDoorUnlocked, getDoorState, getDoorType, unlockDoor } = doorStore;
+    const { currentMap, generateMap } = mapStore;
     const { updateRoom, updateGamePhase } = gameState;
 
     // Refs for room detection
@@ -201,33 +198,23 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
     const lastUpdateTime = React.useRef(0);
 
     // Computed values
-    const activeRoomId = mode === "instance" ? instanceRoomId : currentRoomId;
-    const activeTransitioning =
-      mode === "instance" ? playerTransitioning : isTransitioning;
-    const activeProgress =
-      mode === "instance" ? playerProgress : transitionProgress;
+    const activeRoomId = currentRoomId;
+    const activeTransitioning = isTransitioning;
+    const activeProgress = transitionProgress;
 
     // Get room data using memoized hook
     const { room: currentRoom, connectedRooms } = useRoomData(
       mode,
       activeRoomId,
-      roomInstances,
-      currentMap
+      currentMap,
+      roomInstances
     );
 
     // Initialize rooms from definitions (for simple/full modes)
     useEffect(() => {
       if (mode === "simple" || mode === "full") {
-        const { addRoom } = useRoomStore.getState();
-        Object.values(ROOM_DEFINITIONS).forEach((roomDef) => {
-          addRoom({
-            id: roomDef.id,
-            name: roomDef.name,
-            position: { x: 0, z: 0 },
-            connections: roomDef.doors,
-            spawnPosition: roomDef.spawnPosition,
-          });
-        });
+        // Note: Room management now handled by consolidated store
+        // Room definitions are handled by map generation
       }
     }, [mode]);
 
@@ -240,7 +227,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
             return;
           }
 
-          if (!instanceRoomId) {
+          if (!activeRoomId) {
             await loadRoom(currentMap.startRoomId);
             setActiveRoom(currentMap.startRoomId);
 
@@ -261,8 +248,16 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
                 window.dispatchEvent(
                   new CustomEvent("playerTeleport", {
                     detail: {
-                      position: spawnPosition.toArray(),
-                      rotation: spawnRotation.toArray(),
+                      position: spawnPosition.toArray() as [
+                        number,
+                        number,
+                        number
+                      ],
+                      rotation: spawnRotation.toArray() as [
+                        number,
+                        number,
+                        number
+                      ],
                     },
                   })
                 );
@@ -273,14 +268,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
 
         initializeGame();
       }
-    }, [
-      mode,
-      currentMap,
-      instanceRoomId,
-      generateMap,
-      loadRoom,
-      setActiveRoom,
-    ]);
+    }, [mode, currentMap, activeRoomId, generateMap, loadRoom, setActiveRoom]);
 
     // Initialize room bounds for player detection (for instance mode)
     useEffect(() => {
@@ -372,29 +360,31 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
       (room: RoomData, doorId: string) => {
         if (mode === "full") {
           const isUnlocked = isDoorUnlocked(doorId);
-          if (isUnlocked) {
-            // Use roomManagerStore's startTransition for proper room loading
-            const { startTransition } = useRoomManagerStore.getState();
+          if (isUnlocked && activeRoomId) {
+            // Use consolidated store's startTransition for proper room loading
             startTransition(activeRoomId, room.id, "north");
-          } else {
+          } else if (activeRoomId) {
             unlockDoor(doorId, activeRoomId, "manual");
           }
         } else {
           // Instance mode: also handle door clicks for navigation
           console.log(`🚪 UnifiedRoomManager: Door clicked -> ${room.id}`);
-          // Use roomManagerStore's startTransition for proper room loading
-          const { startTransition } = useRoomManagerStore.getState();
-          startTransition(activeRoomId, room.id, "north");
+          // Use consolidated store's startTransition for proper room loading
+          if (activeRoomId) {
+            startTransition(activeRoomId, room.id, "north");
+          }
         }
       },
-      [mode, isDoorUnlocked, unlockDoor, activeRoomId]
+      [mode, isDoorUnlocked, unlockDoor, activeRoomId, startTransition]
     );
 
     // Memoized door state change handler
     const handleDoorStateChange = useCallback(
       (doorId: string, newState: string) => {
         if (mode === "full") {
-          useDoorProgressionStore.getState().setDoorState(doorId, newState);
+          useDoorProgressionStore
+            .getState()
+            .setDoorState(doorId, newState as any);
         }
       },
       [mode]
@@ -403,10 +393,13 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
     // Memoized room transition handler
     const handleRoomTransition = useCallback(
       (fromRoomId: string, toRoomId: string, direction: string) => {
-        const { startTransition } = useRoomManagerStore.getState();
-        startTransition(fromRoomId, toRoomId, direction);
+        startTransition(
+          fromRoomId,
+          toRoomId,
+          direction as "north" | "south" | "east" | "west"
+        );
       },
-      []
+      [startTransition]
     );
 
     // Show loading/transition state
@@ -439,7 +432,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
         {mode === "simple" && <SimpleRoomRenderer />}
         {mode === "instance" && (
           <RoomInstanceRenderer
-            playerPosition={playerPosition}
+            playerPosition={playerPosition as [number, number, number]}
             onInteraction={onInteraction}
             onRoomTransition={handleRoomTransition}
           />
@@ -488,7 +481,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
           } else {
             const isUnlocked = mode === "full" ? isDoorUnlocked(doorId) : true;
             const doorState = mode === "full" ? getDoorState(doorId) : "closed";
-            const doorType = mode === "full" ? getDoorType(doorId) : "normal";
+            const doorType = mode === "full" ? getDoorType(doorId) : "standard";
 
             return (
               <Door
@@ -514,8 +507,8 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
         {mode === "instance" && (
           <RoomTransitionEffect
             isTransitioning={activeTransitioning}
-            fromRoomId={fromRoomId}
-            toRoomId={toRoomId}
+            fromRoomId={fromRoomId || undefined}
+            toRoomId={toRoomId || undefined}
             progress={activeProgress}
           />
         )}

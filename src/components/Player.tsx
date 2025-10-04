@@ -9,7 +9,7 @@ import { useMouseLook } from "../hooks/useMouseLook";
 import { refBasedGameState } from "../utils/refBasedGameState";
 import { useSimpleSafeSpawn } from "../hooks/useSimpleSafeSpawn";
 import { Text } from "@react-three/drei";
-import usePlayerMovementStore from "../store/playerMovementStore";
+import { useConsolidatedGameStore } from "../store/consolidatedGameStore";
 
 interface PlayerProps {
   initialSpawnPosition?: [number, number, number];
@@ -23,7 +23,7 @@ export function Player({
   const ref = useRef<RapierRigidBody>(null);
   const keys = usePhysicalKeyboard();
   const { camera } = useThree();
-  const { isMovementEnabled, isTransitioning } = usePlayerMovementStore();
+  const { isMovementEnabled, isTransitioning } = useConsolidatedGameStore();
   const { findSafeSpawnPosition } = useSimpleSafeSpawn({
     maxAttempts: 100,
     searchRadius: 25,

@@ -4,7 +4,7 @@ import { Box } from "@react-three/drei";
 import * as THREE from "three";
 import withOptionalBreaking from "../../withOptionalBreaking";
 import { loadTextureFromImage } from "../../../utils/textureUtils";
-import { useWallsEnabled } from "../../../store/wallToggleStore";
+import { useWallsEnabled } from "../../../store/consolidatedGameStore";
 
 export interface WallProps {
   position: [number, number, number];
