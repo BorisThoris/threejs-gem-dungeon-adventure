@@ -122,18 +122,12 @@ const GlobalActionCards: React.FC = () => {
       lastRoomId.current = currentRoomId;
 
       if (currentRoom && actionRoomType && gamePhase === "exploration") {
-        // Use requestAnimationFrame for smoother transitions
-        const frameId = requestAnimationFrame(() => {
-          const timer = setTimeout(() => {
-            showActionCards();
-          }, 300); // Reduced delay for better responsiveness
+        // Simple timeout for showing action cards
+        const timer = setTimeout(() => {
+          showActionCards();
+        }, 300); // Reduced delay for better responsiveness
 
-          return () => clearTimeout(timer);
-        });
-
-        return () => {
-          cancelAnimationFrame(frameId);
-        };
+        return () => clearTimeout(timer);
       } else {
         hideCards();
       }

@@ -24,9 +24,15 @@ export const useSafeSpawn = (options: SafeSpawnOptions = {}) => {
     searchRadius = 20,
     searchHeight = 10,
     playerRadius = 0.8,
-    playerHeight = 1.6,
+    playerHeight = 0.6,
     stepSize = 1,
   } = options;
+
+  // Reusable objects to avoid garbage collection
+  const tempVector = useRef(new THREE.Vector3());
+  const testPosition = useRef(new THREE.Vector3());
+  const fallbackPosition = useRef(new THREE.Vector3());
+  const currentPosition = useRef(new THREE.Vector3());
 
   const { world } = useRapier();
   const { camera } = useThree();
@@ -83,7 +89,8 @@ export const useSafeSpawn = (options: SafeSpawnOptions = {}) => {
       };
     }
 
-    const center = new THREE.Vector3(...centerPosition);
+    tempVector.current.set(...centerPosition);
+    const center = tempVector.current;
     let attempts = 0;
     let bestPosition = center.clone();
     let bestDistance = Infinity;
@@ -111,12 +118,12 @@ export const useSafeSpawn = (options: SafeSpawnOptions = {}) => {
         
         // Try different heights
         for (let heightOffset = 0; heightOffset <= searchHeight; heightOffset += stepSize) {
-          const testPosition = new THREE.Vector3(x, center.y + heightOffset, z);
+          testPosition.current.set(x, center.y + heightOffset, z);
           
-          if (isPositionSafe(testPosition)) {
-            const distance = center.distanceTo(testPosition);
+          if (isPositionSafe(testPosition.current)) {
+            const distance = center.distanceTo(testPosition.current);
             if (distance < bestDistance) {
-              bestPosition = testPosition.clone();
+              bestPosition = testPosition.current.clone();
               bestDistance = distance;
             }
           }
@@ -135,10 +142,10 @@ export const useSafeSpawn = (options: SafeSpawnOptions = {}) => {
 
     // Fallback: try to find the highest safe position
     for (let y = center.y + searchHeight; y >= center.y - searchHeight; y -= stepSize) {
-      const testPosition = new THREE.Vector3(center.x, y, center.z);
-      if (isPositionSafe(testPosition)) {
+      testPosition.current.set(center.x, y, center.z);
+      if (isPositionSafe(testPosition.current)) {
         return {
-          position: [testPosition.x, testPosition.y, testPosition.z] as [number, number, number],
+          position: [testPosition.current.x, testPosition.current.y, testPosition.current.z] as [number, number, number],
           isSafe: true,
           attempts: attempts + 1,
         };
@@ -146,14 +153,14 @@ export const useSafeSpawn = (options: SafeSpawnOptions = {}) => {
     }
 
     // Last resort: spawn above the center
-    const fallbackPosition = new THREE.Vector3(
+    fallbackPosition.current.set(
       center.x,
       center.y + searchHeight + playerHeight,
       center.z
     );
 
     return {
-      position: [fallbackPosition.x, fallbackPosition.y, fallbackPosition.z] as [number, number, number],
+      position: [fallbackPosition.current.x, fallbackPosition.current.y, fallbackPosition.current.z] as [number, number, number],
       isSafe: false,
       attempts,
     };
@@ -164,7 +171,8 @@ export const useSafeSpawn = (options: SafeSpawnOptions = {}) => {
     currentPosition: [number, number, number],
     forceCheck: boolean = false
   ): SafeSpawnResult => {
-    const current = new THREE.Vector3(...currentPosition);
+    currentPosition.current.set(...currentPosition);
+    const current = currentPosition.current;
     
     // Skip check if position hasn't changed much and we're not forcing a check
     if (!forceCheck && lastCheckedPosition.current) {

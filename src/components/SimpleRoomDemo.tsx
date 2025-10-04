@@ -2,7 +2,11 @@ import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
-import { RoomProvider, useRoomContext } from "../contexts/RoomContext";
+import {
+  useCurrentRoomId,
+  useNavigateToRoom,
+  useRoomStore,
+} from "../store/roomStore";
 import SimpleRoomManager from "./SimpleRoomManager";
 import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
 
@@ -17,26 +21,23 @@ const SimpleRoomDemo: React.FC = () => {
         <Environment preset="sunset" />
 
         <Physics gravity={[0, -9.81, 0]}>
-          {/* Room Provider wraps everything */}
-          <RoomProvider>
-            {/* Render current room and doors */}
-            <SimpleRoomManager />
+          {/* Render current room and doors */}
+          <SimpleRoomManager />
 
-            {/* Player */}
-            <SafeFirstPersonPlayer />
+          {/* Player */}
+          <SafeFirstPersonPlayer />
 
-            {/* Ground plane */}
-            <RigidBody type="fixed" colliders="trimesh">
-              <mesh
-                rotation={[-Math.PI / 2, 0, 0]}
-                position={[0, -0.5, 0]}
-                receiveShadow
-              >
-                <planeGeometry args={[50, 50]} />
-                <meshLambertMaterial color="#2d5016" />
-              </mesh>
-            </RigidBody>
-          </RoomProvider>
+          {/* Ground plane */}
+          <RigidBody type="fixed" colliders="trimesh">
+            <mesh
+              rotation={[-Math.PI / 2, 0, 0]}
+              position={[0, -0.5, 0]}
+              receiveShadow
+            >
+              <planeGeometry args={[50, 50]} />
+              <meshLambertMaterial color="#2d5016" />
+            </mesh>
+          </RigidBody>
         </Physics>
       </Canvas>
 
@@ -61,10 +62,12 @@ const SimpleRoomDemo: React.FC = () => {
 
 // Component to show current room info
 const SimpleRoomInfo: React.FC = () => {
-  const { currentRoomId, getCurrentRoom, getAllConnectedRooms } =
-    useRoomContext();
-  const currentRoom = getCurrentRoom();
-  const doors = getAllConnectedRooms();
+  const currentRoomId = useCurrentRoomId();
+  const navigateToRoom = useNavigateToRoom();
+
+  // Get room data from store
+  const currentRoom = useRoomStore.getState().getCurrentRoom();
+  const doors = useRoomStore.getState().getAllConnectedRooms();
 
   return (
     <div>

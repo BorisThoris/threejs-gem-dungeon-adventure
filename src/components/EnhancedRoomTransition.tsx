@@ -30,7 +30,6 @@ const EnhancedRoomTransition: React.FC<EnhancedRoomTransitionProps> = ({
   });
 
   const particleRefs = useRef<THREE.Group[]>([]);
-  const animationRef = useRef<number>();
 
   // Create particle system
   const createParticles = () => {
@@ -100,7 +99,7 @@ const EnhancedRoomTransition: React.FC<EnhancedRoomTransitionProps> = ({
           transitionState.textOpacity > 0 ||
           transitionState.particleOpacity > 0
         ) {
-          animationRef.current = requestAnimationFrame(fadeOut);
+          setTimeout(fadeOut, 16); // ~60fps
         }
       };
 
@@ -127,7 +126,7 @@ const EnhancedRoomTransition: React.FC<EnhancedRoomTransitionProps> = ({
           transitionState.overlayOpacity < 0.9 ||
           transitionState.textOpacity < 1
         ) {
-          animationRef.current = requestAnimationFrame(fadeIn);
+          setTimeout(fadeIn, 16); // ~60fps
         }
       };
 
@@ -135,9 +134,7 @@ const EnhancedRoomTransition: React.FC<EnhancedRoomTransitionProps> = ({
     }
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      // Cleanup handled by component unmount
     };
   }, [isTransitioning, onComplete]);
 

@@ -3,7 +3,7 @@ import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { CapsuleCollider } from "@react-three/rapier";
 import { SimpleFirstPersonArms } from "./SimpleFirstPersonArms";
 import { usePhysicalKeyboard } from "../hooks/usePhysicalKeyboard";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useThree, useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 import * as THREE from "three";
 import { useMouseLook } from "../hooks/useMouseLook";
@@ -22,7 +22,7 @@ interface SafeFirstPersonPlayerProps {
 }
 
 export function SafeFirstPersonPlayer({
-  initialSpawnPosition = [0, 0.5, 0],
+  initialSpawnPosition = [0, 1.5, 0],
   showDebugInfo = false,
 }: SafeFirstPersonPlayerProps) {
   const ref = useRef<RapierRigidBody>(null);
@@ -60,14 +60,32 @@ export function SafeFirstPersonPlayer({
 
   // Find safe spawn position on mount
   useEffect(() => {
-    const safeSpawn = findSafeSpawnPosition(initialSpawnPosition);
-    setSpawnPosition(safeSpawn.position);
-    setSpawnInfo(safeSpawn);
+    // Use a fixed safe height that should work for most rooms
+    // This places the player 1.5 units above the floor (which is typically at Y=-0.5)
+    const safeSpawnPosition: [number, number, number] = [
+      initialSpawnPosition[0], // Keep X position
+      1.5, // Safe height above floor
+      initialSpawnPosition[2], // Keep Z position
+    ];
+
+    setSpawnPosition(safeSpawnPosition);
+    setSpawnInfo({
+      position: safeSpawnPosition,
+      isSafe: true,
+      attempts: 1,
+    });
     setIsSpawned(true);
 
     if (showDebugInfo) {
+      console.log("SafeFirstPersonPlayer: Safe spawning at", safeSpawnPosition);
+      console.log(
+        "SafeFirstPersonPlayer: Player capsule will be from Y=",
+        1.5 - 0.3,
+        "to Y=",
+        1.5 + 0.3
+      );
     }
-  }, [initialSpawnPosition, findSafeSpawnPosition, showDebugInfo]);
+  }, [initialSpawnPosition, showDebugInfo]);
 
   // Initialize camera position once spawned
   useEffect(() => {
@@ -111,10 +129,11 @@ export function SafeFirstPersonPlayer({
       const { position, rotation } = event.detail;
       const newPosition = new THREE.Vector3(...position);
       const newRotation = new THREE.Euler(...rotation);
+      const newQuaternion = new THREE.Quaternion().setFromEuler(newRotation);
 
       // Teleport the rigid body
       ref.current.setTranslation(newPosition, true);
-      ref.current.setRotation(newRotation, true);
+      ref.current.setRotation(newQuaternion, true);
 
       // Stop any existing velocity
       ref.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -143,8 +162,15 @@ export function SafeFirstPersonPlayer({
     };
   }, [camera]);
 
-  // Simple movement control
-  useFrame(() => {
+  // Reusable vectors to avoid garbage collection
+  const frontVector = useRef(new Vector3());
+  const sideVector = useRef(new Vector3());
+  const direction = useRef(new Vector3());
+  const cameraDirection = useRef(new Vector3());
+  const armsPosition = useRef(new Vector3());
+
+  // Movement control using regular useFrame
+  useFrame((state, delta) => {
     if (!isSpawned || !ref.current) return;
 
     // Update ref-based game state (no React re-renders)
@@ -194,12 +220,12 @@ export function SafeFirstPersonPlayer({
       lastUpdateTime.current = now;
     }
 
-    // Calculate movement (slower speeds)
+    // Calculate movement (slower speeds) - reuse vectors
     const speed = dash ? 8 : 5;
-    const frontVector = new Vector3(0, 0, +backward - +forward);
-    const sideVector = new Vector3(+left - +right, 0, 0);
-    const direction = new Vector3()
-      .subVectors(frontVector, sideVector)
+    frontVector.current.set(0, 0, +backward - +forward);
+    sideVector.current.set(+left - +right, 0, 0);
+    direction.current
+      .subVectors(frontVector.current, sideVector.current)
       .normalize()
       .multiplyScalar(speed)
       .applyQuaternion(camera.quaternion);
@@ -209,21 +235,20 @@ export function SafeFirstPersonPlayer({
 
     // Apply movement
     ref.current.setLinvel(
-      { x: direction.x, y: yVelocity, z: direction.z },
+      { x: direction.current.x, y: yVelocity, z: direction.current.z },
       true
     );
 
-    // Position arms using refs (throttled)
+    // Position arms using refs (throttled) - reuse vectors
     if (armsRef.current && now - lastUpdateTime.current > 16) {
-      const cameraDirection = new Vector3();
-      camera.getWorldDirection(cameraDirection);
+      camera.getWorldDirection(cameraDirection.current);
 
-      const armsPosition = new Vector3()
+      armsPosition.current
         .copy(camera.position)
-        .add(cameraDirection.multiplyScalar(0.2))
+        .add(cameraDirection.current.multiplyScalar(0.2))
         .add(new Vector3(0, -0.3, 0));
 
-      armsRef.current.position.copy(armsPosition);
+      armsRef.current.position.copy(armsPosition.current);
       armsRef.current.quaternion.copy(camera.quaternion);
       armsRef.current.updateMatrixWorld(true);
     }
@@ -244,6 +269,11 @@ export function SafeFirstPersonPlayer({
         position={spawnPosition}
         enabledRotations={[false, false, false]}
         lockRotations
+        onCollisionEnter={(event) => {
+          if (showDebugInfo) {
+            console.log("SafeFirstPersonPlayer: Collision detected", event);
+          }
+        }}
       >
         <CapsuleCollider args={[0.8, 0.3]} />
       </RigidBody>
@@ -287,6 +317,17 @@ export function SafeFirstPersonPlayer({
             outlineColor="#000000"
           >
             Spawn Pos: {spawnInfo.position.map((p) => p.toFixed(1)).join(", ")}
+          </Text>
+          <Text
+            position={[0, -1.0, 0]}
+            fontSize={0.2}
+            color="#ffff00"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            Physics Body: {spawnPosition.map((p) => p.toFixed(1)).join(", ")}
           </Text>
         </group>
       )}

@@ -1,12 +1,13 @@
 import React from "react";
-import { useRoomContext } from "../contexts/RoomContext";
+import { useCurrentRoomId, useAllConnectedRooms } from "../store/roomStore";
 import SimpleRoomRenderer from "./SimpleRoomRenderer";
 import SimpleDoor from "./SimpleDoor";
 import DebugSign from "./DebugSign";
-import { ROOM_DEFINITIONS } from "../contexts/RoomContext";
+import { ROOM_DEFINITIONS } from "../data/roomDefinitions";
 
 const SimpleRoomManager: React.FC = () => {
-  const { currentRoomId, getAllConnectedRooms } = useRoomContext();
+  const currentRoomId = useCurrentRoomId();
+  const getAllConnectedRooms = useAllConnectedRooms();
 
   const currentRoom = ROOM_DEFINITIONS[currentRoomId];
   const availableDoors = getAllConnectedRooms();

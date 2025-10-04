@@ -10,7 +10,6 @@ export const useMouseLook = () => {
   const sensitivity = 0.001; // Reduced for smoother movement
   const isMouseDown = useRef(false);
   const lastRotationUpdate = useRef(0);
-  const animationFrameRef = useRef<number | null>(null);
   const pendingRotation = useRef({ x: 0, y: 0 });
 
   // Check if we're running in Electron
@@ -57,15 +56,12 @@ export const useMouseLook = () => {
 
     window.addEventListener("playerTeleport", handleTeleport);
 
-    // Smooth camera update function using requestAnimationFrame
+    // Simple camera update function
     const updateCameraRotation = () => {
       if (isPointerLocked.current && isMouseDown.current) {
         camera.rotation.order = "YXZ";
         camera.rotation.y = euler.current.y;
         camera.rotation.x = euler.current.x;
-        animationFrameRef.current = requestAnimationFrame(updateCameraRotation);
-      } else {
-        animationFrameRef.current = null;
       }
     };
 
@@ -105,10 +101,8 @@ export const useMouseLook = () => {
         Math.min(Math.PI / 2, euler.current.x)
       );
 
-      // Start smooth camera updates if not already running
-      if (!animationFrameRef.current) {
-        updateCameraRotation();
-      }
+      // Update camera rotation
+      updateCameraRotation();
     };
 
     const handlePointerLockChange = () => {
@@ -156,11 +150,6 @@ export const useMouseLook = () => {
         if (isPointerLocked.current) {
           document.exitPointerLock();
         }
-        // Stop animation frame
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-          animationFrameRef.current = null;
-        }
         // Emit UI event instead of React state update
         uiEvents.emit(UI_EVENTS.MOUSE_LOOK_END);
       }
@@ -187,12 +176,6 @@ export const useMouseLook = () => {
       document.removeEventListener("mouseup", handleMouseUp);
       document.removeEventListener("contextmenu", handleContextMenu);
       window.removeEventListener("playerTeleport", handleTeleport);
-
-      // Cleanup animation frame
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
     };
   }, [camera]);
 

@@ -3,7 +3,8 @@ import { RigidBody } from "@react-three/rapier";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
 import { type BiomeWallConfig, type WallDefinition } from "../types/biomeWalls";
-import { loadTextureFromImage } from "../utils/textureUtils";
+import { globalTextureManager } from "../utils/globalTextureManager";
+import { useThreeDisposal } from "../hooks/useThreeDisposal";
 import withOptionalBreaking from "./withOptionalBreaking";
 
 interface BiomeWallRendererProps {
@@ -24,6 +25,7 @@ const BiomeWallRenderer: React.FC<BiomeWallRendererProps> = ({
   onFragmentClick,
 }) => {
   const [textures, setTextures] = useState<Record<string, THREE.Texture>>({});
+  const { addDisposable } = useThreeDisposal();
 
   // Load textures for all materials used in this biome
   useEffect(() => {
@@ -49,11 +51,11 @@ const BiomeWallRenderer: React.FC<BiomeWallRendererProps> = ({
         materials.add(biomeConfig.ceiling.texture);
       }
 
-      // Load textures
+      // Load textures using global manager
       materials.forEach((material) => {
         texturePromises.push({
           material,
-          promise: loadTextureFromImage(material),
+          promise: globalTextureManager.getTexture(material),
         });
       });
 
@@ -68,6 +70,11 @@ const BiomeWallRenderer: React.FC<BiomeWallRendererProps> = ({
         });
 
         setTextures(textureMap);
+
+        // Register textures for disposal
+        Object.values(textureMap).forEach((texture) => {
+          addDisposable({ texture });
+        });
       } catch (error) {
         console.error(
           "Failed to load textures for biome:",
@@ -78,7 +85,7 @@ const BiomeWallRenderer: React.FC<BiomeWallRendererProps> = ({
     };
 
     loadTextures();
-  }, [biomeConfig]);
+  }, [biomeConfig, addDisposable]);
 
   const getMaterialProps = (wall: WallDefinition) => {
     const baseProps = {

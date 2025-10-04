@@ -31,12 +31,12 @@ export function BasicFirstPersonPlayer() {
   const lastUpdateTime = useRef(0);
 
   // Fixed spawn position - no need to recalculate every render
-  const spawnPosition: [number, number, number] = [0, 1, 0];
+  const spawnPosition: [number, number, number] = [0, 1.5, 0];
 
   // Initialize camera position once
   useEffect(() => {
-    camera.position.set(0, 1, 0);
-    camera.lookAt(0, 1, -1);
+    camera.position.set(0, 1.5, 0);
+    camera.lookAt(0, 1.5, -1);
   }, [camera]);
 
   const handleMouseDown = useCallback((event: MouseEvent) => {

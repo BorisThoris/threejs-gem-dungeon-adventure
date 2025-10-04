@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { OrbitControls, Sky, Environment } from "@react-three/drei";
-import * as THREE from "three";
 
 // Import improved components
 import ImprovedRoomManager from "./ImprovedRoomManager";
@@ -185,7 +184,7 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
 
           {/* Player */}
           <SafeFirstPersonPlayer
-            initialSpawnPosition={[0, 0.5, 0]}
+            initialSpawnPosition={[0, 1.5, 0]}
             showDebugInfo={showDebugInfo}
           />
         </Physics>

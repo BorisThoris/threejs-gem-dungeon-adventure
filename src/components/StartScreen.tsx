@@ -15,7 +15,7 @@ import SharedNavigation from "./SharedNavigation";
 import WallToggleControls from "./WallToggleControls";
 import BiomeCategorySelector from "./BiomeCategorySelector";
 import { ThemeSelector, ThemePreview } from "../themes";
-import { WallToggleProvider } from "../contexts/WallToggleContext";
+// WallToggleProvider removed - now using Zustand store
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
@@ -87,7 +87,7 @@ const GhostScene: React.FC = () => {
 
         {/* Safe First Person Player */}
         <SafeFirstPersonPlayer
-          initialSpawnPosition={[0, 0.5, 0]}
+          initialSpawnPosition={[0, 1.5, 0]}
           showDebugInfo={true}
         />
 
@@ -271,9 +271,7 @@ const StartScreenContent: React.FC = () => {
 const StartScreen: React.FC = () => {
   return (
     <GameInitializer>
-      <WallToggleProvider>
-        <StartScreenContent />
-      </WallToggleProvider>
+      <StartScreenContent />
     </GameInitializer>
   );
 };

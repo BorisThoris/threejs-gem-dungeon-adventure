@@ -1,5 +1,5 @@
 import React from "react";
-import { useBreakingContext } from "../hooks/useBreakingContext";
+import { useGlobalBreakingEnabled } from "../store/breakingStore";
 import type { BreakingOptions } from "../hooks/useBreaking";
 import * as THREE from "three";
 
@@ -34,7 +34,7 @@ const GlobalBreakableWrapper: React.FC<GlobalBreakableWrapperProps> = ({
   forceEnabled = false,
   forceDisabled = false,
 }) => {
-  const { globalBreakingEnabled } = useBreakingContext();
+  const globalBreakingEnabled = useGlobalBreakingEnabled();
 
   // Determine if breaking should be enabled for this component
   const isBreakingEnabled = forceDisabled

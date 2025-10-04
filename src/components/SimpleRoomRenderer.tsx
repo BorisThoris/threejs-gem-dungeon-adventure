@@ -1,8 +1,9 @@
 import React from "react";
-import { useRoomContext, ROOM_DEFINITIONS } from "../contexts/RoomContext";
+import { useCurrentRoomId } from "../store/roomStore";
+import { ROOM_DEFINITIONS } from "../data/roomDefinitions";
 
 const SimpleRoomRenderer: React.FC = () => {
-  const { currentRoomId } = useRoomContext();
+  const currentRoomId = useCurrentRoomId();
 
   const currentRoom = ROOM_DEFINITIONS[currentRoomId];
 

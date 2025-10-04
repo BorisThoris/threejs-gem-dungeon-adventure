@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 import { roomNavigationSystem } from "../systems/RoomNavigationSystem";
+import { useFrame } from "@react-three/fiber";
 
 interface PerformanceMetrics {
   fps: number;
@@ -37,8 +37,8 @@ const RoomPerformanceMonitor: React.FC<RoomPerformanceMonitorProps> = ({
   const lastTimeRef = useRef(performance.now());
   const lastUpdateRef = useRef(performance.now());
 
-  // FPS calculation
-  useFrame(() => {
+  // FPS calculation - reduced frequency to avoid overhead
+  useFrame((state, delta) => {
     const now = performance.now();
     const deltaTime = now - lastTimeRef.current;
 

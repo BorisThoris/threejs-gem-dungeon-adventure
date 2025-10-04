@@ -50,10 +50,16 @@ const InstancedBrickHouse: React.FC<InstancedBrickHouseProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,
+  onPrototypeAction: _onPrototypeAction,
 }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
+
+  // Reusable objects to avoid garbage collection
+  const tempVector = useRef(new THREE.Vector3());
+  const tempEuler = useRef(new THREE.Euler());
+  const tempQuaternion = useRef(new THREE.Quaternion());
+  const tempMatrix = useRef(new THREE.Matrix4());
   const [brickTexture, setBrickTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
@@ -132,15 +138,16 @@ const InstancedBrickHouse: React.FC<InstancedBrickHouseProps> = ({
               wallCenter[2],
             ];
 
-            // Apply wall rotation
-            const rotatedPosition = new THREE.Vector3(...brickPosition);
-            rotatedPosition.applyEuler(new THREE.Euler(...wallRotation));
+            // Apply wall rotation - reuse objects
+            tempVector.current.set(...brickPosition);
+            tempEuler.current.set(...wallRotation);
+            tempVector.current.applyEuler(tempEuler.current);
 
             bricks.push({
               position: [
-                rotatedPosition.x,
-                rotatedPosition.y,
-                rotatedPosition.z,
+                tempVector.current.x,
+                tempVector.current.y,
+                tempVector.current.z,
               ],
               scale: [
                 brickWidth * sizeVariation,
@@ -274,16 +281,16 @@ const InstancedBrickHouse: React.FC<InstancedBrickHouseProps> = ({
       // Set the instance count
       meshRef.current.count = brickData.length;
 
-      // Update each instance
+      // Update each instance - reuse objects
       brickData.forEach((brick, index) => {
-        matrix.compose(
-          new THREE.Vector3(...brick.position),
-          new THREE.Quaternion().setFromEuler(
-            new THREE.Euler(...brick.rotation)
+        tempMatrix.current.compose(
+          tempVector.current.set(...brick.position),
+          tempQuaternion.current.setFromEuler(
+            tempEuler.current.set(...brick.rotation)
           ),
-          new THREE.Vector3(...brick.scale)
+          tempVector.current.set(...brick.scale)
         );
-        meshRef.current!.setMatrixAt(index, matrix);
+        meshRef.current!.setMatrixAt(index, tempMatrix.current);
       });
 
       meshRef.current.instanceMatrix.needsUpdate = true;

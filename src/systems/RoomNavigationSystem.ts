@@ -313,11 +313,11 @@ export class RoomNavigationSystem extends BrowserEventEmitter {
         this.completeTransition();
         onComplete();
       } else {
-        requestAnimationFrame(animate);
+        setTimeout(animate, 16); // ~60fps
       }
     };
 
-    requestAnimationFrame(animate);
+    setTimeout(animate, 16); // ~60fps
   }
 
   // Complete room transition
