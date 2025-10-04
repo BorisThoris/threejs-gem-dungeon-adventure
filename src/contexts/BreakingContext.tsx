@@ -1,24 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-
-interface BreakingContextType {
-  globalBreakingEnabled: boolean;
-  setGlobalBreakingEnabled: (enabled: boolean) => void;
-  toggleGlobalBreaking: () => void;
-}
-
-const BreakingContext = createContext<BreakingContextType | undefined>(
-  undefined
-);
-
-export const useBreakingContext = () => {
-  const context = useContext(BreakingContext);
-  if (!context) {
-    throw new Error(
-      "useBreakingContext must be used within a BreakingProvider"
-    );
-  }
-  return context;
-};
+import React, { useState } from "react";
+import type { ReactNode } from "react";
+import { BreakingContext } from "./BreakingContextDefinition";
 
 interface BreakingProviderProps {
   children: ReactNode;

@@ -1,7 +1,16 @@
 import React from "react";
-import { useBreakingContext } from "../contexts/BreakingContext";
+import { useBreakingContext } from "../hooks/useBreakingContext";
 import type { BreakingOptions } from "../hooks/useBreaking";
 import * as THREE from "three";
+
+interface BreakableComponentProps {
+  enabled?: boolean;
+  breakingOptions?: BreakingOptions;
+  onBreak?: (impactPoint: THREE.Vector3) => void;
+  onFragmentClick?: (fragmentId: string) => void;
+  showHoverEffect?: boolean;
+  hoverColor?: string;
+}
 
 interface GlobalBreakableWrapperProps {
   children: React.ReactNode;
@@ -36,18 +45,26 @@ const GlobalBreakableWrapper: React.FC<GlobalBreakableWrapperProps> = ({
   const childrenWithBreaking = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
       // Check if the child is a breakable component by looking for the 'enabled' prop
-      if (typeof child.props === "object" && "enabled" in child.props) {
-        return React.cloneElement(child as React.ReactElement<any>, {
-          enabled: isBreakingEnabled,
-          breakingOptions: {
-            ...breakingOptions,
-            ...child.props.breakingOptions,
-          },
-          onBreak: onBreak || child.props.onBreak,
-          onFragmentClick: onFragmentClick || child.props.onFragmentClick,
-          showHoverEffect: showHoverEffect,
-          hoverColor: hoverColor,
-        });
+      if (
+        typeof child.props === "object" &&
+        child.props !== null &&
+        "enabled" in child.props
+      ) {
+        const childProps = child.props as BreakableComponentProps;
+        return React.cloneElement(
+          child as React.ReactElement<BreakableComponentProps>,
+          {
+            enabled: isBreakingEnabled,
+            breakingOptions: {
+              ...breakingOptions,
+              ...(childProps.breakingOptions || {}),
+            },
+            onBreak: onBreak || childProps.onBreak,
+            onFragmentClick: onFragmentClick || childProps.onFragmentClick,
+            showHoverEffect: showHoverEffect,
+            hoverColor: hoverColor,
+          }
+        );
       }
     }
     return child;
