@@ -123,12 +123,7 @@ export class RoomNavigationSystem extends BrowserEventEmitter {
       return;
     }
 
-    console.log(`🚪 RoomNavigationSystem: Updating doors for room ${currentRoom.id}`, {
-      connections: currentRoom.connections,
-      connectionsLength: currentRoom.connections?.length || 0,
-      roomSize: currentRoom.size,
-      position: currentRoom.position
-    });
+    // Debug logging removed for performance
 
     const roomSize = currentRoom.size || 10;
     const halfSize = roomSize / 2;
@@ -146,18 +141,14 @@ export class RoomNavigationSystem extends BrowserEventEmitter {
         const direction = this.calculateDoorDirectionForInstance(currentRoom, targetRoom, index);
         const doorInfo = this.calculateDoorInfo(currentRoom, targetRoom, direction, index);
         
-        console.log(`RoomNavigationSystem: Created door ${doorInfo.id} -> ${targetRoomId} (${direction})`, {
-          position: doorInfo.position,
-          rotation: doorInfo.rotation,
-          targetRoomId: doorInfo.targetRoomId
-        });
+        // Debug logging removed for performance
         this.state.doors.set(doorInfo.id, doorInfo);
       });
     } else {
       console.warn(`RoomNavigationSystem: Room ${currentRoom.id} has no connections!`);
     }
 
-    console.log(`RoomNavigationSystem: Updated ${this.state.doors.size} doors for room ${currentRoom.id}`);
+    // Debug logging removed for performance
     this.emit('doorsUpdated', Array.from(this.state.doors.values()));
   }
 

@@ -114,7 +114,7 @@ const ImprovedRoomManager: React.FC<ImprovedRoomManagerProps> = ({
   // Handle door click
   const handleDoorClick = useCallback(
     (doorId: string, targetRoomId: string) => {
-      console.log(`🚪 Door clicked: ${doorId} -> ${targetRoomId}`);
+      // Debug logging removed for performance
 
       // Get door info to determine direction
       const door = roomNavigationSystem.getDoor(doorId);

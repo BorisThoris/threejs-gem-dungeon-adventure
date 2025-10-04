@@ -1,11 +1,11 @@
-import React from "react";
+import React, { memo } from "react";
 import { useCurrentRoomId, useAllConnectedRooms } from "../store/roomStore";
 import SimpleRoomRenderer from "./SimpleRoomRenderer";
 import SimpleDoor from "./SimpleDoor";
 import DebugSign from "./DebugSign";
 import { ROOM_DEFINITIONS } from "../data/roomDefinitions";
 
-const SimpleRoomManager: React.FC = () => {
+const SimpleRoomManager: React.FC = memo(() => {
   const currentRoomId = useCurrentRoomId();
   const getAllConnectedRooms = useAllConnectedRooms();
 
@@ -96,6 +96,8 @@ const SimpleRoomManager: React.FC = () => {
       })}
     </group>
   );
-};
+});
+
+SimpleRoomManager.displayName = "SimpleRoomManager";
 
 export default SimpleRoomManager;

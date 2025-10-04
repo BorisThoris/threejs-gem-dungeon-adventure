@@ -70,8 +70,8 @@ export const useRoomStore = create<RoomStore>()(
 
 // Selector hooks for better performance
 export const useCurrentRoomId = () => useRoomStore((state) => state.currentRoomId);
-export const useCurrentRoom = () => useRoomStore((state) => state.getCurrentRoom());
-export const useRoomDoors = () => useRoomStore((state) => state.getRoomDoors());
-export const useRoomSpawnPosition = () => useRoomStore((state) => state.getRoomSpawnPosition());
-export const useAllConnectedRooms = () => useRoomStore((state) => state.getAllConnectedRooms());
+export const useCurrentRoom = () => useRoomStore((state) => state.getCurrentRoom);
+export const useRoomDoors = () => useRoomStore((state) => state.getRoomDoors);
+export const useRoomSpawnPosition = () => useRoomStore((state) => state.getRoomSpawnPosition);
+export const useAllConnectedRooms = () => useRoomStore((state) => state.getAllConnectedRooms);
 export const useNavigateToRoom = () => useRoomStore((state) => state.navigateToRoom);

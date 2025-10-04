@@ -13,7 +13,7 @@ type BreakingStore = BreakingState & BreakingActions;
 
 export const useBreakingStore = create<BreakingStore>((set, get) => ({
   // State
-  globalBreakingEnabled: false,
+  globalBreakingEnabled: true,
 
   // Actions
   setGlobalBreakingEnabled: (enabled: boolean) => {
