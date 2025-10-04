@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
-import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
+import { Player } from "./Player";
 import { SafeSpawnArea } from "./SafeSpawnArea";
 import MapContainer from "./MapContainer";
 import RoomInstanceManager from "./RoomInstanceManager";
@@ -86,10 +86,7 @@ const GhostScene: React.FC = () => {
         <SafeSpawnArea position={[0, 0, 0]} size={8} />
 
         {/* Safe First Person Player */}
-        <SafeFirstPersonPlayer
-          initialSpawnPosition={[0, 1.5, 0]}
-          showDebugInfo={true}
-        />
+        <Player initialSpawnPosition={[0, 1.5, 0]} showDebugInfo={true} />
 
         {/* Room Instance Manager - Single room at a time */}
         <RoomInstanceManager />

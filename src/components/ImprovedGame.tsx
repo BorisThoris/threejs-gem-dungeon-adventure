@@ -4,7 +4,7 @@ import { Physics } from "@react-three/rapier";
 import { OrbitControls, Sky, Environment } from "@react-three/drei";
 
 // Import improved components
-import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
+import { Player } from "./Player";
 import GameUI from "./GameUI";
 import RoomManager from "./RoomManager";
 
@@ -113,7 +113,7 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
           <RoomManager onRoomChange={handleRoomChange} />
 
           {/* Player */}
-          <SafeFirstPersonPlayer
+          <Player
             initialSpawnPosition={[0, 1.5, 0]}
             showDebugInfo={showDebugInfo}
           />

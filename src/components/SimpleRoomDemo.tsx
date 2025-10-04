@@ -5,7 +5,7 @@ import { Environment } from "@react-three/drei";
 // Import unified room store - updated at 2025-01-04 12:25
 import { useRoomStore } from "../store/roomStore";
 import SimpleRoomManager from "./SimpleRoomManager";
-import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
+import { Player } from "./Player";
 
 const SimpleRoomDemo: React.FC = () => {
   return (
@@ -22,7 +22,7 @@ const SimpleRoomDemo: React.FC = () => {
           <SimpleRoomManager />
 
           {/* Player */}
-          <SafeFirstPersonPlayer />
+          <Player />
 
           {/* Ground plane */}
           <RigidBody type="fixed" colliders="trimesh">

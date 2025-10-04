@@ -1,7 +1,6 @@
-import { useRef, useCallback, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { CapsuleCollider } from "@react-three/rapier";
-import { SimpleFirstPersonArms } from "./SimpleFirstPersonArms";
 import { usePhysicalKeyboard } from "../hooks/usePhysicalKeyboard";
 import { useThree, useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
@@ -12,23 +11,16 @@ import { useSimpleSafeSpawn } from "../hooks/useSimpleSafeSpawn";
 import { Text } from "@react-three/drei";
 import usePlayerMovementStore from "../store/playerMovementStore";
 
-interface ArmsRef {
-  switchAnimation: (toMagic: boolean) => void;
-}
-
-interface SafeFirstPersonPlayerProps {
+interface PlayerProps {
   initialSpawnPosition?: [number, number, number];
   showDebugInfo?: boolean;
 }
 
-export function SafeFirstPersonPlayer({
+export function Player({
   initialSpawnPosition = [0, 1.5, 0],
   showDebugInfo = false,
-}: SafeFirstPersonPlayerProps) {
+}: PlayerProps) {
   const ref = useRef<RapierRigidBody>(null);
-  const armsRef = useRef<THREE.Group>(null);
-  const armsControlRef = useRef<ArmsRef>(null);
-  const isMouseDown = useRef(false);
   const keys = usePhysicalKeyboard();
   const { camera } = useThree();
   const { isMovementEnabled, isTransitioning } = usePlayerMovementStore();
@@ -77,9 +69,9 @@ export function SafeFirstPersonPlayer({
     setIsSpawned(true);
 
     if (showDebugInfo) {
-      console.log("SafeFirstPersonPlayer: Safe spawning at", safeSpawnPosition);
+      console.log("Player: Safe spawning at", safeSpawnPosition);
       console.log(
-        "SafeFirstPersonPlayer: Player capsule will be from Y=",
+        "Player: Player capsule will be from Y=",
         1.5 - 0.3,
         "to Y=",
         1.5 + 0.3
@@ -94,30 +86,6 @@ export function SafeFirstPersonPlayer({
       camera.lookAt(spawnPosition[0], spawnPosition[1], spawnPosition[2] - 1);
     }
   }, [camera, spawnPosition, isSpawned]);
-
-  const handleMouseDown = useCallback((event: MouseEvent) => {
-    if (event.button === 0 && !isMouseDown.current && armsControlRef.current) {
-      isMouseDown.current = true;
-      armsControlRef.current.switchAnimation(true);
-    }
-  }, []);
-
-  const handleMouseUp = useCallback((event: MouseEvent) => {
-    if (event.button === 0 && isMouseDown.current && armsControlRef.current) {
-      isMouseDown.current = false;
-      armsControlRef.current.switchAnimation(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [handleMouseDown, handleMouseUp]);
 
   // No periodic safety checks - safe spawn only works during initial spawn
 
@@ -176,8 +144,6 @@ export function SafeFirstPersonPlayer({
   const frontVector = useRef(new Vector3());
   const sideVector = useRef(new Vector3());
   const direction = useRef(new Vector3());
-  const cameraDirection = useRef(new Vector3());
-  const armsPosition = useRef(new Vector3());
 
   // Movement control using regular useFrame
   useFrame((state, delta) => {
@@ -248,20 +214,6 @@ export function SafeFirstPersonPlayer({
       { x: direction.current.x, y: yVelocity, z: direction.current.z },
       true
     );
-
-    // Position arms using refs (throttled) - reuse vectors
-    if (armsRef.current && now - lastUpdateTime.current > 16) {
-      camera.getWorldDirection(cameraDirection.current);
-
-      armsPosition.current
-        .copy(camera.position)
-        .add(cameraDirection.current.multiplyScalar(0.2))
-        .add(new Vector3(0, -0.3, 0));
-
-      armsRef.current.position.copy(armsPosition.current);
-      armsRef.current.quaternion.copy(camera.quaternion);
-      armsRef.current.updateMatrixWorld(true);
-    }
   });
 
   if (!isSpawned) {
@@ -281,16 +233,12 @@ export function SafeFirstPersonPlayer({
         lockRotations
         onCollisionEnter={(event) => {
           if (showDebugInfo) {
-            console.log("SafeFirstPersonPlayer: Collision detected", event);
+            console.log("Player: Collision detected", event);
           }
         }}
       >
         <CapsuleCollider args={[0.8, 0.3]} />
       </RigidBody>
-
-      <group ref={armsRef}>
-        <SimpleFirstPersonArms ref={armsControlRef} />
-      </group>
 
       {/* Debug information - shows initial spawn status only */}
       {showDebugInfo && spawnInfo && (
