@@ -4,6 +4,7 @@ import { OrbitControls, Html } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
 import * as THREE from "three";
 import SharedNavigation from "./SharedNavigation";
+import SimpleDoor from "./SimpleDoor";
 
 // Import all room components
 import StartRoom from "./primitives/game-rooms/StartRoom";
@@ -68,7 +69,6 @@ import {
   Torch,
   Barrel,
   Chest,
-  Door,
   SpikeTrap,
   Pillar,
   Chain,
@@ -1662,7 +1662,7 @@ const ELEMENT_CONFIGS: RoomConfig[] = [
   },
   {
     type: "door",
-    component: Door,
+    component: SimpleDoor,
     title: "Door",
     emoji: "🚪",
     description: "Interactive door with lock",

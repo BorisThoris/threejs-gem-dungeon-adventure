@@ -40,7 +40,6 @@ export { default as Barrel } from './Barrel';
 export { default as Brazier } from './Brazier';
 export { default as Chain } from './Chain';
 export { default as Chest } from './Chest';
-export { default as Door } from './Door';
 export { default as Pillar } from './Pillar';
 export { default as Spikes } from './Spikes';
 export { default as SpikeTrap } from './SpikeTrap';

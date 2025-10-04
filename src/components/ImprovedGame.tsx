@@ -4,83 +4,26 @@ import { Physics } from "@react-three/rapier";
 import { OrbitControls, Sky, Environment } from "@react-three/drei";
 
 // Import improved components
-import ImprovedRoomManager from "./ImprovedRoomManager";
-import NavigationHistory from "./NavigationHistory";
-import RoomPerformanceMonitor from "./RoomPerformanceMonitor";
 import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
 import GameUI from "./GameUI";
-import DoorStyleSelector, { type DoorStyle } from "./DoorStyleSelector";
-import { roomNavigationSystem } from "../systems/RoomNavigationSystem";
+import SimpleRoomManager from "./SimpleRoomManager";
 
 interface ImprovedGameProps {
   showDebugInfo?: boolean;
-  showPerformanceMonitor?: boolean;
-  showNavigationHistory?: boolean;
-  showDoorStyleSelector?: boolean;
 }
 
 const ImprovedGame: React.FC<ImprovedGameProps> = ({
   showDebugInfo = false,
-  showPerformanceMonitor = false,
-  showNavigationHistory = true,
-  showDoorStyleSelector = true,
 }) => {
   const [playerPosition, setPlayerPosition] = useState<
     [number, number, number]
   >([0, 0, 0]);
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [doorStyle, setDoorStyle] = useState<DoorStyle>("wooden");
 
   // Initialize the game
   useEffect(() => {
-    const initializeGame = async () => {
-      try {
-        // Set up room navigation system event listeners
-        const handleRoomChanged = ({
-          currentRoomId: roomId,
-        }: {
-          currentRoomId: string;
-        }) => {
-          setCurrentRoomId(roomId);
-        };
-
-        const handleTransitionStarted = (transition: any) => {};
-
-        const handleTransitionCompleted = ({
-          roomId,
-        }: {
-          roomId: string;
-        }) => {};
-
-        // Add event listeners
-        roomNavigationSystem.on("roomChanged", handleRoomChanged);
-        roomNavigationSystem.on("transitionStarted", handleTransitionStarted);
-        roomNavigationSystem.on(
-          "transitionCompleted",
-          handleTransitionCompleted
-        );
-
-        setIsInitialized(true);
-
-        return () => {
-          // Cleanup
-          roomNavigationSystem.off("roomChanged", handleRoomChanged);
-          roomNavigationSystem.off(
-            "transitionStarted",
-            handleTransitionStarted
-          );
-          roomNavigationSystem.off(
-            "transitionCompleted",
-            handleTransitionCompleted
-          );
-        };
-      } catch (error) {
-        // Failed to initialize improved game
-      }
-    };
-
-    initializeGame();
+    setIsInitialized(true);
   }, []);
 
   // Handle room changes
@@ -92,15 +35,6 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
   const handleDoorHover = (doorId: string, isHovered: boolean) => {
     if (showDebugInfo) {
     }
-  };
-
-  // Handle navigation history selection
-  const handleRoomSelect = (roomId: string) => {};
-
-  // Handle door style change
-  const handleDoorStyleChange = (style: DoorStyle) => {
-    setDoorStyle(style);
-    roomNavigationSystem.setDefaultDoorStyle(style);
   };
 
   if (!isInitialized) {
@@ -175,12 +109,8 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
 
         {/* Physics World */}
         <Physics gravity={[0, -9.81, 0]} debug={showDebugInfo}>
-          {/* Improved Room Manager */}
-          <ImprovedRoomManager
-            playerPosition={playerPosition}
-            onRoomChange={handleRoomChange}
-            onDoorHover={handleDoorHover}
-          />
+          {/* Simple Room Manager */}
+          <SimpleRoomManager />
 
           {/* Player */}
           <SafeFirstPersonPlayer
@@ -202,38 +132,31 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
 
       {/* UI Components */}
       <GameUI
-        currentRoomId={currentRoomId}
-        playerPosition={playerPosition}
-        onPositionUpdate={setPlayerPosition}
+        playerStats={{
+          lives: 3,
+          maxLives: 3,
+          points: 0,
+          keys: 0,
+          bombs: 0,
+          level: 1,
+          experience: 0,
+          streak: 0,
+          maxStreak: 0,
+          size: 1,
+          speed: 1,
+          strength: 1,
+          defense: 1,
+          luck: 1,
+          buffs: {
+            speedBoost: 0,
+            strengthBoost: 0,
+            defenseBoost: 0,
+            luckBoost: 0,
+          },
+        }}
+        inventory={[]}
+        currentRoom={currentRoomId || undefined}
       />
-
-      {/* Navigation History */}
-      {showNavigationHistory && (
-        <NavigationHistory
-          onRoomSelect={handleRoomSelect}
-          maxHistoryItems={5}
-          showRoomNames={true}
-        />
-      )}
-
-      {/* Performance Monitor */}
-      {showPerformanceMonitor && (
-        <RoomPerformanceMonitor
-          show={true}
-          position="top-right"
-          updateInterval={1000}
-        />
-      )}
-
-      {/* Door Style Selector */}
-      {showDoorStyleSelector && (
-        <DoorStyleSelector
-          currentStyle={doorStyle}
-          onStyleChange={handleDoorStyleChange}
-          show={true}
-          position="bottom-left"
-        />
-      )}
 
       {/* Debug Info */}
       {showDebugInfo && (
@@ -260,10 +183,7 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
             {playerPosition.map((p) => p.toFixed(2)).join(", ")}
           </div>
           <div>Navigation System: ✅ Active</div>
-          <div>
-            Room Instances: {roomNavigationSystem.getState().roomInstances.size}
-          </div>
-          <div>Active Doors: {roomNavigationSystem.getState().doors.size}</div>
+          <div>Room System: ✅ SimpleRoomManager Active</div>
         </div>
       )}
 

@@ -51,18 +51,19 @@ export const useMouseLook = () => {
 
     // Listen for teleportation events to sync rotation
     const handleTeleport = () => {
-      setTimeout(handleCameraUpdate, 50); // Small delay to ensure camera is updated
+      setTimeout(() => {
+        handleCameraUpdate();
+        updateCameraRotation(); // Ensure camera rotation is applied immediately
+      }, 50); // Small delay to ensure camera is updated
     };
 
     window.addEventListener("playerTeleport", handleTeleport);
 
     // Simple camera update function
     const updateCameraRotation = () => {
-      if (isPointerLocked.current && isMouseDown.current) {
-        camera.rotation.order = "YXZ";
-        camera.rotation.y = euler.current.y;
-        camera.rotation.x = euler.current.x;
-      }
+      camera.rotation.order = "YXZ";
+      camera.rotation.y = euler.current.y;
+      camera.rotation.x = euler.current.x;
     };
 
     const handleMouseMove = (event: MouseEvent) => {

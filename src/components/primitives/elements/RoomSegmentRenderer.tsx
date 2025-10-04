@@ -96,6 +96,8 @@ const RoomSegmentRenderer: React.FC<RoomSegmentRendererProps> = memo(
             targetRoomId={
               doorSegment.targetRoomId || `room_${doorSegment.direction}`
             }
+            direction={doorSegment.direction}
+            showLabel={true}
             onDoorClick={() => {
               console.log(
                 `🚪 RoomSegmentRenderer: Door clicked ${doorSegment.direction} -> ${doorSegment.targetRoomId}`

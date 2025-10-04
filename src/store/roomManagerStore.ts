@@ -148,24 +148,24 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
 
       switch (direction) {
         case 'north':
-          // Entering from north, spawn at north wall, face south (into room)
-          position = new THREE.Vector3(0, 0.5, -roomHalfSize + entranceDistance);
-          rotation = new THREE.Euler(0, 0, 0); // Face south (into room)
-          break;
-        case 'south':
-          // Entering from south, spawn at south wall, face north (into room)
+          // Entering from north door, spawn at south wall of target room, face north (into room)
           position = new THREE.Vector3(0, 0.5, roomHalfSize - entranceDistance);
           rotation = new THREE.Euler(0, Math.PI, 0); // Face north (into room)
           break;
-        case 'east':
-          // Entering from east, spawn at east wall, face west (into room)
-          position = new THREE.Vector3(roomHalfSize - entranceDistance, 0.5, 0);
-          rotation = new THREE.Euler(0, -Math.PI / 2, 0); // Face west (into room)
+        case 'south':
+          // Entering from south door, spawn at north wall of target room, face south (into room)
+          position = new THREE.Vector3(0, 0.5, -roomHalfSize + entranceDistance);
+          rotation = new THREE.Euler(0, 0, 0); // Face south (into room)
           break;
-        case 'west':
-          // Entering from west, spawn at west wall, face east (into room)
+        case 'east':
+          // Entering from east door, spawn at west wall of target room, face east (into room)
           position = new THREE.Vector3(-roomHalfSize + entranceDistance, 0.5, 0);
           rotation = new THREE.Euler(0, Math.PI / 2, 0); // Face east (into room)
+          break;
+        case 'west':
+          // Entering from west door, spawn at east wall of target room, face west (into room)
+          position = new THREE.Vector3(roomHalfSize - entranceDistance, 0.5, 0);
+          rotation = new THREE.Euler(0, -Math.PI / 2, 0); // Face west (into room)
           break;
         default:
           position = new THREE.Vector3(0, 0.5, roomHalfSize - entranceDistance);
@@ -185,7 +185,6 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
       }
 
       // Emit teleportation event
-      
       window.dispatchEvent(new CustomEvent('playerTeleport', {
         detail: { position: position.toArray(), rotation: rotation.toArray() }
       }));

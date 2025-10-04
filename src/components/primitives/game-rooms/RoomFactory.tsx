@@ -2,7 +2,6 @@ import React from "react";
 import useMapStore from "../../../store/mapStore";
 import { useGameState } from "../../../hooks/useGameState";
 import { gameEvents, GAME_EVENTS } from "../../../utils/gameEvents";
-import { useDoorInteraction } from "../../../hooks/useDoorInteraction";
 import type { Room } from "../../../types/map";
 import { BreakableCeiling, RoomFloor } from "../elements";
 import SimpleDoor from "../../SimpleDoor";
@@ -222,6 +221,11 @@ const getDoorPosition = (room: Room, targetRoom: Room, roomSize: number) => {
         number,
         number
       ],
+      direction: (dx > 0 ? "east" : "west") as
+        | "north"
+        | "south"
+        | "east"
+        | "west",
     };
   } else {
     // North or South
@@ -232,6 +236,11 @@ const getDoorPosition = (room: Room, targetRoom: Room, roomSize: number) => {
         number
       ],
       rot: [0, dz > 0 ? Math.PI : 0, 0] as [number, number, number],
+      direction: (dz > 0 ? "south" : "north") as
+        | "north"
+        | "south"
+        | "east"
+        | "west",
     };
   }
 };
@@ -288,16 +297,6 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
         };
       })
       .filter(Boolean) || [];
-
-  // Enable keyboard door interaction
-  useDoorInteraction({
-    onDoorEnter: (doorId) => {
-      console.log(`RoomFactory: Keyboard door interaction to ${doorId}`);
-      onRoomChange?.(doorId);
-    },
-    doors: doorData,
-    interactionDistance: 4,
-  });
 
   // Update game state when room changes
   useEffect(() => {
@@ -410,6 +409,8 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
                 position={doorPosition.pos}
                 rotation={doorPosition.rot}
                 targetRoomId={connectionId}
+                direction={doorPosition.direction}
+                showLabel={true}
                 onDoorClick={() => onRoomChange?.(connectionId)}
               />
             );

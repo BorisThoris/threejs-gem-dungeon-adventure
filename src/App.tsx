@@ -6,7 +6,6 @@ import TexturePainterLauncher from "./components/TexturePainterLauncher";
 import MosaicCreatorLauncher from "./components/MosaicCreatorLauncher";
 import TexturePainterExample from "./components/TexturePainterExample";
 import SimpleRoomDemo from "./components/SimpleRoomDemo";
-import TexturedDoorDemo from "./components/TexturedDoorDemo";
 import ImprovedGame from "./components/ImprovedGame";
 import { ThemeProvider } from "./themes";
 import "./App.css";
@@ -21,7 +20,6 @@ function App() {
   const showTexturePainterExample =
     urlParams.get("texture-painter-example") === "true";
   const showSimpleRoomDemo = urlParams.get("simple-rooms") === "true";
-  const showTexturedDoorDemo = urlParams.get("textured-doors") === "true";
   const showImprovedGame = urlParams.get("improved-game") === "true";
 
   // Add CSS class to root element for editor mode
@@ -89,23 +87,10 @@ function App() {
     );
   }
 
-  if (showTexturedDoorDemo) {
-    return (
-      <ThemeProvider>
-        <TexturedDoorDemo />
-      </ThemeProvider>
-    );
-  }
-
   if (showImprovedGame) {
     return (
       <ThemeProvider>
-        <ImprovedGame
-          showDebugInfo={true}
-          showPerformanceMonitor={true}
-          showNavigationHistory={true}
-          showDoorStyleSelector={true}
-        />
+        <ImprovedGame showDebugInfo={true} />
       </ThemeProvider>
     );
   }

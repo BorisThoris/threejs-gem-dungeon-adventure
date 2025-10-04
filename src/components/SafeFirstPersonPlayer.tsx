@@ -129,6 +129,7 @@ export function SafeFirstPersonPlayer({
       const { position, rotation } = event.detail;
       const newPosition = new THREE.Vector3(...position);
       const newRotation = new THREE.Euler(...rotation);
+      newRotation.order = "YXZ"; // Set rotation order
       const newQuaternion = new THREE.Quaternion().setFromEuler(newRotation);
 
       // Teleport the rigid body
@@ -150,6 +151,15 @@ export function SafeFirstPersonPlayer({
       camera.rotation.z = newRotation.z;
 
       camera.updateMatrixWorld(true);
+
+      // Force camera rotation update after a small delay to ensure it's not overridden
+      setTimeout(() => {
+        camera.rotation.order = "YXZ";
+        camera.rotation.x = newRotation.x;
+        camera.rotation.y = newRotation.y;
+        camera.rotation.z = newRotation.z;
+        camera.updateMatrixWorld(true);
+      }, 100);
     };
 
     window.addEventListener("playerTeleport", handleTeleport as EventListener);
