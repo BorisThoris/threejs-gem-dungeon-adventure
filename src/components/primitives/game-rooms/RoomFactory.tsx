@@ -4,7 +4,7 @@ import { useGameState } from "../../../hooks/useGameState";
 import { gameEvents, GAME_EVENTS } from "../../../utils/gameEvents";
 import type { Room } from "../../../types/map";
 import { BreakableCeiling, RoomFloor } from "../elements";
-import SimpleDoor from "../../SimpleDoor";
+import Door from "../../Door";
 
 // Import all room content components
 import StartRoom from "./StartRoom";
@@ -404,7 +404,7 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
             );
 
             return (
-              <SimpleDoor
+              <Door
                 key={`door-${connectionId}`}
                 position={doorPosition.pos}
                 rotation={doorPosition.rot}

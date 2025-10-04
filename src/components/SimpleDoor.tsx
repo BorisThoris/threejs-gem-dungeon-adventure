@@ -3,23 +3,23 @@ import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
 
-interface SimpleDoorProps {
+interface DoorProps {
   position: [number, number, number];
   rotation: [number, number, number];
   targetRoomId: string;
   onDoorClick: () => void;
   showLabel?: boolean;
-  direction?: "north" | "south" | "east" | "west";
+  direction?: "north" | "south" | "east" | "west"; // Keep for backward compatibility
 }
 
-const SimpleDoor: React.FC<SimpleDoorProps> = React.memo(
+const Door: React.FC<DoorProps> = React.memo(
   ({
     position,
     rotation,
     targetRoomId,
     onDoorClick,
     showLabel = true,
-    direction,
+    direction, // Keep for backward compatibility but not required for labels
   }) => {
     const handleClick = useCallback(
       (e: any) => {
@@ -27,7 +27,7 @@ const SimpleDoor: React.FC<SimpleDoorProps> = React.memo(
         // SimpleDoor clicked
         onDoorClick();
       },
-      [targetRoomId, onDoorClick]
+      [onDoorClick]
     );
 
     const handlePointerOver = useCallback((e: any) => {
@@ -40,24 +40,16 @@ const SimpleDoor: React.FC<SimpleDoorProps> = React.memo(
       document.body.style.cursor = "default";
     }, []);
 
-    // Generate door label
-    const doorLabel =
-      showLabel && direction
-        ? (() => {
-            const directionNames = {
-              north: "North",
-              south: "South",
-              east: "East",
-              west: "West",
-            };
+    // Generate door label - just show target room name
+    const doorLabel = showLabel
+      ? (() => {
+          const targetRoomName = targetRoomId
+            .replace(/^room_/, "")
+            .replace(/_/g, " ");
 
-            const targetRoomName = targetRoomId
-              .replace(/^room_/, "")
-              .replace(/_/g, " ");
-
-            return `🚪 ${directionNames[direction]}\n→ ${targetRoomName}`;
-          })()
-        : "";
+          return `🚪 ${targetRoomName}`;
+        })()
+      : "";
 
     return (
       <group position={position} rotation={rotation}>
@@ -117,6 +109,6 @@ const SimpleDoor: React.FC<SimpleDoorProps> = React.memo(
   }
 );
 
-SimpleDoor.displayName = "SimpleDoor";
+Door.displayName = "Door";
 
-export default SimpleDoor;
+export default Door;

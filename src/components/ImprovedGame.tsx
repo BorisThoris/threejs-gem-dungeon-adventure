@@ -6,7 +6,7 @@ import { OrbitControls, Sky, Environment } from "@react-three/drei";
 // Import improved components
 import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
 import GameUI from "./GameUI";
-import SimpleRoomManager from "./SimpleRoomManager";
+import RoomManager from "./RoomManager";
 
 interface ImprovedGameProps {
   showDebugInfo?: boolean;
@@ -110,7 +110,7 @@ const ImprovedGame: React.FC<ImprovedGameProps> = ({
         {/* Physics World */}
         <Physics gravity={[0, -9.81, 0]} debug={showDebugInfo}>
           {/* Simple Room Manager */}
-          <SimpleRoomManager />
+          <RoomManager onRoomChange={handleRoomChange} />
 
           {/* Player */}
           <SafeFirstPersonPlayer

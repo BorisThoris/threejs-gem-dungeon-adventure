@@ -1,8 +1,10 @@
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 import type { RoomInstance, RoomManagerState, RoomManagerActions, RoomTransition } from '../types/roomInstance';
 import type { Room } from '../types/map';
 import useMapStore from './mapStore';
 import usePlayerMovementStore from './playerMovementStore';
+import { calculatePlayerSpawnPosition } from '../utils/doorUtils';
 import * as THREE from 'three';
 
 const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, get) => ({
@@ -139,38 +141,9 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
     if (targetRoom) {
       const roomSize = targetRoom.size || 10;
       
-      // Calculate entrance position (room is at origin in room-instance mode)
-      // Spawn player at door position, facing inward into the room
-      const entranceDistance = 1.5; // Closer to door
+      // Use unified door utilities to calculate spawn position
+      let { position, rotation } = calculatePlayerSpawnPosition(direction, roomSize);
       const roomHalfSize = roomSize / 2;
-      let position: THREE.Vector3;
-      let rotation: THREE.Euler;
-
-      switch (direction) {
-        case 'north':
-          // Entering from north door, spawn at south wall of target room, face north (into room)
-          position = new THREE.Vector3(0, 0.5, roomHalfSize - entranceDistance);
-          rotation = new THREE.Euler(0, Math.PI, 0); // Face north (into room)
-          break;
-        case 'south':
-          // Entering from south door, spawn at north wall of target room, face south (into room)
-          position = new THREE.Vector3(0, 0.5, -roomHalfSize + entranceDistance);
-          rotation = new THREE.Euler(0, 0, 0); // Face south (into room)
-          break;
-        case 'east':
-          // Entering from east door, spawn at west wall of target room, face east (into room)
-          position = new THREE.Vector3(-roomHalfSize + entranceDistance, 0.5, 0);
-          rotation = new THREE.Euler(0, Math.PI / 2, 0); // Face east (into room)
-          break;
-        case 'west':
-          // Entering from west door, spawn at east wall of target room, face west (into room)
-          position = new THREE.Vector3(roomHalfSize - entranceDistance, 0.5, 0);
-          rotation = new THREE.Euler(0, -Math.PI / 2, 0); // Face west (into room)
-          break;
-        default:
-          position = new THREE.Vector3(0, 0.5, roomHalfSize - entranceDistance);
-          rotation = new THREE.Euler(0, Math.PI, 0);
-      }
 
       // Validate spawn position is within room bounds
       const isWithinBounds = 

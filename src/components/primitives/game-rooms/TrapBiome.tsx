@@ -3,7 +3,7 @@ import { RigidBody } from "@react-three/rapier";
 import Torch from "../elements/Torch";
 import SpikeTrap from "../elements/SpikeTrap";
 import Lever from "../objects/Lever";
-import SimpleDoor from "../../SimpleDoor";
+import Door from "../../Door";
 
 export interface TrapBiomeProps {
   size?: number;
@@ -78,10 +78,11 @@ const TrapBiome: React.FC<TrapBiomeProps> = ({ size = 10, onRoomComplete }) => {
       />
 
       {/* Exit door */}
-      <SimpleDoor
+      <Door
         position={[0, 0.5, size / 2]}
         rotation={[0, 0, 0]}
         targetRoomId="next_room"
+        showLabel={true}
         onDoorClick={() => setDoorOpen(true)}
       />
 

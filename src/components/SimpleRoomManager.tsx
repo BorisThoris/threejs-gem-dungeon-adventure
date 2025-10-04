@@ -1,16 +1,16 @@
 import React, { memo } from "react";
-import { useCurrentRoomId, useAllConnectedRooms } from "../store/roomStore";
+import { useRoomStore, getConnectedRooms } from "../store/roomStore";
 import SimpleRoomRenderer from "./SimpleRoomRenderer";
-import SimpleDoor from "./SimpleDoor";
+import Door from "./Door";
 import DebugSign from "./DebugSign";
 import { ROOM_DEFINITIONS } from "../data/roomDefinitions";
 
 const SimpleRoomManager: React.FC = memo(() => {
-  const currentRoomId = useCurrentRoomId();
-  const getAllConnectedRooms = useAllConnectedRooms();
+  const { currentRoomId } = useRoomStore();
+  const connectedRooms = getConnectedRooms(currentRoomId);
 
   const currentRoom = ROOM_DEFINITIONS[currentRoomId];
-  const availableDoors = getAllConnectedRooms();
+  const availableDoors = connectedRooms;
 
   // Debug: Room connections
 
@@ -58,7 +58,10 @@ const SimpleRoomManager: React.FC = memo(() => {
     return positions;
   };
 
-  const doorPositions = getDoorPositions(currentRoomId, availableDoors);
+  const doorPositions = getDoorPositions(
+    currentRoomId,
+    availableDoors.map((room) => room.id)
+  );
 
   return (
     <group>
@@ -72,13 +75,17 @@ const SimpleRoomManager: React.FC = memo(() => {
 
         return (
           <group key={`door-group-${doorPosition.roomId}`}>
-            <SimpleDoor
+            <Door
               targetRoomId={doorPosition.roomId}
               position={doorPosition.position}
               rotation={doorPosition.rotation}
-              width={2}
-              height={2.5}
-              color="#8B4513"
+              showLabel={true}
+              onDoorClick={() => {
+                console.log(
+                  `🚪 SimpleRoomManager: Door clicked -> ${doorPosition.roomId}`
+                );
+                // Add room change logic here if needed
+              }}
             />
 
             {/* Debug sign next to door */}

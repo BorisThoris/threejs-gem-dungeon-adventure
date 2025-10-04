@@ -2,7 +2,7 @@ import React, { useEffect, useState, memo } from "react";
 import { segmentManager } from "../../../utils/segmentUtils";
 import type { RoomSegments } from "../../../utils/segmentUtils";
 import WallSegment from "./WallSegment";
-import SimpleDoor from "../../SimpleDoor";
+import Door from "../../Door";
 
 interface RoomSegmentRendererProps {
   roomId: string;
@@ -89,7 +89,7 @@ const RoomSegmentRenderer: React.FC<RoomSegmentRendererProps> = memo(
 
         {/* Render door segments */}
         {segments.doors.map((doorSegment) => (
-          <SimpleDoor
+          <Door
             key={doorSegment.id}
             position={doorSegment.position}
             rotation={doorSegment.rotation}

@@ -1,77 +1,118 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { ROOM_DEFINITIONS } from '../data/roomDefinitions';
 
-interface RoomState {
+// Unified room store using Zustand
+
+export interface Room {
+  id: string;
+  name: string;
+  position: { x: number; z: number };
+  connections: string[];
+  spawnPosition: [number, number, number];
+}
+
+export interface RoomState {
+  // Current room
   currentRoomId: string;
+  rooms: Record<string, Room>;
+  
+  // Room transitions
+  isTransitioning: boolean;
+  transitionProgress: number;
+  
+  // Actions
+  setCurrentRoom: (roomId: string) => void;
+  addRoom: (room: Room) => void;
+  updateRoom: (roomId: string, updates: Partial<Room>) => void;
+  removeRoom: (roomId: string) => void;
+  
+  // Room transitions
+  startTransition: (targetRoomId: string) => Promise<void>;
+  completeTransition: () => void;
+  
+  // Door interactions
+  handleDoorClick: (targetRoomId: string) => void;
 }
 
-interface RoomActions {
-  navigateToRoom: (roomId: string) => void;
-  getCurrentRoom: () => any;
-  getRoomDoors: () => string[];
-  getRoomSpawnPosition: () => [number, number, number];
-  getAllConnectedRooms: () => string[];
-}
-
-type RoomStore = RoomState & RoomActions;
-
-export const useRoomStore = create<RoomStore>()(
+export const useRoomStore = create<RoomState>()(
   subscribeWithSelector((set, get) => ({
-    // State
-    currentRoomId: "start",
-
-    // Actions
-    navigateToRoom: (roomId: string) => {
-      if (ROOM_DEFINITIONS[roomId]) {
-        set({ currentRoomId: roomId });
-      } else {
-        console.warn(`Room not found: ${roomId}`);
+    // Initial state
+    currentRoomId: 'start',
+    rooms: {},
+    isTransitioning: false,
+    transitionProgress: 0,
+    
+    // Room management
+    setCurrentRoom: (roomId: string) => {
+      set({ currentRoomId: roomId });
+    },
+    
+    addRoom: (room: Room) => {
+      set((state) => ({
+        rooms: { ...state.rooms, [room.id]: room }
+      }));
+    },
+    
+    updateRoom: (roomId: string, updates: Partial<Room>) => {
+      set((state) => ({
+        rooms: {
+          ...state.rooms,
+          [roomId]: { ...state.rooms[roomId], ...updates }
+        }
+      }));
+    },
+    
+    removeRoom: (roomId: string) => {
+      set((state) => {
+        const { [roomId]: removed, ...remainingRooms } = state.rooms;
+        return { rooms: remainingRooms };
+      });
+    },
+    
+    // Room transitions
+    startTransition: async (targetRoomId: string) => {
+      const { currentRoomId } = get();
+      
+      if (currentRoomId === targetRoomId) return;
+      
+      set({ 
+        isTransitioning: true, 
+        transitionProgress: 0 
+      });
+      
+      // Simulate transition progress
+      for (let progress = 0; progress <= 100; progress += 10) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        set({ transitionProgress: progress });
       }
+      
+      // Complete transition
+      set({ 
+        currentRoomId: targetRoomId,
+        isTransitioning: false,
+        transitionProgress: 100
+      });
     },
-
-    getCurrentRoom: () => {
-      const { currentRoomId } = get();
-      return ROOM_DEFINITIONS[currentRoomId] || null;
+    
+    completeTransition: () => {
+      set({ 
+        isTransitioning: false,
+        transitionProgress: 0
+      });
     },
-
-    getRoomDoors: () => {
-      const room = get().getCurrentRoom();
-      return room?.doors || [];
-    },
-
-    getRoomSpawnPosition: () => {
-      const room = get().getCurrentRoom();
-      return room?.spawnPosition || [0, 1.5, 0];
-    },
-
-    getAllConnectedRooms: () => {
-      const { currentRoomId } = get();
-      const currentRoom = get().getCurrentRoom();
-      if (!currentRoom) return [];
-
-      // Get rooms this room connects to (outgoing)
-      const outgoingConnections = currentRoom.doors || [];
-
-      // Get rooms that connect to this room (incoming)
-      const incomingConnections = Object.values(ROOM_DEFINITIONS)
-        .filter((room) => room.doors.includes(currentRoomId))
-        .map((room) => room.id);
-
-      // Combine and remove duplicates
-      const allConnections = [
-        ...new Set([...outgoingConnections, ...incomingConnections]),
-      ];
-
-      return allConnections;
-    },
+    
+    // Door interactions
+    handleDoorClick: (targetRoomId: string) => {
+      const { startTransition } = get();
+      startTransition(targetRoomId);
+    }
   }))
 );
 
-// Selector hooks for better performance
-export const useCurrentRoomId = () => useRoomStore((state) => state.currentRoomId);
-export const useCurrentRoom = () => useRoomStore((state) => state.getCurrentRoom);
-export const useRoomDoors = () => useRoomStore((state) => state.getRoomDoors);
-export const useRoomSpawnPosition = () => useRoomStore((state) => state.getRoomSpawnPosition);
-export const useAllConnectedRooms = () => useRoomStore((state) => state.getAllConnectedRooms);
-export const useNavigateToRoom = () => useRoomStore((state) => state.navigateToRoom);
+// Helper functions
+export const getCurrentRoom = () => useRoomStore.getState().rooms[useRoomStore.getState().currentRoomId];
+export const getRoomById = (roomId: string) => useRoomStore.getState().rooms[roomId];
+export const getConnectedRooms = (roomId: string) => {
+  const room = getRoomById(roomId);
+  return room ? room.connections.map(id => getRoomById(id)).filter(Boolean) : [];
+};

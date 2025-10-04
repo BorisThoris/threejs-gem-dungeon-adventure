@@ -1,9 +1,9 @@
 import React, { memo } from "react";
-import { useCurrentRoomId } from "../store/roomStore";
+import { useRoomStore } from "../store/roomStore";
 import { ROOM_DEFINITIONS } from "../data/roomDefinitions";
 
 const SimpleRoomRenderer: React.FC = memo(() => {
-  const currentRoomId = useCurrentRoomId();
+  const { currentRoomId } = useRoomStore();
 
   const currentRoom = ROOM_DEFINITIONS[currentRoomId];
 

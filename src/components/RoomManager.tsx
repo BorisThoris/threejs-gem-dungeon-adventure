@@ -1,186 +1,157 @@
-import React, { useState, useRef, useEffect } from "react";
-import useMapStore from "../store/mapStore";
-import { useGameState } from "../hooks/useGameState";
-import { gameEvents, GAME_EVENTS } from "../utils/gameEvents";
-import SingleRoom from "./SingleRoom";
-import RoomTransition from "./RoomTransition";
-import { roomDetectionManager } from "../utils/roomDetectionManager";
+import React, { memo, useEffect } from "react";
+import {
+  useRoomStore,
+  getCurrentRoom,
+  getConnectedRooms,
+} from "../store/roomStore";
+import { useDoorProgressionStore } from "../store/doorProgressionStore";
+import Door from "./Door";
+import DoorDebugger from "./DoorDebugger";
+import { ROOM_DEFINITIONS } from "../data/roomDefinitions";
+import { getAllOptimalDoorPositions } from "../utils/smartDoorPositioning";
 
 interface RoomManagerProps {
   onRoomChange?: (roomId: string) => void;
 }
 
-const RoomManager: React.FC<RoomManagerProps> = ({ onRoomChange }) => {
-  const { currentMap } = useMapStore();
-  const { updateRoom } = useGameState();
-  const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [pendingRoomId, setPendingRoomId] = useState<string | null>(null);
-  const playerPositionRef = useRef<[number, number, number]>([0, 5, 0]);
+const RoomManager: React.FC<RoomManagerProps> = memo(({ onRoomChange }) => {
+  const {
+    currentRoomId,
+    isTransitioning,
+    transitionProgress,
+    handleDoorClick,
+  } = useRoomStore();
 
-  // Initialize with start room
+  const { isDoorUnlocked, getDoorState, getDoorType, unlockDoor } =
+    useDoorProgressionStore();
+
+  const currentRoom = getCurrentRoom();
+  const connectedRooms = getConnectedRooms(currentRoomId);
+
+  // Initialize rooms from definitions
   useEffect(() => {
-    if (currentMap && !currentRoomId) {
-      const startRoom = currentMap.rooms.find((room) => room.type === "start");
-      if (startRoom) {
-        setCurrentRoomId(startRoom.id);
-      }
+    const { addRoom } = useRoomStore.getState();
+
+    Object.values(ROOM_DEFINITIONS).forEach((roomDef) => {
+      addRoom({
+        id: roomDef.id,
+        name: roomDef.name,
+        position: { x: 0, z: 0 }, // Default position
+        connections: roomDef.doors,
+        spawnPosition: roomDef.spawnPosition,
+      });
+    });
+  }, []);
+
+  // Handle room changes
+  useEffect(() => {
+    if (onRoomChange) {
+      onRoomChange(currentRoomId);
     }
-  }, [currentMap, currentRoomId]);
+  }, [currentRoomId, onRoomChange]);
 
-  // Handle room transitions
-  const handleRoomChange = (newRoomId: string) => {
-    // Validate roomId
-    if (!newRoomId || typeof newRoomId !== "string") {
-      console.warn(`RoomManager: Invalid roomId received:`, newRoomId);
-      return;
-    }
+  // Calculate door positions
+  const getDoorPosition = (targetRoomId: string) => {
+    const roomSize = 10; // Default room size
+    const entranceDistance = 1;
 
-    // If we're stuck in transitioning state, force reset it
-    if (isTransitioning && !pendingRoomId) {
-      setIsTransitioning(false);
-    }
+    // Simple positioning - doors on walls
+    const doorPositions = {
+      north: {
+        pos: [0, 0.5, roomSize / 2] as [number, number, number],
+        rot: [0, 0, 0] as [number, number, number],
+      },
+      south: {
+        pos: [0, 0.5, -roomSize / 2] as [number, number, number],
+        rot: [0, Math.PI, 0] as [number, number, number],
+      },
+      east: {
+        pos: [roomSize / 2, 0.5, 0] as [number, number, number],
+        rot: [0, -Math.PI / 2, 0] as [number, number, number],
+      },
+      west: {
+        pos: [-roomSize / 2, 0.5, 0] as [number, number, number],
+        rot: [0, Math.PI / 2, 0] as [number, number, number],
+      },
+    };
 
-    if (isTransitioning || newRoomId === currentRoomId) {
-      console.log(
-        `RoomManager: Skipping room change - isTransitioning: ${isTransitioning}, same room: ${
-          newRoomId === currentRoomId
-        }`
-      );
-      return;
-    }
-
-    console.log(
-      `RoomManager: Transitioning from ${currentRoomId} to ${newRoomId}`
-    );
-
-    setIsTransitioning(true);
-    setPendingRoomId(newRoomId);
-
-    // Update global room state
-    roomDetectionManager.setCurrentRoom(newRoomId);
-    updateRoom(newRoomId);
+    // For now, just use north wall for all doors
+    return doorPositions.north;
   };
 
-  // Complete room transition
-  const handleTransitionComplete = () => {
-    console.log(
-      `RoomManager: handleTransitionComplete called with pendingRoomId: ${pendingRoomId}`
+  if (isTransitioning) {
+    return (
+      <group>
+        {/* Loading screen during transition */}
+        <mesh position={[0, 2, 0]}>
+          <planeGeometry args={[8, 4]} />
+          <meshBasicMaterial color="#000000" transparent opacity={0.8} />
+        </mesh>
+        <mesh position={[0, 2, 0.1]}>
+          <planeGeometry args={[6, 2]} />
+          <meshBasicMaterial color="#FFFFFF" />
+        </mesh>
+      </group>
     );
-    if (pendingRoomId) {
-      console.log(
-        `RoomManager: Completing transition to room ${pendingRoomId}`
-      );
-      setCurrentRoomId(pendingRoomId);
-      setPendingRoomId(null);
-      setIsTransitioning(false);
+  }
 
-      // Position player in front of door (center of room)
-      playerPositionRef.current = [0, 5, 0];
-
-      console.log(`RoomManager: Transition completed to room ${pendingRoomId}`);
-      onRoomChange?.(pendingRoomId);
-    } else {
-      console.log(
-        `RoomManager: No pending room ID, cannot complete transition`
-      );
-    }
-  };
-
-  // Fallback: Force complete transition if it gets stuck
-  useEffect(() => {
-    if (isTransitioning) {
-      console.log(`RoomManager: Transition started, setting fallback timer`);
-      const fallbackTimer = setTimeout(() => {
-        console.log(
-          `RoomManager: Fallback timer triggered - forcing transition completion`
-        );
-        if (isTransitioning && pendingRoomId) {
-          console.log(
-            `RoomManager: Forcing completion to room ${pendingRoomId}`
-          );
-          handleTransitionComplete();
-        } else if (isTransitioning) {
-          // If we're stuck in transitioning but no pending room, force reset
-          console.log(`RoomManager: Forcing reset of stuck transition state`);
-          setIsTransitioning(false);
-          setPendingRoomId(null);
-        }
-      }, 1000); // Reduced to 1 second for faster recovery
-
-      return () => {
-        console.log(`RoomManager: Cleaning up fallback timer`);
-        clearTimeout(fallbackTimer);
-      };
-    }
-  }, [isTransitioning, pendingRoomId]);
-
-  // Listen for room change events from doors
-  useEffect(() => {
-    const handleRoomEnter = (roomOrId: any) => {
-      // Handle both room objects and roomId strings
-      const roomId = typeof roomOrId === "string" ? roomOrId : roomOrId?.id;
-
-      if (roomId && roomId !== currentRoomId) {
-        console.log(
-          `RoomManager: handleRoomEnter received:`,
-          roomOrId,
-          "extracted roomId:",
-          roomId
-        );
-        handleRoomChange(roomId);
-      } else if (!roomId) {
-        console.warn(
-          `RoomManager: handleRoomEnter received invalid data:`,
-          roomOrId
-        );
-      }
-    };
-
-    gameEvents.on(GAME_EVENTS.ROOM_ENTER, handleRoomEnter);
-
-    return () => {
-      // Cleanup handled by gameEvents automatically
-    };
-  }, [currentRoomId]);
-
-  // Manual reset function for stuck transitions (R key)
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === "r" && isTransitioning) {
-        console.log(`RoomManager: Manual reset triggered by R key`);
-        setIsTransitioning(false);
-        setPendingRoomId(null);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyPress);
-    return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [isTransitioning]);
-
-  if (!currentMap || !currentRoomId) {
+  if (!currentRoom) {
     return null;
   }
 
-  return (
-    <>
-      {/* Current Room - Only render when not transitioning */}
-      {!isTransitioning && (
-        <SingleRoom
-          key={currentRoomId} // Force remount when room changes
-          currentRoomId={currentRoomId}
-          onRoomChange={handleRoomChange}
-        />
-      )}
+  // Get the current room component
+  const CurrentRoomComponent =
+    currentRoomId && ROOM_DEFINITIONS[currentRoomId]
+      ? ROOM_DEFINITIONS[currentRoomId].component
+      : null;
 
-      {/* Room Transition Overlay */}
-      <RoomTransition
-        isTransitioning={isTransitioning}
-        onTransitionComplete={handleTransitionComplete}
-        duration={800}
-      />
-    </>
+  return (
+    <group>
+      {/* Render current room content */}
+      {CurrentRoomComponent && <CurrentRoomComponent />}
+
+      {/* Render doors for connected rooms */}
+      {connectedRooms.map((room) => {
+        if (!room) return null;
+
+        const doorPosition = getDoorPosition(room.id);
+        const doorId = `door-${currentRoomId}-${room.id}`;
+        const isUnlocked = isDoorUnlocked(doorId);
+        const doorState = getDoorState(doorId);
+        const doorType = getDoorType(doorId);
+
+        return (
+          <Door
+            key={doorId}
+            position={doorPosition.pos}
+            rotation={doorPosition.rot}
+            targetRoomId={room.id}
+            showLabel={true}
+            state={doorState}
+            type={doorType}
+            isLocked={!isUnlocked}
+            glowEffect={doorType === "secret"}
+            onDoorClick={() => {
+              if (isUnlocked) {
+                handleDoorClick(room.id);
+              } else {
+                // Try to unlock door
+                unlockDoor(doorId, currentRoomId, "manual");
+              }
+            }}
+            onStateChange={(newState) => {
+              useDoorProgressionStore.getState().setDoorState(doorId, newState);
+            }}
+          />
+        );
+      })}
+
+      {/* Door Debugger */}
+      <DoorDebugger showDebugger={import.meta.env.DEV} />
+    </group>
   );
-};
+});
+
+RoomManager.displayName = "RoomManager";
 
 export default RoomManager;

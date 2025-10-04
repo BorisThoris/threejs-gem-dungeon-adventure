@@ -29,7 +29,7 @@ import StartRoom from "./primitives/game-rooms/StartRoom";
 import EndBiome from "./primitives/game-rooms/EndBiome";
 import EnemyBiome from "./primitives/game-rooms/EnemyBiome";
 import RoomInteraction from "./RoomInteraction";
-import SimpleDoor from "./SimpleDoor";
+import Door from "./Door";
 import RoomDecorator from "./primitives/elements/RoomDecorator";
 import RoomSegmentRenderer from "./primitives/elements/RoomSegmentRenderer";
 import { loadTextureFromImage } from "../utils/textureUtils";
@@ -617,11 +617,12 @@ const Room: React.FC<RoomProps> = memo(
               if (!target) return null;
               const doorPosition = getDoorPosition(room, target);
               return (
-                <SimpleDoor
+                <Door
                   key={`door-${connectionId}`}
                   position={doorPosition.position}
                   rotation={doorPosition.rotation}
                   targetRoomId={connectionId}
+                  showLabel={true}
                   onDoorClick={() => onRoomChange?.(connectionId)}
                 />
               );

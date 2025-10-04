@@ -2,11 +2,8 @@ import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
-import {
-  useCurrentRoomId,
-  useNavigateToRoom,
-  useRoomStore,
-} from "../store/roomStore";
+// Import unified room store - updated at 2025-01-04 12:25
+import { useRoomStore } from "../store/roomStore";
 import SimpleRoomManager from "./SimpleRoomManager";
 import { SafeFirstPersonPlayer } from "./SafeFirstPersonPlayer";
 
@@ -62,20 +59,23 @@ const SimpleRoomDemo: React.FC = () => {
 
 // Component to show current room info
 const SimpleRoomInfo: React.FC = () => {
-  const currentRoomId = useCurrentRoomId();
-  const navigateToRoom = useNavigateToRoom();
+  const { currentRoomId, setCurrentRoom } = useRoomStore();
 
   // Get room data from store
-  const currentRoom = useRoomStore.getState().getCurrentRoom();
-  const doors = useRoomStore.getState().getAllConnectedRooms();
+  const currentRoom = useRoomStore.getState().rooms[currentRoomId];
+  const doors = Object.values(useRoomStore.getState().rooms).filter(
+    (room) => room && room.connections.includes(currentRoomId)
+  );
 
   return (
     <div>
       <h3>Current Room: {currentRoom?.name || "Unknown"}</h3>
       <p>Connected Rooms (doors available):</p>
       <ul>
-        {doors.map((doorId) => (
-          <li key={doorId}>{doorId}</li>
+        {doors.map((room) => (
+          <li key={room.id}>
+            <button onClick={() => setCurrentRoom(room.id)}>{room.name}</button>
+          </li>
         ))}
       </ul>
       <p>Click on doors to navigate!</p>

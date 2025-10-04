@@ -6,7 +6,7 @@ import Pillar from "../elements/Pillar";
 import PressurePlate from "../objects/PressurePlate";
 import Switch from "../objects/Switch";
 import Statue from "../objects/Statue";
-import SimpleDoor from "../../SimpleDoor";
+import Door from "../../Door";
 
 export interface PuzzleBiomeProps {
   size?: number;
@@ -148,10 +148,11 @@ const PuzzleBiome: React.FC<PuzzleBiomeProps> = ({
       />
 
       {/* Exit door */}
-      <SimpleDoor
+      <Door
         position={[0, 0.5, size / 2]}
         rotation={[0, 0, 0]}
         targetRoomId="next_room"
+        showLabel={true}
         onDoorClick={() => setPuzzleSolved(true)}
       />
 
