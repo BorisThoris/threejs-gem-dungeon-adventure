@@ -117,14 +117,7 @@ const BossBiome: React.FC<BossBiomeProps> = ({ size = 15, onRoomComplete }) => {
         switchType="toggle"
       />
 
-      {/* Exit doors */}
-      <Door
-        position={[0, 0.5, size / 2]}
-        rotation={[0, 0, 0]}
-        targetRoomId="next_room"
-        showLabel={true}
-        onDoorClick={() => setDoorsUnlocked(true)}
-      />
+      {/* Exit doors - Handled by UnifiedRoomManager to prevent duplication */}
 
       {/* Victory platform */}
       {bossDefeated && (

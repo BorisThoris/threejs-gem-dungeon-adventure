@@ -56,6 +56,7 @@ const RoomInstanceRenderer: React.FC<RoomInstanceRendererProps> = ({
         playerPosition={playerPosition}
         onInteraction={onInteraction}
         onRoomTransition={onRoomTransition}
+        disableDoors={true} // Disable internal door rendering to prevent duplication
       />
     </group>
   );

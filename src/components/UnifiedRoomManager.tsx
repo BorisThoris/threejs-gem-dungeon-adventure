@@ -62,7 +62,9 @@ const calculateDoorPosition = (
   mode: string,
   roomSize: number,
   index: number,
-  totalDoors: number
+  totalDoors: number,
+  currentRoom?: RoomData,
+  targetRoom?: RoomData
 ): DoorPosition => {
   if (mode === "simple") {
     // Simple mode: distribute doors around perimeter
@@ -78,11 +80,54 @@ const calculateDoorPosition = (
       rotation: [0, rotationY, 0],
     };
   } else {
-    // Instance/full mode: position doors on walls (north wall for now)
-    return {
-      position: [0, 0, -roomSize / 2],
-      rotation: [0, 0, 0],
-    };
+    // Instance/full mode: use proper door positioning based on room positions
+    if (currentRoom && targetRoom) {
+      const dx = targetRoom.position.x - currentRoom.position.x;
+      const dz = targetRoom.position.z - currentRoom.position.z;
+
+      const roomHalfSize = roomSize / 2;
+
+      if (Math.abs(dx) > Math.abs(dz)) {
+        // East or West
+        if (dx > 0) {
+          return {
+            position: [roomHalfSize, 0.5, 0],
+            rotation: [0, -Math.PI / 2, 0],
+          };
+        } else {
+          return {
+            position: [-roomHalfSize, 0.5, 0],
+            rotation: [0, Math.PI / 2, 0],
+          };
+        }
+      } else {
+        // North or South
+        if (dz > 0) {
+          return {
+            position: [0, 0.5, roomHalfSize],
+            rotation: [0, 0, 0],
+          };
+        } else {
+          return {
+            position: [0, 0.5, -roomHalfSize],
+            rotation: [0, Math.PI, 0],
+          };
+        }
+      }
+    } else {
+      // Fallback: distribute doors around perimeter
+      const angleStep = (2 * Math.PI) / totalDoors;
+      const radius = roomSize / 2;
+      const angle = index * angleStep;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      const rotationY = angle + Math.PI;
+
+      return {
+        position: [x, 0.5, z],
+        rotation: [0, rotationY, 0],
+      };
+    }
   }
 };
 
@@ -134,12 +179,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
     const { camera } = useThree();
 
     // Extract only the values we need
-    const {
-      currentRoomId,
-      isTransitioning,
-      transitionProgress,
-      handleDoorClick,
-    } = roomStore;
+    const { currentRoomId, isTransitioning, transitionProgress } = roomStore;
     const { isDoorUnlocked, getDoorState, getDoorType, unlockDoor } = doorStore;
     const {
       currentRoomId: instanceRoomId,
@@ -333,15 +373,21 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
         if (mode === "full") {
           const isUnlocked = isDoorUnlocked(doorId);
           if (isUnlocked) {
-            handleDoorClick(room.id);
+            // Use roomManagerStore's startTransition for proper room loading
+            const { startTransition } = useRoomManagerStore.getState();
+            startTransition(activeRoomId, room.id, "north");
           } else {
             unlockDoor(doorId, activeRoomId, "manual");
           }
         } else {
+          // Instance mode: also handle door clicks for navigation
           console.log(`🚪 UnifiedRoomManager: Door clicked -> ${room.id}`);
+          // Use roomManagerStore's startTransition for proper room loading
+          const { startTransition } = useRoomManagerStore.getState();
+          startTransition(activeRoomId, room.id, "north");
         }
       },
-      [mode, isDoorUnlocked, unlockDoor, activeRoomId, handleDoorClick]
+      [mode, isDoorUnlocked, unlockDoor, activeRoomId]
     );
 
     // Memoized door state change handler
@@ -408,7 +454,9 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
             mode,
             currentRoom?.size || ROOM_SIZE,
             index,
-            connectedRooms.length
+            connectedRooms.length,
+            currentRoom,
+            room
           );
           const doorId = `door-${activeRoomId}-${room.id}`;
           const roomName = room.name || room.id;
@@ -484,4 +532,3 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
 UnifiedRoomManager.displayName = "UnifiedRoomManager";
 
 export default UnifiedRoomManager;
-

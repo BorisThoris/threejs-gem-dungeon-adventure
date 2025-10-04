@@ -77,14 +77,7 @@ const TrapBiome: React.FC<TrapBiomeProps> = ({ size = 10, onRoomComplete }) => {
         label="Disable Traps"
       />
 
-      {/* Exit door */}
-      <Door
-        position={[0, 0.5, size / 2]}
-        rotation={[0, 0, 0]}
-        targetRoomId="next_room"
-        showLabel={true}
-        onDoorClick={() => setDoorOpen(true)}
-      />
+      {/* Exit door - Handled by UnifiedRoomManager to prevent duplication */}
 
       {/* Warning signs */}
       <mesh position={[-3, 1, -3]}>

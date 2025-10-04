@@ -147,14 +147,7 @@ const PuzzleBiome: React.FC<PuzzleBiomeProps> = ({
         onInteract={statueActivated ? undefined : handleStatueInteract}
       />
 
-      {/* Exit door */}
-      <Door
-        position={[0, 0.5, size / 2]}
-        rotation={[0, 0, 0]}
-        targetRoomId="next_room"
-        showLabel={true}
-        onDoorClick={() => setPuzzleSolved(true)}
-      />
+      {/* Exit door - Handled by UnifiedRoomManager to prevent duplication */}
 
       {/* Puzzle indicators */}
       <mesh position={[0, 0.1, 0]}>
