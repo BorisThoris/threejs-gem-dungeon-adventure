@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { DoorState, DoorType } from '../components/Door';
+import { canTransition } from '../components/Door';
 
 export interface DoorUnlock {
   doorId: string;
@@ -81,14 +82,54 @@ export const useDoorProgressionStore = create<DoorProgression & DoorProgressionA
     },
     
     setDoorState: (doorId: string, state: DoorState) => {
+      const currentState = get().doorStates[doorId] || 'closed';
+      
+      // Validate state transition
+      if (!canTransition(currentState, state)) {
+        console.warn(`Invalid door state transition: ${currentState} -> ${state}`);
+        return;
+      }
+      
+      // Add state change timestamp for debugging
+      const stateChange = {
+        doorId,
+        fromState: currentState,
+        toState: state,
+        timestamp: Date.now()
+      };
+      
       set({
         doorStates: { ...get().doorStates, [doorId]: state }
       });
+      
+      // Log state changes in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Door state change:', stateChange);
+      }
+      
+      // Handle automatic state transitions with configurable timing
+      if (state === "opening") {
+        // Auto-transition to open after animation
+        setTimeout(() => {
+          const currentDoorState = get().doorStates[doorId];
+          if (currentDoorState === "opening") {
+            get().setDoorState(doorId, "open");
+          }
+        }, 1000); // 1 second animation
+      } else if (state === "closing") {
+        // Auto-transition to closed after animation
+        setTimeout(() => {
+          const currentDoorState = get().doorStates[doorId];
+          if (currentDoorState === "closing") {
+            get().setDoorState(doorId, "closed");
+          }
+        }, 1000); // 1 second animation
+      }
     },
     
     setDoorType: (doorId: string, type: DoorType) => {
       set({
-        doorTypes: { ...get().doorStates, [doorId]: type }
+        doorTypes: { ...get().doorTypes, [doorId]: type }
       });
     },
     
@@ -104,20 +145,6 @@ export const useDoorProgressionStore = create<DoorProgression & DoorProgressionA
       return get().doorTypes[doorId] || 'standard';
     },
     
-    getUnlockedDoors: () => {
-      return Array.from(get().unlockedDoors);
-    },
-    
-    getProgressionStats: () => {
-      const { totalDoorsUnlocked, progressionLevel, unlockHistory } = get();
-      const recentUnlocks = unlockHistory.slice(-5); // Last 5 unlocks
-      
-      return {
-        totalUnlocked: totalDoorsUnlocked,
-        progressionLevel,
-        recentUnlocks
-      };
-    },
     
     resetProgression: () => {
       set({
@@ -133,7 +160,6 @@ export const useDoorProgressionStore = create<DoorProgression & DoorProgressionA
 );
 
 // Helper functions
-export const getDoorProgressionStats = () => useDoorProgressionStore.getState().getProgressionStats();
 export const isDoorUnlocked = (doorId: string) => useDoorProgressionStore.getState().isDoorUnlocked(doorId);
 export const unlockDoor = (doorId: string, roomId: string, method: DoorUnlock['method'] = 'manual') => {
   useDoorProgressionStore.getState().unlockDoor(doorId, roomId, method);
