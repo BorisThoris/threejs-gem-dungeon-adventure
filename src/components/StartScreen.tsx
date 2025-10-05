@@ -11,9 +11,6 @@ import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
 import EventDrivenActionCards from "./EventDrivenActionCards";
 import SharedNavigation from "./SharedNavigation";
-import WallToggleControls from "./WallToggleControls";
-import BiomeCategorySelector from "./BiomeCategorySelector";
-import { ThemeSelector } from "../themes";
 // WallToggleProvider removed - now using Zustand store
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
@@ -237,28 +234,6 @@ const StartScreenContent: React.FC = () => {
 
       {/* Shared Navigation */}
       <SharedNavigation currentPage="game" />
-
-      {/* Wall Toggle Controls */}
-      <WallToggleControls />
-
-      {/* Biome Category Selector */}
-      <BiomeCategorySelector onCategoriesChange={setEnabledBiomeCategories} />
-
-      {/* Theme Selector */}
-      <div
-        style={{
-          position: "fixed",
-          top: "20px",
-          right: "20px",
-          zIndex: 1000,
-          background: "rgba(0, 0, 0, 0.8)",
-          padding: "15px",
-          borderRadius: "8px",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <ThemeSelector />
-      </div>
 
       {/* UI is now handled by DOM UI Manager - no React re-renders */}
     </div>
