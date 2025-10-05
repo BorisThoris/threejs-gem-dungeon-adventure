@@ -10,11 +10,10 @@ import MapUI from "./MapUI";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
 import EventDrivenActionCards from "./EventDrivenActionCards";
-import RoomDetectionDebugger from "./RoomDetectionDebugger";
 import SharedNavigation from "./SharedNavigation";
 import WallToggleControls from "./WallToggleControls";
 import BiomeCategorySelector from "./BiomeCategorySelector";
-import { ThemeSelector, ThemePreview } from "../themes";
+import { ThemeSelector } from "../themes";
 // WallToggleProvider removed - now using Zustand store
 import useGameStore from "../store/gameStore";
 import useMapStore from "../store/mapStore";
@@ -88,7 +87,7 @@ const GhostScene: React.FC = () => {
         <SafeSpawnArea position={[0, 0, 0]} size={8} />
 
         {/* Safe First Person Player */}
-        <Player initialSpawnPosition={[0, 1.5, 0]} showDebugInfo={true} />
+        <Player initialSpawnPosition={[0, 1.5, 0]} showDebugInfo={false} />
 
         {/* Room Instance Manager - Single room at a time */}
         <UnifiedRoomManager mode="instance" />
@@ -259,7 +258,6 @@ const StartScreenContent: React.FC = () => {
         }}
       >
         <ThemeSelector />
-        <ThemePreview />
       </div>
 
       {/* UI is now handled by DOM UI Manager - no React re-renders */}

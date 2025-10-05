@@ -400,8 +400,8 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
           progress={activeProgress}
         />
 
-        {/* Door Debugger */}
-        {showDebugInfo && <DoorDebugger showDebugger={import.meta.env.DEV} />}
+        {/* Door Debugger - Disabled */}
+        {false && <DoorDebugger showDebugger={false} />}
       </group>
     );
   }
