@@ -4,6 +4,7 @@ import type { RoomInstance, RoomTransition } from '../types/roomInstance';
 import type { Room } from '../types/map';
 import useMapStore from './mapStore';
 import { calculatePlayerSpawnPosition } from '../utils/doorUtils';
+import { gameEvents, GAME_EVENTS } from '../utils/gameEvents';
 import * as THREE from 'three';
 
 // ============================================================================
@@ -256,6 +257,9 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
         currentRoomId: roomId,
         roomInstances: newInstances 
       });
+
+      // Emit room enter event to trigger room cards
+      gameEvents.emit(GAME_EVENTS.ROOM_ENTER, roomInstance.room);
     },
 
     startTransition: async (fromRoomId: string, toRoomId: string, direction: 'north' | 'south' | 'east' | 'west') => {

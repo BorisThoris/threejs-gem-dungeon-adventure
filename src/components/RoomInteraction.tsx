@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import RoomActionCards from "./RoomActionCards";
 import { useRoomActions } from "../hooks/useRoomActions";
 import type { Room } from "../types/map";
@@ -15,7 +15,6 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
   onInteraction,
 }) => {
   // Game store functions handled through card system
-  const [isNearby, setIsNearby] = useState(false);
 
   // Map room types to action card room types
   const getRoomTypeForActions = (roomType: string) => {
@@ -52,57 +51,12 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
     onBossFight: () => onInteraction("boss", room.id),
   });
 
-  // Check if player is close enough to interact
-  useEffect(() => {
-    const distance = Math.sqrt(
-      Math.pow(
-        _playerPosition[0] -
-          (room.position as unknown as [number, number, number])[0],
-        2
-      ) +
-        Math.pow(
-          _playerPosition[2] -
-            (room.position as unknown as [number, number, number])[2],
-          2
-        )
-    );
-
-    // Define a proximity threshold
-    const proximityThreshold = 5; // Adjust as needed
-
-    if (distance < proximityThreshold) {
-      setIsNearby(true);
-    } else {
-      setIsNearby(false);
-    }
-  }, [_playerPosition, room]);
-
-  // All interactions now go through the card system automatically
-  // No more direct clickable interactions - cards handle everything
-
-  if (!isNearby || !actionRoomType) return null;
+  // Cards are now shown based on room loading, not proximity
+  if (!actionRoomType) return null;
 
   return (
     <>
-      <group
-        position={[
-          (room.position as unknown as [number, number, number])[0],
-          (room.position as unknown as [number, number, number])[1] + 3,
-          (room.position as unknown as [number, number, number])[2],
-        ]}
-      >
-        {/* Visual indicator only - no longer clickable */}
-        <mesh position={[0, -1, 0]}>
-          <boxGeometry args={[0.6, 0.05, 0.6]} />
-          <meshBasicMaterial
-            color="#00FF00"
-            transparent
-            opacity={0.3 + Math.sin(Date.now() * 0.005) * 0.3}
-          />
-        </mesh>
-      </group>
-
-      {/* Action Cards - Automatically shown when near room */}
+      {/* Action Cards - Shown when room is loaded */}
       {actionRoomType && (
         <RoomActionCards
           cards={cards}

@@ -118,11 +118,9 @@ const EventDrivenActionCards: React.FC = () => {
         // Room entered via event
         setCurrentRoom(room);
 
-        // Show cards after a short delay
-        setTimeout(() => {
-          showActionCards();
-          setIsVisible(true);
-        }, 300);
+        // Show cards immediately when room loads
+        showActionCards();
+        setIsVisible(true);
       }
     );
 
