@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
+import { useCameraController } from "../hooks/useCameraController";
 import { Player } from "./Player";
 import { SafeSpawnArea } from "./SafeSpawnArea";
 import UnifiedRoomManager from "./UnifiedRoomManager";
@@ -63,6 +64,8 @@ const SafetyFloor: React.FC = () => {
 
 // Main Scene Component
 const GhostScene: React.FC = () => {
+  // Mount centralized camera controller to handle programmatic rotations
+  useCameraController();
   return (
     <>
       {/* Environment */}

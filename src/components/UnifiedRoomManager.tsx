@@ -190,34 +190,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
           await loadRoom(currentMap.startRoomId);
           setActiveRoom(currentMap.startRoomId);
 
-          // Spawn player in the start room
-          const startRoom = currentMap.rooms.find(
-            (r: RoomData) => r.id === currentMap.startRoomId
-          );
-          if (startRoom) {
-            const roomSize = startRoom.size || ROOM_SIZE;
-            const spawnPosition = new THREE.Vector3(0, 0.5, roomSize / 2 - 1.5);
-            const spawnRotation = new THREE.Euler(0, Math.PI, 0);
-
-            setTimeout(() => {
-              window.dispatchEvent(
-                new CustomEvent("playerTeleport", {
-                  detail: {
-                    position: spawnPosition.toArray() as [
-                      number,
-                      number,
-                      number
-                    ],
-                    rotation: spawnRotation.toArray() as [
-                      number,
-                      number,
-                      number
-                    ],
-                  },
-                })
-              );
-            }, 100);
-          }
+          // Initial spawn now handled by consolidatedGameStore.startTransition
         }
       };
 
@@ -288,7 +261,8 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
 
     // Main detection loop
     useFrame(() => {
-      if (playerRoomDetection.isDetectionEnabled()) {
+      // Only run detection when not in transition to avoid mid-flight teleports
+      if (!activeTransitioning && playerRoomDetection.isDetectionEnabled()) {
         const playerPos = {
           x: camera.position.x,
           y: camera.position.y,
@@ -309,12 +283,22 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
     const handleDoorClickCallback = useCallback(
       (room: RoomData, doorId: string) => {
         console.log(`🚪 UnifiedRoomManager: Door clicked -> ${room.id}`);
-        // Use consolidated store's startTransition for proper room loading
-        if (activeRoomId) {
-          startTransition(activeRoomId, room.id, "north");
+        if (!activeRoomId || !currentRoom) return;
+
+        // Determine direction from current room to target room
+        const dx = (room.position?.x || 0) - (currentRoom.position?.x || 0);
+        const dz = (room.position?.z || 0) - (currentRoom.position?.z || 0);
+
+        let direction: "north" | "south" | "east" | "west";
+        if (Math.abs(dx) > Math.abs(dz)) {
+          direction = dx > 0 ? "east" : "west";
+        } else {
+          direction = dz > 0 ? "north" : "south";
         }
+
+        startTransition(activeRoomId, room.id, direction);
       },
-      [activeRoomId, startTransition]
+      [activeRoomId, startTransition, currentRoom]
     );
 
     // Memoized door state change handler

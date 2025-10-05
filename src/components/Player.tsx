@@ -79,11 +79,10 @@ export function Player({
     }
   }, [initialSpawnPosition, showDebugInfo]);
 
-  // Initialize camera position once spawned
+  // Initialize camera position once spawned (do not set rotation here)
   useEffect(() => {
     if (isSpawned && spawnPosition) {
       camera.position.set(...spawnPosition);
-      camera.lookAt(spawnPosition[0], spawnPosition[1], spawnPosition[2] - 1);
     }
   }, [camera, spawnPosition, isSpawned]);
 
@@ -108,26 +107,10 @@ export function Player({
       ref.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
       ref.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
 
-      // Update camera position and rotation
+      // Update camera position only; rotation is owned by camera controller/mouse look
       camera.position.copy(newPosition);
       camera.position.y += 1.0; // Eye level offset (reduced from 1.6)
-
-      // Set camera rotation order and apply rotation
-      camera.rotation.order = "YXZ";
-      camera.rotation.x = newRotation.x;
-      camera.rotation.y = newRotation.y;
-      camera.rotation.z = newRotation.z;
-
       camera.updateMatrixWorld(true);
-
-      // Force camera rotation update after a small delay to ensure it's not overridden
-      setTimeout(() => {
-        camera.rotation.order = "YXZ";
-        camera.rotation.x = newRotation.x;
-        camera.rotation.y = newRotation.y;
-        camera.rotation.z = newRotation.z;
-        camera.updateMatrixWorld(true);
-      }, 100);
     };
 
     window.addEventListener("playerTeleport", handleTeleport as EventListener);
@@ -173,25 +156,12 @@ export function Player({
     const velocity = ref.current.linvel();
     const { x, y, z } = ref.current.translation();
 
-    // Update camera position using refs (throttled to prevent stutters)
+    // Update camera position using refs (throttled to prevent stutters); do not write rotation
     const now = performance.now();
     if (now - lastUpdateTime.current > 16) {
       // ~60fps max
       cameraPositionRef.current.set(x, y + 1.6, z);
       camera.position.copy(cameraPositionRef.current);
-
-      // Ensure camera looks straight ahead initially
-      if (
-        camera.rotation.x === 0 &&
-        camera.rotation.y === 0 &&
-        camera.rotation.z === 0
-      ) {
-        camera.rotation.order = "YXZ";
-        camera.rotation.x = 0; // Look straight ahead
-        camera.rotation.y = -Math.PI / 2; // Face forward
-        camera.rotation.z = 0;
-      }
-
       camera.updateMatrixWorld(true);
       lastUpdateTime.current = now;
     }

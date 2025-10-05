@@ -62,6 +62,7 @@ export const GAME_EVENTS = {
   ACTION_CARD_HIDE: 'action_card_hide',
   PLAYER_MOVEMENT: 'player_movement',
   UI_UPDATE: 'ui_update',
+  CAMERA_SET_ROTATION: 'camera_set_rotation',
 } as const;
 
 export type GameEventType = typeof GAME_EVENTS[keyof typeof GAME_EVENTS];

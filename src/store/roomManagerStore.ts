@@ -156,10 +156,8 @@ const useRoomManagerStore = create<RoomManagerState & RoomManagerActions>((set, 
         rotation = new THREE.Euler(0, 0, 0);
       }
 
-      // Emit teleportation event
-      window.dispatchEvent(new CustomEvent('playerTeleport', {
-        detail: { position: position.toArray(), rotation: rotation.toArray() }
-      }));
+    // Teleport emission is centralized in consolidatedGameStore.startTransition
+    // to avoid duplicate/conflicting spawns.
     }
     
     // Complete transition and re-enable movement after a delay

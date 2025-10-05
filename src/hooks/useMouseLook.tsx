@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { uiEvents, UI_EVENTS } from "../utils/uiEvents";
+import { gameEvents, GAME_EVENTS } from "../utils/gameEvents";
 
 export const useMouseLook = () => {
   const { camera } = useThree();
@@ -58,6 +59,16 @@ export const useMouseLook = () => {
     };
 
     window.addEventListener("playerTeleport", handleTeleport);
+
+    // Listen for programmatic camera rotation requests
+    const offSetRotation = gameEvents.on(
+      GAME_EVENTS.CAMERA_SET_ROTATION,
+      (rotation: { x: number; y: number; z?: number }) => {
+        euler.current.x = rotation.x;
+        euler.current.y = rotation.y;
+        updateCameraRotation();
+      }
+    );
 
     // Simple camera update function
     const updateCameraRotation = () => {
@@ -177,6 +188,7 @@ export const useMouseLook = () => {
       document.removeEventListener("mouseup", handleMouseUp);
       document.removeEventListener("contextmenu", handleContextMenu);
       window.removeEventListener("playerTeleport", handleTeleport);
+      offSetRotation?.();
     };
   }, [camera]);
 

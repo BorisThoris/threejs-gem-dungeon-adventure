@@ -283,24 +283,33 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
       // Set new active room immediately
       get().setActiveRoom(toRoomId);
       
-      // Emit teleportation event for player to listen to
+      // Emit teleportation event for player to listen to; face toward room center
       if (targetRoom) {
         const roomSize = targetRoom.size || 10;
         let { position, rotation } = calculatePlayerSpawnPosition(direction, roomSize);
         const roomHalfSize = roomSize / 2;
 
+        // Allow edge spawns just inside the room perimeter
         const isWithinBounds = 
-          Math.abs(position.x) < roomHalfSize - 1 && 
-          Math.abs(position.z) < roomHalfSize - 1;
+          Math.abs(position.x) <= roomHalfSize - 1 && 
+          Math.abs(position.z) <= roomHalfSize - 1;
         
         if (!isWithinBounds) {
-          position = new THREE.Vector3(0, 1.6, 0);
+          console.warn('[Transition] Spawn out of bounds, falling back to center:', position.toArray());
+          position = new THREE.Vector3(0, 0.5, 0);
           rotation = new THREE.Euler(0, 0, 0);
         }
+
+        // Debug computed spawn for verification
+        console.debug('[Transition] direction=', direction, 'spawn=', position.toArray(), 'rotation(y)=', rotation.y);
 
         window.dispatchEvent(new CustomEvent('playerTeleport', {
           detail: { position: position.toArray(), rotation: rotation.toArray() }
         }));
+
+        // Ensure camera faces center (rotation already points inward per direction)
+        // but also broadcast via camera controller in case mouse look state diverged
+        gameEvents.emit(GAME_EVENTS.CAMERA_SET_ROTATION, { x: rotation.x, y: rotation.y, z: rotation.z });
       }
       
       // Complete transition and re-enable movement after a delay
