@@ -12,12 +12,10 @@ import { useGameState } from "../hooks/useGameState";
 import Door from "./Door";
 import DoorDebugger from "./DoorDebugger";
 import DebugSign from "./DebugSign";
-import SimpleRoomRenderer from "./SimpleRoomRenderer";
 import RoomInstanceRenderer from "./RoomInstanceRenderer";
 import RoomTransitionEffect from "./RoomTransitionEffect";
 
 // Data and utils
-import { ROOM_DEFINITIONS } from "../data/roomDefinitions";
 import { playerRoomDetection } from "../utils/playerRoomDetection";
 import { gameEvents, GAME_EVENTS } from "../utils/gameEvents";
 
@@ -36,7 +34,6 @@ interface DoorPosition {
 }
 
 interface UnifiedRoomManagerProps {
-  mode?: "simple" | "instance" | "full";
   playerPosition?: [number, number, number];
   onRoomChange?: (roomId: string) => void;
   onRoomEnter?: (roomId: string) => void;
@@ -53,116 +50,85 @@ const DOOR_HEIGHT_OFFSET = 1.25;
 
 // Memoized door position calculator
 const calculateDoorPosition = (
-  mode: string,
   roomSize: number,
   index: number,
   totalDoors: number,
   currentRoom?: RoomData,
   targetRoom?: RoomData
 ): DoorPosition => {
-  if (mode === "simple") {
-    // Simple mode: distribute doors around perimeter
+  // Use proper door positioning based on room positions
+  if (currentRoom && targetRoom) {
+    const dx = (targetRoom.position?.x || 0) - (currentRoom.position?.x || 0);
+    const dz = (targetRoom.position?.z || 0) - (currentRoom.position?.z || 0);
+
+    const roomHalfSize = roomSize / 2;
+
+    if (Math.abs(dx) > Math.abs(dz)) {
+      // East or West
+      if (dx > 0) {
+        return {
+          position: [roomHalfSize, 0.5, 0],
+          rotation: [0, -Math.PI / 2, 0],
+        };
+      } else {
+        return {
+          position: [-roomHalfSize, 0.5, 0],
+          rotation: [0, Math.PI / 2, 0],
+        };
+      }
+    } else {
+      // North or South
+      if (dz > 0) {
+        return {
+          position: [0, 0.5, roomHalfSize],
+          rotation: [0, 0, 0],
+        };
+      } else {
+        return {
+          position: [0, 0.5, -roomHalfSize],
+          rotation: [0, Math.PI, 0],
+        };
+      }
+    }
+  } else {
+    // Fallback: distribute doors around perimeter
     const angleStep = (2 * Math.PI) / totalDoors;
-    const radius = roomSize / 2 + WALL_THICKNESS;
+    const radius = roomSize / 2;
     const angle = index * angleStep;
     const x = Math.cos(angle) * radius;
     const z = Math.sin(angle) * radius;
     const rotationY = angle + Math.PI;
 
     return {
-      position: [x, GROUND_LEVEL + DOOR_HEIGHT_OFFSET, z],
+      position: [x, 0.5, z],
       rotation: [0, rotationY, 0],
     };
-  } else {
-    // Instance/full mode: use proper door positioning based on room positions
-    if (currentRoom && targetRoom) {
-      const dx = (targetRoom.position?.x || 0) - (currentRoom.position?.x || 0);
-      const dz = (targetRoom.position?.z || 0) - (currentRoom.position?.z || 0);
-
-      const roomHalfSize = roomSize / 2;
-
-      if (Math.abs(dx) > Math.abs(dz)) {
-        // East or West
-        if (dx > 0) {
-          return {
-            position: [roomHalfSize, 0.5, 0],
-            rotation: [0, -Math.PI / 2, 0],
-          };
-        } else {
-          return {
-            position: [-roomHalfSize, 0.5, 0],
-            rotation: [0, Math.PI / 2, 0],
-          };
-        }
-      } else {
-        // North or South
-        if (dz > 0) {
-          return {
-            position: [0, 0.5, roomHalfSize],
-            rotation: [0, 0, 0],
-          };
-        } else {
-          return {
-            position: [0, 0.5, -roomHalfSize],
-            rotation: [0, Math.PI, 0],
-          };
-        }
-      }
-    } else {
-      // Fallback: distribute doors around perimeter
-      const angleStep = (2 * Math.PI) / totalDoors;
-      const radius = roomSize / 2;
-      const angle = index * angleStep;
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius;
-      const rotationY = angle + Math.PI;
-
-      return {
-        position: [x, 0.5, z],
-        rotation: [0, rotationY, 0],
-      };
-    }
   }
 };
 
 // Memoized room data getter
 const useRoomData = (
-  mode: string,
   activeRoomId: string | null,
   currentMap: any,
   roomInstances: Map<string, any>
 ) => {
   return useMemo(() => {
-    if (mode === "instance") {
-      const currentRoomInstance = activeRoomId
-        ? roomInstances.get(activeRoomId)
-        : null;
-      const room = currentRoomInstance?.room;
-      const connectedRooms =
-        room?.connections
-          ?.map((connectionId: string) =>
-            currentMap?.rooms.find((r: RoomData) => r.id === connectionId)
-          )
-          .filter(Boolean) || [];
-      return { room, connectedRooms };
-    } else {
-      const room = currentMap?.rooms.find(
-        (r: RoomData) => r.id === activeRoomId
-      );
-      const connectedRooms =
-        room?.connections
-          ?.map((connectionId: string) =>
-            currentMap?.rooms.find((r: RoomData) => r.id === connectionId)
-          )
-          .filter(Boolean) || [];
-      return { room, connectedRooms };
-    }
-  }, [mode, activeRoomId, currentMap, roomInstances]);
+    const currentRoomInstance = activeRoomId
+      ? roomInstances.get(activeRoomId)
+      : null;
+    const room = currentRoomInstance?.room;
+    const connectedRooms =
+      room?.connections
+        ?.map((connectionId: string) =>
+          currentMap?.rooms.find((r: RoomData) => r.id === connectionId)
+        )
+        .filter(Boolean) || [];
+    return { room, connectedRooms };
+  }, [activeRoomId, currentMap, roomInstances]);
 };
 
 const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
   ({
-    mode = "instance",
     playerPosition = [0, 0, 0],
     onRoomChange,
     onRoomEnter,
@@ -204,78 +170,66 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
 
     // Get room data using memoized hook
     const { room: currentRoom, connectedRooms } = useRoomData(
-      mode,
       activeRoomId,
       currentMap,
       roomInstances
     );
 
-    // Initialize rooms from definitions (for simple/full modes)
+    // Note: Room management now handled by consolidated store
+    // Room definitions are handled by map generation
+
+    // Initialize map and load start room
     useEffect(() => {
-      if (mode === "simple" || mode === "full") {
-        // Note: Room management now handled by consolidated store
-        // Room definitions are handled by map generation
-      }
-    }, [mode]);
+      const initializeGame = async () => {
+        if (!currentMap) {
+          generateMap();
+          return;
+        }
 
-    // Initialize map and load start room (for instance mode)
-    useEffect(() => {
-      if (mode === "instance") {
-        const initializeGame = async () => {
-          if (!currentMap) {
-            generateMap();
-            return;
-          }
+        if (!activeRoomId) {
+          await loadRoom(currentMap.startRoomId);
+          setActiveRoom(currentMap.startRoomId);
 
-          if (!activeRoomId) {
-            await loadRoom(currentMap.startRoomId);
-            setActiveRoom(currentMap.startRoomId);
+          // Spawn player in the start room
+          const startRoom = currentMap.rooms.find(
+            (r: RoomData) => r.id === currentMap.startRoomId
+          );
+          if (startRoom) {
+            const roomSize = startRoom.size || ROOM_SIZE;
+            const spawnPosition = new THREE.Vector3(0, 0.5, roomSize / 2 - 1.5);
+            const spawnRotation = new THREE.Euler(0, Math.PI, 0);
 
-            // Spawn player in the start room
-            const startRoom = currentMap.rooms.find(
-              (r: RoomData) => r.id === currentMap.startRoomId
-            );
-            if (startRoom) {
-              const roomSize = startRoom.size || ROOM_SIZE;
-              const spawnPosition = new THREE.Vector3(
-                0,
-                0.5,
-                roomSize / 2 - 1.5
+            setTimeout(() => {
+              window.dispatchEvent(
+                new CustomEvent("playerTeleport", {
+                  detail: {
+                    position: spawnPosition.toArray() as [
+                      number,
+                      number,
+                      number
+                    ],
+                    rotation: spawnRotation.toArray() as [
+                      number,
+                      number,
+                      number
+                    ],
+                  },
+                })
               );
-              const spawnRotation = new THREE.Euler(0, Math.PI, 0);
-
-              setTimeout(() => {
-                window.dispatchEvent(
-                  new CustomEvent("playerTeleport", {
-                    detail: {
-                      position: spawnPosition.toArray() as [
-                        number,
-                        number,
-                        number
-                      ],
-                      rotation: spawnRotation.toArray() as [
-                        number,
-                        number,
-                        number
-                      ],
-                    },
-                  })
-                );
-              }, 100);
-            }
+            }, 100);
           }
-        };
+        }
+      };
 
-        initializeGame();
-      }
-    }, [mode, currentMap, activeRoomId, generateMap, loadRoom, setActiveRoom]);
+      initializeGame();
+    }, [currentMap, activeRoomId, generateMap, loadRoom, setActiveRoom]);
 
-    // Initialize room bounds for player detection (for instance mode)
+    // Initialize room bounds for player detection
     useEffect(() => {
-      if (mode === "instance" && currentMap?.rooms) {
+      if (currentMap?.rooms) {
         playerRoomDetection.initializeRoomBounds(currentMap.rooms);
       }
-    }, [mode, currentMap]);
+    }, [currentMap]);
 
     // Handle room changes
     useEffect(() => {
@@ -284,11 +238,9 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
       }
     }, [activeRoomId, onRoomChange]);
 
-    // Room detection for instance mode - memoized callback
+    // Room detection - memoized callback
     const detectRoom = useCallback(
       (playerPosition: { x: number; y: number; z: number }) => {
-        if (mode !== "instance") return;
-
         const now = Date.now();
         if (now - lastUpdateTime.current < 100) return; // Throttle to 10fps max
         lastUpdateTime.current = now;
@@ -331,12 +283,12 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
           }
         }
       },
-      [mode, currentMap, updateRoom, updateGamePhase, onRoomEnter, onRoomExit]
+      [currentMap, updateRoom, updateGamePhase, onRoomEnter, onRoomExit]
     );
 
-    // Main detection loop for instance mode
+    // Main detection loop
     useFrame(() => {
-      if (mode === "instance" && playerRoomDetection.isDetectionEnabled()) {
+      if (playerRoomDetection.isDetectionEnabled()) {
         const playerPos = {
           x: camera.position.x,
           y: camera.position.y,
@@ -349,45 +301,30 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
     // Cleanup
     useEffect(() => {
       return () => {
-        if (mode === "instance") {
-          playerRoomDetection.clearCurrentRoom();
-        }
+        playerRoomDetection.clearCurrentRoom();
       };
-    }, [mode]);
+    }, []);
 
     // Memoized door click handler
     const handleDoorClickCallback = useCallback(
       (room: RoomData, doorId: string) => {
-        if (mode === "full") {
-          const isUnlocked = isDoorUnlocked(doorId);
-          if (isUnlocked && activeRoomId) {
-            // Use consolidated store's startTransition for proper room loading
-            startTransition(activeRoomId, room.id, "north");
-          } else if (activeRoomId) {
-            unlockDoor(doorId, activeRoomId, "manual");
-          }
-        } else {
-          // Instance mode: also handle door clicks for navigation
-          console.log(`🚪 UnifiedRoomManager: Door clicked -> ${room.id}`);
-          // Use consolidated store's startTransition for proper room loading
-          if (activeRoomId) {
-            startTransition(activeRoomId, room.id, "north");
-          }
+        console.log(`🚪 UnifiedRoomManager: Door clicked -> ${room.id}`);
+        // Use consolidated store's startTransition for proper room loading
+        if (activeRoomId) {
+          startTransition(activeRoomId, room.id, "north");
         }
       },
-      [mode, isDoorUnlocked, unlockDoor, activeRoomId, startTransition]
+      [activeRoomId, startTransition]
     );
 
     // Memoized door state change handler
     const handleDoorStateChange = useCallback(
       (doorId: string, newState: string) => {
-        if (mode === "full") {
-          useDoorProgressionStore
-            .getState()
-            .setDoorState(doorId, newState as any);
-        }
+        useDoorProgressionStore
+          .getState()
+          .setDoorState(doorId, newState as any);
       },
-      [mode]
+      []
     );
 
     // Memoized room transition handler
@@ -423,28 +360,21 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
     }
 
     // Get room component for rendering
-    const CurrentRoomComponent =
-      activeRoomId && ROOM_DEFINITIONS[activeRoomId]?.component;
 
     return (
       <group>
         {/* Render current room content */}
-        {mode === "simple" && <SimpleRoomRenderer />}
-        {mode === "instance" && (
-          <RoomInstanceRenderer
-            playerPosition={playerPosition as [number, number, number]}
-            onInteraction={onInteraction}
-            onRoomTransition={handleRoomTransition}
-          />
-        )}
-        {mode === "full" && CurrentRoomComponent && <CurrentRoomComponent />}
+        <RoomInstanceRenderer
+          playerPosition={playerPosition as [number, number, number]}
+          onInteraction={onInteraction}
+          onRoomTransition={handleRoomTransition}
+        />
 
         {/* Render doors */}
         {connectedRooms.map((room: RoomData, index: number) => {
           if (!room) return null;
 
           const doorPosition = calculateDoorPosition(
-            mode,
             currentRoom?.size || ROOM_SIZE,
             index,
             connectedRooms.length,
@@ -454,69 +384,40 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
           const doorId = `door-${activeRoomId}-${room.id}`;
           const roomName = room.name || room.id;
 
-          // Use different door components based on mode
-          if (mode === "simple") {
-            return (
-              <group key={`door-group-${room.id}`}>
-                <Door
-                  targetRoomId={room.id}
-                  position={doorPosition.position}
-                  rotation={doorPosition.rotation}
-                  showLabel={true}
-                  onDoorClick={() => handleDoorClickCallback(room, doorId)}
-                />
-                {showDebugInfo && (
-                  <DebugSign
-                    position={[
-                      doorPosition.position[0] + 1.5,
-                      doorPosition.position[1] + 1,
-                      doorPosition.position[2] + 1.5,
-                    ]}
-                    text={`→ ${roomName}`}
-                    color="#00FF00"
-                  />
-                )}
-              </group>
-            );
-          } else {
-            const isUnlocked = mode === "full" ? isDoorUnlocked(doorId) : true;
-            const doorState = mode === "full" ? getDoorState(doorId) : "closed";
-            const doorType = mode === "full" ? getDoorType(doorId) : "standard";
+          // Render door with simplified logic
+          const isUnlocked = isDoorUnlocked(doorId);
+          const doorState = getDoorState(doorId);
+          const doorType = getDoorType(doorId);
 
-            return (
-              <Door
-                key={doorId}
-                position={doorPosition.position}
-                rotation={doorPosition.rotation}
-                targetRoomId={room.id}
-                showLabel={true}
-                state={doorState}
-                type={doorType}
-                isLocked={!isUnlocked}
-                glowEffect={doorType === "secret"}
-                onDoorClick={() => handleDoorClickCallback(room, doorId)}
-                onStateChange={(newState) =>
-                  handleDoorStateChange(doorId, newState)
-                }
-              />
-            );
-          }
+          return (
+            <Door
+              key={doorId}
+              position={doorPosition.position}
+              rotation={doorPosition.rotation}
+              targetRoomId={room.id}
+              showLabel={true}
+              state={doorState}
+              type={doorType}
+              isLocked={!isUnlocked}
+              glowEffect={doorType === "secret"}
+              onDoorClick={() => handleDoorClickCallback(room, doorId)}
+              onStateChange={(newState) =>
+                handleDoorStateChange(doorId, newState)
+              }
+            />
+          );
         })}
 
-        {/* Room Transition Effect (instance mode) */}
-        {mode === "instance" && (
-          <RoomTransitionEffect
-            isTransitioning={activeTransitioning}
-            fromRoomId={fromRoomId || undefined}
-            toRoomId={toRoomId || undefined}
-            progress={activeProgress}
-          />
-        )}
+        {/* Room Transition Effect */}
+        <RoomTransitionEffect
+          isTransitioning={activeTransitioning}
+          fromRoomId={fromRoomId || undefined}
+          toRoomId={toRoomId || undefined}
+          progress={activeProgress}
+        />
 
-        {/* Door Debugger (full mode) */}
-        {mode === "full" && showDebugInfo && (
-          <DoorDebugger showDebugger={import.meta.env.DEV} />
-        )}
+        {/* Door Debugger */}
+        {showDebugInfo && <DoorDebugger showDebugger={import.meta.env.DEV} />}
       </group>
     );
   }

@@ -4,7 +4,6 @@ import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
 import { Player } from "./Player";
 import { SafeSpawnArea } from "./SafeSpawnArea";
-import MapContainer from "./MapContainer";
 import UnifiedRoomManager from "./UnifiedRoomManager";
 import MapUI from "./MapUI";
 import Cursor from "./Cursor";
