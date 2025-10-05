@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 // @ts-ignore
-// import eslint from 'vite-plugin-eslint'
+import eslint from 'vite-plugin-eslint2'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -9,13 +9,14 @@ export default defineConfig({
     react({
       jsxRuntime: 'automatic'
     }),
-    // eslint({
-    //   cache: false,
-    //   include: ['src/**/*.{ts,tsx}'],
-    //   exclude: ['node_modules', 'dist'],
-    //   failOnError: false, // Don't fail build on lint errors
-    //   failOnWarning: false, // Don't fail build on warnings
-    // })
+    eslint({
+      cache: false,
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['node_modules', 'dist'],
+      lintOnStart: true,
+      emitError: true, // Show errors in dev mode
+      emitWarning: true, // Show warnings in dev mode
+    })
   ],
   base: './', // Important for Electron
   root: '.',

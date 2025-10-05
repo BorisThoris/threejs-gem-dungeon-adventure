@@ -18,7 +18,7 @@
         "electron-dist": "yarn build && electron-builder --publish=never",
         "generate-config": "node scripts/generate-config.js",
         "generate-assets": "node scripts/generate-assets.js",
-        "scan-components": "npx ts-node src/utils/componentScanner.ts",
+        "scan-components": "yarn ts-node src/utils/componentScanner.ts",
         "generate-textures": "node scripts/generate-textures.js"
     },
     "dependencies": {
