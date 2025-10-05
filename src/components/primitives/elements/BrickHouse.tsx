@@ -51,8 +51,8 @@ const BrickHouse: React.FC<BrickHouseProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,
+  onPrototypeAction: _onPrototypeAction,
 }) => {
   // Load brick texture
   const [brickTexture, setBrickTexture] = useState(null);
@@ -487,4 +487,5 @@ const BrickHouse: React.FC<BrickHouseProps> = ({
   );
 };
 
-export default withOptionalBreaking(BrickHouse);
+const BrickHouseWithBreaking = withOptionalBreaking(BrickHouse);
+export default BrickHouseWithBreaking;

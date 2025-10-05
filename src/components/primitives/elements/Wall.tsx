@@ -54,8 +54,8 @@ const Wall: React.FC<WallProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,  
+  onPrototypeAction: _onPrototypeAction,  
 }) => {
   const wallsEnabled = useWallsEnabled();
   // Load appropriate texture based on material

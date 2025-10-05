@@ -6,15 +6,7 @@ import { type BiomeWallConfig, type WallDefinition } from "../types/biomeWalls";
 import { globalTextureManager } from "../utils/globalTextureManager";
 import { useThreeDisposal } from "../hooks/useThreeDisposal";
 import withOptionalBreaking from "./withOptionalBreaking";
-
-interface BiomeWallRendererProps {
-  biomeConfig: BiomeWallConfig;
-  position?: [number, number, number];
-  rotation?: [number, number, number];
-  scale?: [number, number, number];
-  onWallBreak?: (wallId: string, impactPoint: THREE.Vector3) => void;
-  onFragmentClick?: (fragmentId: string) => void;
-}
+import { type BiomeWallRendererProps } from "./biomeWallRendererTypes";
 
 const BiomeWallRenderer: React.FC<BiomeWallRendererProps> = ({
   biomeConfig,
@@ -259,4 +251,5 @@ const BiomeWallRenderer: React.FC<BiomeWallRendererProps> = ({
   );
 };
 
-export default withOptionalBreaking(BiomeWallRenderer);
+const BiomeWallRendererWithBreaking = withOptionalBreaking(BiomeWallRenderer);
+export default BiomeWallRendererWithBreaking;

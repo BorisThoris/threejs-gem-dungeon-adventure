@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import useGameStore from "../../store/gameStore";
 
 interface SequencePuzzleProps {
@@ -19,7 +19,7 @@ const SequencePuzzle: React.FC<SequencePuzzleProps> = ({
   const [timeLeft, setTimeLeft] = useState(30);
   const [moves, setMoves] = useState(0);
 
-  const colors = ["🔴", "🔵", "🟢", "🟡", "🟣", "🟠"];
+  const colors = useMemo(() => ["🔴", "🔵", "🟢", "🟡", "🟣", "🟠"], []);
   const sequenceLength =
     difficulty === "easy" ? 4 : difficulty === "medium" ? 6 : 8;
 
@@ -30,7 +30,7 @@ const SequencePuzzle: React.FC<SequencePuzzleProps> = ({
       () => colors[Math.floor(Math.random() * colors.length)]
     );
     setSequence(newSequence);
-  }, [sequenceLength]);
+  }, [sequenceLength, colors]);
 
   // Timer countdown
   useEffect(() => {
@@ -44,7 +44,7 @@ const SequencePuzzle: React.FC<SequencePuzzleProps> = ({
       setMoves(0);
       setTimeLeft(30);
     }
-  }, [timeLeft, gameComplete]);
+  }, [timeLeft, gameComplete, isShowing]);
 
   // Show sequence
   useEffect(() => {
@@ -62,7 +62,7 @@ const SequencePuzzle: React.FC<SequencePuzzleProps> = ({
         }
       }, 800);
     }
-  }, [sequence]);
+  }, [sequence, isShowing]);
 
   // Check for completion
   useEffect(() => {

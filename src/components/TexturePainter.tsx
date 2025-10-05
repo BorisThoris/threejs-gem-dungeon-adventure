@@ -145,7 +145,7 @@ const applyFilter = (
   const data = imageData.data;
 
   switch (filter) {
-    case "blur":
+    case "blur": {
       // Simple box blur
       const radius = Math.floor(intensity * 3);
       for (let y = radius; y < canvas.height - radius; y++) {
@@ -175,6 +175,7 @@ const applyFilter = (
         }
       }
       break;
+    }
 
     case "grayscale":
       for (let i = 0; i < data.length; i += 4) {
@@ -198,15 +199,16 @@ const applyFilter = (
       }
       break;
 
-    case "invert":
+    case "invert": {
       for (let i = 0; i < data.length; i += 4) {
         data[i] = 255 - data[i];
         data[i + 1] = 255 - data[i + 1];
         data[i + 2] = 255 - data[i + 2];
       }
       break;
+    }
 
-    case "brightness":
+    case "brightness": {
       const brightness = (intensity - 0.5) * 2; // -1 to 1
       for (let i = 0; i < data.length; i += 4) {
         data[i] = Math.max(0, Math.min(255, data[i] + brightness * 255));
@@ -220,8 +222,9 @@ const applyFilter = (
         );
       }
       break;
+    }
 
-    case "contrast":
+    case "contrast": {
       const contrast = intensity * 2; // 0 to 2
       for (let i = 0; i < data.length; i += 4) {
         data[i] = Math.max(0, Math.min(255, (data[i] - 128) * contrast + 128));
@@ -235,6 +238,7 @@ const applyFilter = (
         );
       }
       break;
+    }
   }
 
   ctx.putImageData(imageData, 0, 0);
@@ -544,7 +548,7 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
     const baseLayer = createLayer("Base Layer");
     setLayers([baseLayer]);
     setActiveLayerId(baseLayer.id);
-  }, []);
+  }, [createLayer]);
 
   // Load theme-based texture definitions
   useEffect(() => {
@@ -561,44 +565,50 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
     loadThemeTextures();
   }, []);
 
-  const createLayer = (name: string): Layer => {
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
+  const createLayer = useCallback(
+    (name: string): Layer => {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
 
-    return {
-      id: `layer_${Date.now()}`,
-      name,
-      visible: true,
-      opacity: 1.0,
-      blendMode: "normal",
-      canvas,
-      texture,
-      filter: "none",
-      filterIntensity: 1.0,
-      locked: false,
-    };
-  };
+      return {
+        id: `layer_${Date.now()}`,
+        name,
+        visible: true,
+        opacity: 1.0,
+        blendMode: "normal",
+        canvas,
+        texture,
+        filter: "none",
+        filterIntensity: 1.0,
+        locked: false,
+      };
+    },
+    [width, height]
+  );
 
-  const addLayer = () => {
+  const addLayer = useCallback(() => {
     const newLayer = createLayer(`Layer ${layers.length + 1}`);
     setLayers([...layers, newLayer]);
     setActiveLayerId(newLayer.id);
-  };
+  }, [createLayer, layers, setLayers, setActiveLayerId]);
 
-  const deleteLayer = (layerId: string) => {
-    if (layers.length <= 1) return; // Don't delete the last layer
+  const deleteLayer = useCallback(
+    (layerId: string) => {
+      if (layers.length <= 1) return; // Don't delete the last layer
 
-    const newLayers = layers.filter((layer) => layer.id !== layerId);
-    setLayers(newLayers);
+      const newLayers = layers.filter((layer) => layer.id !== layerId);
+      setLayers(newLayers);
 
-    if (activeLayerId === layerId) {
-      setActiveLayerId(newLayers[0]?.id || null);
-    }
-  };
+      if (activeLayerId === layerId) {
+        setActiveLayerId(newLayers[0]?.id || null);
+      }
+    },
+    [layers, activeLayerId, setLayers, setActiveLayerId]
+  );
 
   const updateLayer = (layerId: string, updates: Partial<Layer>) => {
     setLayers(
@@ -697,92 +707,116 @@ const TexturePainter: React.FC<TexturePainterProps> = ({
   };
 
   // Programmatic access methods
-  const programmaticMethods = {
-    setMode: (mode: "free" | "grid") => setCurrentMode(mode),
-    setPixelSize: (size: number) => setCurrentPixelSize(size),
-    setColor: (color: string) => setSelectedColor(color),
-    setBrushSize: (size: number) => setBrushSize(size),
-    setBrushOpacity: (opacity: number) => setBrushOpacity(opacity),
-    setBrushHardness: (hardness: number) => setBrushHardness(hardness),
-    addLayer: () => addLayer(),
-    deleteLayer: (layerId: string) => deleteLayer(layerId),
-    setActiveLayer: (layerId: string) => setActiveLayerId(layerId),
-    getCurrentTexture: () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return null;
+  const programmaticMethods = useMemo(
+    () => ({
+      setMode: (mode: "free" | "grid") => setCurrentMode(mode),
+      setPixelSize: (size: number) => setCurrentPixelSize(size),
+      setColor: (color: string) => setSelectedColor(color),
+      setBrushSize: (size: number) => setBrushSize(size),
+      setBrushOpacity: (opacity: number) => setBrushOpacity(opacity),
+      setBrushHardness: (hardness: number) => setBrushHardness(hardness),
+      addLayer: () => addLayer(),
+      deleteLayer: (layerId: string) => deleteLayer(layerId),
+      setActiveLayer: (layerId: string) => setActiveLayerId(layerId),
+      getCurrentTexture: () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return null;
 
-      layers.forEach((layer) => {
-        if (layer.visible) {
-          ctx.globalAlpha = layer.opacity;
-          ctx.globalCompositeOperation =
-            layer.blendMode as GlobalCompositeOperation;
-          ctx.drawImage(layer.canvas, 0, 0, width, height);
-        }
-      });
+        layers.forEach((layer) => {
+          if (layer.visible) {
+            ctx.globalAlpha = layer.opacity;
+            ctx.globalCompositeOperation =
+              layer.blendMode as GlobalCompositeOperation;
+            ctx.drawImage(layer.canvas, 0, 0, width, height);
+          }
+        });
 
-      return canvas.toDataURL("image/png");
-    },
-    paintAt: (x: number, y: number, color?: string) => {
-      if (color) setSelectedColor(color);
-      // We need to call the paint function from the main component scope
-      // This will be handled by the main component's paint function
-      if (activeLayer && !activeLayer.locked) {
-        const ctx = activeLayer.canvas.getContext("2d");
-        if (!ctx) return;
+        return canvas.toDataURL("image/png");
+      },
+      paintAt: (x: number, y: number, color?: string) => {
+        if (color) setSelectedColor(color);
+        // We need to call the paint function from the main component scope
+        // This will be handled by the main component's paint function
+        if (activeLayer && !activeLayer.locked) {
+          const ctx = activeLayer.canvas.getContext("2d");
+          if (!ctx) return;
 
-        ctx.globalAlpha = brushOpacity;
-        ctx.fillStyle = color || selectedColor;
+          ctx.globalAlpha = brushOpacity;
+          ctx.fillStyle = color || selectedColor;
 
-        if (currentMode === "grid") {
-          // Grid mode - snap to pixel grid
-          const gridX = Math.floor(x / currentPixelSize) * currentPixelSize;
-          const gridY = Math.floor(y / currentPixelSize) * currentPixelSize;
-          ctx.fillRect(gridX, gridY, currentPixelSize, currentPixelSize);
-        } else {
-          // Free mode - smooth painting
-          const gradient = ctx.createRadialGradient(
-            x,
-            y,
-            0,
-            x,
-            y,
-            brushSize * brushHardness
-          );
-          gradient.addColorStop(0, color || selectedColor);
-          gradient.addColorStop(1, "transparent");
+          if (currentMode === "grid") {
+            // Grid mode - snap to pixel grid
+            const gridX = Math.floor(x / currentPixelSize) * currentPixelSize;
+            const gridY = Math.floor(y / currentPixelSize) * currentPixelSize;
+            ctx.fillRect(gridX, gridY, currentPixelSize, currentPixelSize);
+          } else {
+            // Free mode - smooth painting
+            const gradient = ctx.createRadialGradient(
+              x,
+              y,
+              0,
+              x,
+              y,
+              brushSize * brushHardness
+            );
+            gradient.addColorStop(0, color || selectedColor);
+            gradient.addColorStop(1, "transparent");
 
-          ctx.fillStyle = gradient;
-          ctx.beginPath();
-          ctx.arc(x, y, brushSize, 0, Math.PI * 2);
-          ctx.fill();
-        }
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x, y, brushSize, 0, Math.PI * 2);
+            ctx.fill();
+          }
 
-        // Update the texture
-        activeLayer.texture.needsUpdate = true;
-
-        // Force canvas re-render by updating layers state
-        setLayers((prevLayers) => [...prevLayers]);
-      }
-    },
-    clearLayer: (layerId?: string) => {
-      const targetLayer = layerId
-        ? layers.find((l) => l.id === layerId)
-        : activeLayer;
-      if (targetLayer) {
-        const ctx = targetLayer.canvas.getContext("2d");
-        if (ctx) {
-          ctx.clearRect(0, 0, width, height);
-          targetLayer.texture.needsUpdate = true;
+          // Update the texture
+          activeLayer.texture.needsUpdate = true;
 
           // Force canvas re-render by updating layers state
           setLayers((prevLayers) => [...prevLayers]);
         }
-      }
-    },
-  };
+      },
+      clearLayer: (layerId?: string) => {
+        const targetLayer = layerId
+          ? layers.find((l) => l.id === layerId)
+          : activeLayer;
+        if (targetLayer) {
+          const ctx = targetLayer.canvas.getContext("2d");
+          if (ctx) {
+            ctx.clearRect(0, 0, width, height);
+            targetLayer.texture.needsUpdate = true;
+
+            // Force canvas re-render by updating layers state
+            setLayers((prevLayers) => [...prevLayers]);
+          }
+        }
+      },
+    }),
+    [
+      setCurrentMode,
+      setCurrentPixelSize,
+      setSelectedColor,
+      setBrushSize,
+      setBrushOpacity,
+      setBrushHardness,
+      addLayer,
+      deleteLayer,
+      setActiveLayerId,
+      layers,
+      activeLayer,
+      brushOpacity,
+      selectedColor,
+      currentMode,
+      currentPixelSize,
+      brushSize,
+      brushHardness,
+      width,
+      height,
+      setLayers,
+    ]
+  );
 
   // Expose methods for programmatic access
   useEffect(() => {

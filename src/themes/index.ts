@@ -23,10 +23,18 @@ export {
 } from './colors';
 
 export { 
-  ThemeProvider, 
+  ThemeProvider
+} from './themeProvider';
+
+export { 
+  ThemeContext,
+  ThemeContextType
+} from './themeContext';
+
+export { 
   useTheme, 
   useThemeStyles 
-} from './ThemeContext';
+} from './themeHooks';
 
 export { 
   ThemeSelector, 

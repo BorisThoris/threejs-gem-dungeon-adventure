@@ -2,6 +2,7 @@
     "name": "threejs-gem-game",
     "private": true,
     "version": "1.0.0",
+    "type": "module",
     "description": "A 3D dungeon exploration game built with Three.js and React",
     "author": "ThreeJS Gem Game Developer",
     "main": "electron/main.js",

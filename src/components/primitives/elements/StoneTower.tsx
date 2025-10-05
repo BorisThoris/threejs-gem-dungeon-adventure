@@ -49,8 +49,8 @@ const StoneTower: React.FC<StoneTowerProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,
+  onPrototypeAction: _onPrototypeAction,
 }) => {
   // Load stone texture
   const [stoneTexture, setStoneTexture] = useState(null);
@@ -346,4 +346,5 @@ const StoneTower: React.FC<StoneTowerProps> = ({
   );
 };
 
-export default withOptionalBreaking(StoneTower);
+const StoneTowerWithBreaking = withOptionalBreaking(StoneTower);
+export default StoneTowerWithBreaking;

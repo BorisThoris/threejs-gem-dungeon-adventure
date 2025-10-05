@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 
 interface DisposableObject {
@@ -19,7 +19,7 @@ export const useThreeDisposal = () => {
     disposables.current.delete(obj);
   };
 
-  const disposeObject = (obj: DisposableObject) => {
+  const disposeObject = useCallback((obj: DisposableObject) => {
     try {
       // Dispose geometry
       if (obj.geometry) {
@@ -47,15 +47,16 @@ export const useThreeDisposal = () => {
     } catch (error) {
       console.warn('Error disposing Three.js object:', error);
     }
-  };
+  }, []);
 
   // Cleanup all disposables on unmount
   useEffect(() => {
+    const currentDisposables = disposables.current;
     return () => {
-      disposables.current.forEach(disposeObject);
-      disposables.current.clear();
+      currentDisposables.forEach(disposeObject);
+      currentDisposables.clear();
     };
-  }, []);
+  }, [disposeObject]);
 
   return {
     addDisposable,
@@ -71,6 +72,13 @@ export const useAutoDisposal = <T extends DisposableObject>(
 ): T => {
   const { addDisposable, removeDisposable } = useThreeDisposal();
   const objectRef = useRef<T | null>(null);
+  const factoryRef = useRef(factory);
+
+  // Update factory ref when deps change
+  useEffect(() => {
+    factoryRef.current = factory;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 
   useEffect(() => {
     // Dispose previous object
@@ -79,7 +87,7 @@ export const useAutoDisposal = <T extends DisposableObject>(
     }
 
     // Create new object
-    const newObject = factory();
+    const newObject = factoryRef.current();
     objectRef.current = newObject;
     addDisposable(newObject);
 
@@ -88,7 +96,7 @@ export const useAutoDisposal = <T extends DisposableObject>(
         removeDisposable(objectRef.current);
       }
     };
-  }, deps);
+  }, [addDisposable, removeDisposable]);
 
   return objectRef.current!;
 };

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import type { DoorState, DoorType } from '../components/Door';
-import { canTransition } from '../components/Door';
+import type { DoorState, DoorType } from '../components/doorUtils';
+import { canTransition } from '../components/doorUtils';
 
 export interface DoorUnlock {
   doorId: string;

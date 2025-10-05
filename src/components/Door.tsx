@@ -3,63 +3,13 @@ import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-
-export type DoorState =
-  | "closed"
-  | "opening"
-  | "open"
-  | "closing"
-  | "locked"
-  | "broken";
-export type DoorType = "standard" | "locked" | "secret";
-
-// Door state transition validation
-export const canTransition = (from: DoorState, to: DoorState): boolean => {
-  const validTransitions: Record<DoorState, DoorState[]> = {
-    closed: ["opening", "locked"],
-    opening: ["open"],
-    open: ["closing"],
-    closing: ["closed"],
-    locked: ["closed"],
-    broken: [], // Cannot transition from broken
-  };
-  return validTransitions[from]?.includes(to) || false;
-};
-
-// Door behavior configuration
-export interface DoorBehavior {
-  requiresInteraction: boolean;
-  canAutoClose: boolean;
-  requiresKey: boolean;
-  interactionType: "standard" | "hidden";
-  autoCloseDelay?: number;
-}
-
-export const getDoorBehavior = (type: DoorType): DoorBehavior => {
-  switch (type) {
-    case "locked":
-      return {
-        requiresInteraction: true,
-        canAutoClose: false,
-        requiresKey: true,
-        interactionType: "standard",
-      };
-    case "secret":
-      return {
-        requiresInteraction: true,
-        canAutoClose: true,
-        requiresKey: true,
-        interactionType: "hidden",
-      };
-    default:
-      return {
-        requiresInteraction: true,
-        canAutoClose: true,
-        requiresKey: false,
-        interactionType: "standard",
-      };
-  }
-};
+import {
+  type DoorState,
+  type DoorType,
+  type DoorBehavior,
+  canTransition,
+  getDoorBehavior,
+} from "./doorUtils";
 
 // Door animation hook
 const useDoorAnimation = (state: DoorState, speed: number = 1) => {

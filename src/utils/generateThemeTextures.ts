@@ -119,15 +119,16 @@ const createPixelArtPattern = (width: number, height: number, colors: string[], 
         case 'checker':
           colorIndex = (x + y) % 2;
           break;
-        case 'dots':
+        case 'dots': {
           const dotX = x % 4;
           const dotY = y % 4;
           colorIndex = (dotX === 1 || dotX === 2) && (dotY === 1 || dotY === 2) ? 1 : 0;
           break;
+        }
         case 'stripes':
           colorIndex = x % 4 < 2 ? 0 : 1;
           break;
-        case 'bricks':
+        case 'bricks': {
           const brickY = Math.floor(y / 3);
           const brickX = Math.floor(x / 4);
           const offsetX = brickY % 2 === 0 ? 0 : 2;
@@ -136,6 +137,7 @@ const createPixelArtPattern = (width: number, height: number, colors: string[], 
           const isMortar = (y % 3 === 0) || (adjustedX % 4 === 0) || (adjustedX % 4 === 3);
           colorIndex = isMortar ? 1 : 0;
           break;
+        }
       }
       
       pixels.push(colors[colorIndex % colors.length]);

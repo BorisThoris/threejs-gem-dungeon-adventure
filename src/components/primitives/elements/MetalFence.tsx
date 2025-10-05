@@ -45,8 +45,8 @@ const MetalFence: React.FC<MetalFenceProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,
+  onPrototypeAction: _onPrototypeAction,
 }) => {
   // Load metal texture
   const [metalTexture, setMetalTexture] = useState(null);
@@ -429,4 +429,5 @@ const MetalFence: React.FC<MetalFenceProps> = ({
   );
 };
 
-export default withOptionalBreaking(MetalFence);
+const MetalFenceWithBreaking = withOptionalBreaking(MetalFence);
+export default MetalFenceWithBreaking;

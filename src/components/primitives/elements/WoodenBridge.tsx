@@ -45,8 +45,8 @@ const WoodenBridge: React.FC<WoodenBridgeProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,  
+  onPrototypeAction: _onPrototypeAction,  
 }) => {
   // Load wood texture
   const [woodTexture, setWoodTexture] = useState(null);

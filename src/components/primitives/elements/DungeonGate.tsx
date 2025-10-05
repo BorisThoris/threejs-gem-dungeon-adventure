@@ -62,8 +62,8 @@ const DungeonGate: React.FC<DungeonGateProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,
+  onPrototypeAction: _onPrototypeAction,
 }) => {
   const [stoneTexture, setStoneTexture] = useState<THREE.Texture | null>(null);
   const [metalTexture, setMetalTexture] = useState<THREE.Texture | null>(null);
@@ -214,7 +214,6 @@ const DungeonGate: React.FC<DungeonGateProps> = ({
   }, [
     width,
     height,
-    depth,
     hasPortcullis,
     hasChains,
     chainCount,
@@ -225,7 +224,6 @@ const DungeonGate: React.FC<DungeonGateProps> = ({
     hasSpikes,
     spikeCount,
     hasTorches,
-    torchCount,
   ]);
 
   // Material configurations

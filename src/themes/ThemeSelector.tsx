@@ -1,5 +1,5 @@
 import React from "react";
-import { useTheme } from "./ThemeContext";
+import { useTheme } from "./themeHooks";
 import { THEMES } from "./colors";
 
 interface ThemeSelectorProps {

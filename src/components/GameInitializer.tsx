@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
@@ -35,7 +35,7 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
   const [showGame, setShowGame] = useState(false);
 
   // Pre-load textures
-  const preloadTextures = async () => {
+  const preloadTextures = useCallback(async () => {
     setStatus("Loading textures...");
     try {
       await texturePreloader.preloadAll();
@@ -47,10 +47,10 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
       setProgress(0.3);
       setStepComplete("textures", true);
     }
-  };
+  }, [setStatus, setProgress, setStepComplete]);
 
   // Pre-load room assets
-  const preloadRoomAssets = async () => {
+  const preloadRoomAssets = useCallback(async () => {
     if (!currentMap) return;
 
     setStatus("Pre-loading rooms...");
@@ -91,10 +91,10 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
       // Failed to preload some rooms
       setStepComplete("rooms", true);
     }
-  };
+  }, [currentMap, loadRoom, setStatus, setProgress, setStepComplete]);
 
   // Initialize game systems
-  const initializeGameSystems = async () => {
+  const initializeGameSystems = useCallback(async () => {
     setStatus("Initializing game systems...");
 
     // Reset game store to initial state
@@ -106,10 +106,10 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
     setProgress(0.1);
 
     setStepComplete("systems", true);
-  };
+  }, [resetGame, setStatus, setProgress, setStepComplete]);
 
   // Cache game data
-  const cacheGameData = async () => {
+  const cacheGameData = useCallback(async () => {
     setStatus("Caching game data...");
 
     // Cache room configurations
@@ -126,7 +126,7 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
 
     setProgress(0.8);
     setStepComplete("cache", true);
-  };
+  }, [currentMap, setStatus, setProgress, setStepComplete]);
 
   // Main initialization
   useEffect(() => {
@@ -183,6 +183,10 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
     setComplete,
     setError,
     setStepComplete,
+    cacheGameData,
+    initializeGameSystems,
+    preloadRoomAssets,
+    preloadTextures,
   ]);
 
   // Debug logging

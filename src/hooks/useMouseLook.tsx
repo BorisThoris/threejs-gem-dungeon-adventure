@@ -190,7 +190,7 @@ export const useMouseLook = () => {
       window.removeEventListener("playerTeleport", handleTeleport);
       offSetRotation?.();
     };
-  }, [camera]);
+  }, [camera, isElectron]);
 
   return {
     isPointerLocked: isPointerLocked.current,

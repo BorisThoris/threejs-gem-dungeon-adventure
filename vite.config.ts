@@ -11,11 +11,12 @@ export default defineConfig({
     }),
     eslint({
       cache: false,
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: ['node_modules', 'dist'],
+      include: ['src/**/*.{ts,tsx}', 'src/**/*.{js,jsx}'],
+      exclude: ['node_modules', 'dist', 'scripts/**', 'code_examples/**'],
       lintOnStart: true,
-      emitError: true, // Show errors in dev mode
-      emitWarning: true, // Show warnings in dev mode
+      emitError: true,
+      emitWarning: true,
+      formatter: 'stylish',
     })
   ],
   base: './', // Important for Electron

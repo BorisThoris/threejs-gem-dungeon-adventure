@@ -47,8 +47,8 @@ const ConcreteFoundation: React.FC<ConcreteFoundationProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,
+  onPrototypeAction: _onPrototypeAction,
 }) => {
   // Load concrete texture
   const [concreteTexture, setConcreteTexture] = useState(null);
@@ -471,4 +471,5 @@ const ConcreteFoundation: React.FC<ConcreteFoundationProps> = ({
   );
 };
 
-export default withOptionalBreaking(ConcreteFoundation);
+const ConcreteFoundationWithBreaking = withOptionalBreaking(ConcreteFoundation);
+export default ConcreteFoundationWithBreaking;

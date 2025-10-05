@@ -61,7 +61,7 @@ export function generateEntryPoints(
       );
       break;
 
-    case 'octagon':
+    case 'octagon': {
       // Octagon - 8 entry points
       const offset = roomSize / 3;
       entryPoints.push(
@@ -76,6 +76,7 @@ export function generateEntryPoints(
         createEntry('south', -offset, roomSize / 2)
       );
       break;
+    }
 
     case 'triangle':
       // Triangle - 3 entry points

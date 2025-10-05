@@ -57,12 +57,12 @@ import ParticleSystem from "./ParticleSystem";
 // Room configuration interface
 interface RoomConfig {
   type: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   component: React.ComponentType<any>;
   title: string;
   emoji: string;
   description: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   props?: any;
   availableActions?: ActionCard[];
   editableProps?: PropConfig[];
@@ -1095,7 +1095,7 @@ const ELEMENT_CONFIGS: RoomConfig[] = [
 // Props Editor Component
 const PropsEditor: React.FC<{
   config: RoomConfig;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   onPropsChange: (props: any) => void;
 }> = ({ config, onPropsChange }) => {
   const [localProps, setLocalProps] = useState(config.props || {});
@@ -1269,7 +1269,7 @@ const GridHelper: React.FC = () => {
 const EditorScene: React.FC<{
   selectedType: string;
   selectedCategory: "rooms" | "biomes" | "objects" | "elements";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   currentProps: any;
   showActionCards: boolean;
   activeTab: "demo" | "game";
@@ -1366,7 +1366,7 @@ const ThreeDEditor: React.FC = () => {
   const [cameraPosition, setCameraPosition] = useState<
     [number, number, number]
   >([10, 10, 10]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const [currentProps, setCurrentProps] = useState<any>({});
   const [showPropsEditor, setShowPropsEditor] = useState<boolean>(false);
   const [showRoomInfo, setShowRoomInfo] = useState<boolean>(false);
@@ -1424,7 +1424,7 @@ const ThreeDEditor: React.FC = () => {
     if (selectedConfig) {
       setCurrentProps(selectedConfig.props || {});
     }
-  }, [selectedType, selectedCategory]);
+  }, [selectedType, selectedCategory, activeTab]);
 
   const configs =
     selectedCategory === "rooms"

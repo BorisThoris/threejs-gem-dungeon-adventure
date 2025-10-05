@@ -94,11 +94,7 @@ const EnhancedRoomTransition: React.FC<EnhancedRoomTransitionProps> = ({
           };
         });
 
-        if (
-          transitionState.overlayOpacity > 0 ||
-          transitionState.textOpacity > 0 ||
-          transitionState.particleOpacity > 0
-        ) {
+        if (newOpacity > 0 || newTextOpacity > 0 || newParticleOpacity > 0) {
           setTimeout(fadeOut, 16); // ~60fps
         }
       };
@@ -122,10 +118,7 @@ const EnhancedRoomTransition: React.FC<EnhancedRoomTransitionProps> = ({
           };
         });
 
-        if (
-          transitionState.overlayOpacity < 0.9 ||
-          transitionState.textOpacity < 1
-        ) {
+        if (newOverlayOpacity < 0.9 || newTextOpacity < 1) {
           setTimeout(fadeIn, 16); // ~60fps
         }
       };

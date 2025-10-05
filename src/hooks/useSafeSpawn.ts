@@ -164,7 +164,7 @@ export const useSafeSpawn = (options: SafeSpawnOptions = {}) => {
       isSafe: false,
       attempts,
     };
-  }, [world, isPositionSafe, maxAttempts, searchRadius, searchHeight, stepSize]);
+  }, [world, isPositionSafe, maxAttempts, searchRadius, searchHeight, stepSize, playerHeight]);
 
   // Check if current position is safe and move if needed
   const ensureSafePosition = useCallback((

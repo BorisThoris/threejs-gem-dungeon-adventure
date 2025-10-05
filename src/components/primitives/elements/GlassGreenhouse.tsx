@@ -51,8 +51,8 @@ const GlassGreenhouse: React.FC<GlassGreenhouseProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
-  prototypeId: _prototypeId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  onPrototypeAction: _onPrototypeAction, // eslint-disable-line @typescript-eslint/no-unused-vars
+  prototypeId: _prototypeId,
+  onPrototypeAction: _onPrototypeAction,
 }) => {
   // Load glass texture
   const [glassTexture, setGlassTexture] = useState(null);
@@ -690,4 +690,5 @@ const GlassGreenhouse: React.FC<GlassGreenhouseProps> = ({
   );
 };
 
-export default withOptionalBreaking(GlassGreenhouse);
+const GlassGreenhouseWithBreaking = withOptionalBreaking(GlassGreenhouse);
+export default GlassGreenhouseWithBreaking;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import useGameStore from "../../store/gameStore";
 import { useGameTimer } from "../../hooks/useGameTimer";
 
@@ -45,12 +45,12 @@ const OptimizedNumberPuzzle: React.FC<OptimizedNumberPuzzleProps> = ({
   });
 
   // Generate new numbers
-  const generateNewNumbers = () => {
+  const generateNewNumbers = useCallback(() => {
     return Array.from(
       { length: sequenceLength },
       () => Math.floor(Math.random() * numberRange) + 1
     );
-  };
+  }, [sequenceLength, numberRange]);
 
   // Initialize puzzle
   useEffect(() => {
@@ -65,7 +65,7 @@ const OptimizedNumberPuzzle: React.FC<OptimizedNumberPuzzleProps> = ({
     setTimeout(() => {
       start();
     }, 1000);
-  }, [difficulty, start]);
+  }, [difficulty, start, generateNewNumbers]);
 
   // Hide numbers after 5 seconds
   useEffect(() => {

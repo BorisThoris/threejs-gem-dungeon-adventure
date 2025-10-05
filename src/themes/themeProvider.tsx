@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import type { ColorTheme } from "./colors";
 import { THEMES, DEFAULT_THEME } from "./colors";
-import { ThemeContext, ThemeContextType } from "./themeContext";
+import { ThemeContext, type ThemeContextType } from "./themeContext";
 
 interface ThemeProviderProps {
   children: ReactNode;

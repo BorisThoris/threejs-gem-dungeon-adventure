@@ -1,28 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useTheme } from "../themes";
-
-// Texture definition interface for preset textures
-export interface PresetTextureDefinition {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  width: number;
-  height: number;
-  filename: string;
-  previewFilename: string;
-  url: string;
-  previewUrl: string;
-}
-
-// Texture categories
-export const TEXTURE_CATEGORIES = {
-  NATURAL: "Natural",
-  BUILDING: "Building",
-  PIXEL_ART: "Pixel Art",
-  PATTERNS: "Patterns",
-  ABSTRACT: "Abstract",
-};
+import {
+  type PresetTextureDefinition,
+  TEXTURE_CATEGORIES,
+} from "./presetTextureLibraryTypes";
 
 // Preset texture library component
 interface PresetTextureLibraryProps {
@@ -50,16 +31,16 @@ export const PresetTextureLibrary: React.FC<PresetTextureLibraryProps> = ({
     const loadTextures = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/preset-textures/manifest.json');
+        const response = await fetch("/preset-textures/manifest.json");
         if (!response.ok) {
-          throw new Error('Failed to load texture manifest');
+          throw new Error("Failed to load texture manifest");
         }
         const manifest = await response.json();
         setTextures(manifest);
         setError(null);
       } catch (err) {
-        console.error('Failed to load preset textures:', err);
-        setError('Failed to load texture library');
+        console.error("Failed to load preset textures:", err);
+        setError("Failed to load texture library");
         // Fallback to empty array
         setTextures([]);
       } finally {
@@ -81,10 +62,13 @@ export const PresetTextureLibrary: React.FC<PresetTextureLibraryProps> = ({
   });
 
   // Handle texture click
-  const handleTextureClick = useCallback((texture: PresetTextureDefinition) => {
-    onTextureSelect(texture);
-    onTextureInject(texture.url, texture.name);
-  }, [onTextureSelect, onTextureInject]);
+  const handleTextureClick = useCallback(
+    (texture: PresetTextureDefinition) => {
+      onTextureSelect(texture);
+      onTextureInject(texture.url, texture.name);
+    },
+    [onTextureSelect, onTextureInject]
+  );
 
   // Get unique categories
   const categories = [
@@ -128,7 +112,13 @@ export const PresetTextureLibrary: React.FC<PresetTextureLibraryProps> = ({
         }}
       >
         <div>❌ {error}</div>
-        <div style={{ fontSize: "12px", color: currentTheme.textSecondary, marginTop: "8px" }}>
+        <div
+          style={{
+            fontSize: "12px",
+            color: currentTheme.textSecondary,
+            marginTop: "8px",
+          }}
+        >
           Run <code>npm run generate-textures</code> to create preset textures
         </div>
       </div>
@@ -258,7 +248,10 @@ export const PresetTextureLibrary: React.FC<PresetTextureLibraryProps> = ({
                   color: ${currentTheme.textSecondary};
                 `;
                 fallback.textContent = "?";
-                e.currentTarget.parentNode?.insertBefore(fallback, e.currentTarget);
+                e.currentTarget.parentNode?.insertBefore(
+                  fallback,
+                  e.currentTarget
+                );
               }}
             />
             <div

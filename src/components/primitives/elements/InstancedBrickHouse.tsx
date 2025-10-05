@@ -403,4 +403,6 @@ const InstancedBrickHouse: React.FC<InstancedBrickHouseProps> = ({
   );
 };
 
-export default withOptionalBreaking(InstancedBrickHouse);
+const InstancedBrickHouseWithBreaking =
+  withOptionalBreaking(InstancedBrickHouse);
+export default InstancedBrickHouseWithBreaking;

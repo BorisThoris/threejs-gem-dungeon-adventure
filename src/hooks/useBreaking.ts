@@ -143,7 +143,7 @@ export const useBreaking = (options: BreakingOptions = {}) => {
     } catch (error) {
       console.error('Error breaking object:', error);
     }
-  }, [isBroken, minSizeForFracture, maxSizeForFracture, fractureImpulse, onFragmentCreated]);
+  }, [isBroken, minSizeForFracture, maxSizeForFracture, onFragmentCreated]);
 
   const reset = useCallback(() => {
     setFragments([]);
