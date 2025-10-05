@@ -14,7 +14,6 @@ import ChallengeBiome from "../components/primitives/game-rooms/ChallengeBiome";
 import LibraryUpgradeBiome from "../components/primitives/game-rooms/LibraryUpgradeBiome";
 import PortalBiome from "../components/primitives/game-rooms/PortalBiome";
 import ArenaBiome from "../components/primitives/game-rooms/ArenaBiome";
-import EnemyBiome from "../components/primitives/game-rooms/EnemyBiome";
 import EndBiome from "../components/primitives/game-rooms/EndBiome";
 import SpecialBiome from "../components/primitives/game-rooms/SpecialBiome";
 
@@ -96,7 +95,7 @@ export const ROOM_DEFINITIONS: Record<string, RoomConfig> = {
     id: "challenge",
     name: "Challenge Room",
     component: ChallengeBiome,
-    doors: ["gym", "enemy"],
+    doors: ["gym", "arena"],
     spawnPosition: [0, 1.5, 0],
   },
   "library-upgrade": {
@@ -117,21 +116,14 @@ export const ROOM_DEFINITIONS: Record<string, RoomConfig> = {
     id: "arena",
     name: "Arena",
     component: ArenaBiome,
-    doors: ["boss", "enemy"],
-    spawnPosition: [0, 1.5, 0],
-  },
-  enemy: {
-    id: "enemy",
-    name: "Enemy Room",
-    component: EnemyBiome,
-    doors: ["challenge", "arena", "end"],
+    doors: ["boss", "end"],
     spawnPosition: [0, 1.5, 0],
   },
   end: {
     id: "end",
     name: "End Room",
     component: EndBiome,
-    doors: ["enemy"],
+    doors: ["arena"],
     spawnPosition: [0, 1.5, 0],
   },
   special: {

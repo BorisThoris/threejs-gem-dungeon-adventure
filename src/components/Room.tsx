@@ -27,7 +27,6 @@ import ArenaBiome from "./primitives/game-rooms/ArenaBiome";
 import BossBiome from "./primitives/game-rooms/BossBiome";
 import StartRoom from "./primitives/game-rooms/StartRoom";
 import EndBiome from "./primitives/game-rooms/EndBiome";
-import EnemyBiome from "./primitives/game-rooms/EnemyBiome";
 import RoomInteraction from "./RoomInteraction";
 import Door from "./Door";
 import RoomDecorator from "./primitives/elements/RoomDecorator";
@@ -523,8 +522,6 @@ const Room: React.FC<RoomProps> = memo(
           {room.type === RoomTypeValues.START && <StartRoom />}
 
           {room.type === RoomTypeValues.END && <EndBiome />}
-
-          {room.type === RoomTypeValues.ENEMY && <EnemyBiome />}
 
           {/* Fallback for other room types */}
           {![

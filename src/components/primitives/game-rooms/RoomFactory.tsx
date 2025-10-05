@@ -20,7 +20,6 @@ import ChallengeBiome from "./ChallengeBiome";
 import LibraryUpgradeBiome from "./LibraryUpgradeBiome";
 import PortalBiome from "./PortalBiome";
 import ArenaBiome from "./ArenaBiome";
-import EnemyBiome from "./EnemyBiome";
 import EndBiome from "./EndBiome";
 import SpecialBiome from "./SpecialBiome";
 import CorridorRoom from "./CorridorRoom";
@@ -135,12 +134,6 @@ const ROOM_CONFIGS: RoomConfig[] = [
     component: ArenaBiome,
     title: "⚔️ ARENA CONTENT ⚔️",
     emoji: "⚔️",
-  },
-  {
-    type: "enemy",
-    component: EnemyBiome,
-    title: "👾 ENEMY CONTENT 👾",
-    emoji: "👾",
   },
   {
     type: "end",

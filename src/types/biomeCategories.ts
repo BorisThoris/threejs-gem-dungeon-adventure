@@ -35,18 +35,6 @@ export const BIOME_CATEGORIES: BiomeCategory[] = [
     icon: "💰"
   },
   {
-    id: "combat",
-    name: "Combat & Challenge",
-    description: "Biomes designed for combat and challenging encounters",
-    biomes: [
-      "arena", "boss", "enemy", "challenge", "trap", "crypt",
-      "dungeon", "barracks", "colosseum", "amphitheater"
-    ],
-    weight: 0.2,
-    color: "#F44336",
-    icon: "⚔️"
-  },
-  {
     id: "puzzle",
     name: "Puzzle & Interaction",
     description: "Biomes with puzzles, mysteries, and interactive elements",
@@ -55,7 +43,7 @@ export const BIOME_CATEGORIES: BiomeCategory[] = [
       "ballroom", "special", "secret", "cursed-room", "devil-room",
       "angel-room", "memory-chamber"
     ],
-    weight: 0.15,
+    weight: 0.25,
     color: "#9C27B0",
     icon: "🧩"
   },
@@ -89,9 +77,10 @@ export const BIOME_CATEGORIES: BiomeCategory[] = [
     description: "Unique and special biomes with distinctive characteristics",
     biomes: [
       "end", "start", "nexus", "crossroads", "void", "abyss",
-      "underground", "subterranean", "pyramid", "ziggurat", "pagoda"
+      "underground", "subterranean", "pyramid", "ziggurat", "pagoda",
+      "arena", "boss", "challenge"
     ],
-    weight: 0.05,
+    weight: 0.15,
     color: "#E91E63",
     icon: "✨"
   }

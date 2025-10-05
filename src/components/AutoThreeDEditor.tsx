@@ -26,7 +26,6 @@ import BossBiome from "./primitives/game-rooms/BossBiome";
 import ChallengeBiome from "./primitives/game-rooms/ChallengeBiome";
 import CorridorRoom from "./primitives/game-rooms/CorridorRoom";
 import EndBiome from "./primitives/game-rooms/EndBiome";
-import EnemyBiome from "./primitives/game-rooms/EnemyBiome";
 import LibraryBiome from "./primitives/game-rooms/LibraryBiome";
 import PortalBiome from "./primitives/game-rooms/PortalBiome";
 import PuzzleBiome from "./primitives/game-rooms/PuzzleBiome";
@@ -322,7 +321,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Boss environment biome for rooms",
     props: { size: 10 },
     category: "biome",
-    subcategory: "combat",
+    subcategory: "special",
     editableProps: [
       {
         key: "size",
@@ -342,27 +341,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Arena environment biome for rooms",
     props: { size: 10 },
     category: "biome",
-    subcategory: "combat",
-    editableProps: [
-      {
-        key: "size",
-        label: "Room Size",
-        type: "number",
-        min: 5,
-        max: 20,
-        step: 1,
-      },
-    ],
-  },
-  {
-    type: "enemy",
-    component: EnemyBiome,
-    title: "Enemy Biome",
-    emoji: "👾",
-    description: "Enemy environment biome for rooms",
-    props: { size: 10 },
-    category: "biome",
-    subcategory: "combat",
+    subcategory: "special",
     editableProps: [
       {
         key: "size",
@@ -439,7 +418,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Challenge environment biome for rooms",
     props: { size: 10 },
     category: "biome",
-    subcategory: "combat",
+    subcategory: "special",
     editableProps: [
       {
         key: "size",
@@ -519,7 +498,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Trap environment biome for rooms",
     props: { size: 10 },
     category: "biome",
-    subcategory: "combat",
+    subcategory: "special",
     editableProps: [
       {
         key: "size",
@@ -539,7 +518,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     description: "Crypt environment biome for rooms",
     props: { size: 10 },
     category: "biome",
-    subcategory: "combat",
+    subcategory: "special",
     editableProps: [
       {
         key: "size",
@@ -3270,7 +3249,6 @@ const AutoThreeDEditor: React.FC = () => {
                 <option value="all">All Biomes</option>
                 <option value="buff">💪 Buff/Healing</option>
                 <option value="resource">💰 Resource/Economy</option>
-                <option value="combat">⚔️ Combat/Challenge</option>
                 <option value="puzzle">🧩 Puzzle/Interaction</option>
                 <option value="transport">🚀 Transportation</option>
                 <option value="obstacle">🚧 Obstacle/Architectural</option>

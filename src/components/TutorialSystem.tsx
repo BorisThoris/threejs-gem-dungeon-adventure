@@ -10,7 +10,6 @@ interface TutorialStep {
     | "room_enter"
     | "item_pickup"
     | "puzzle_start"
-    | "combat_start"
     | "boss_encounter"
     | "secret_discover"
     | "manual";
@@ -51,11 +50,11 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     completed: false,
   },
   {
-    id: "combat_basics",
-    title: "Combat",
-    description: "Click on enemies to attack them. Watch your health!",
+    id: "puzzle_basics",
+    title: "Puzzle",
+    description: "Solve puzzles to progress through rooms!",
     position: [0, 2, 0],
-    trigger: "combat_start",
+    trigger: "puzzle_start",
     completed: false,
   },
   {
@@ -113,9 +112,6 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
           break;
         case "puzzle_start":
           shouldShow = gameState.gamePhase === "puzzle";
-          break;
-        case "combat_start":
-          shouldShow = gameState.gamePhase === "combat";
           break;
         case "boss_encounter":
           shouldShow = gameState.gamePhase === "boss";

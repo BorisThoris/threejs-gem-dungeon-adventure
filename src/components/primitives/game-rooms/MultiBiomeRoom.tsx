@@ -21,7 +21,6 @@ import TreasureBiome from "./TreasureBiome";
 import PuzzleBiome from "./PuzzleBiome";
 import BossBiome from "./BossBiome";
 import ArenaBiome from "./ArenaBiome";
-import EnemyBiome from "./EnemyBiome";
 import EndBiome from "./EndBiome";
 import PortalBiome from "./PortalBiome";
 import SpecialBiome from "./SpecialBiome";
@@ -53,7 +52,6 @@ const BIOME_COMPONENTS = {
   puzzle: PuzzleBiome,
   boss: BossBiome,
   arena: ArenaBiome,
-  enemy: EnemyBiome,
   end: EndBiome,
   portal: PortalBiome,
   special: SpecialBiome,

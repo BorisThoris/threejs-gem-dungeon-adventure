@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { Item } from '../types/map';
-import type { Enemy } from '../components/Enemy';
 
 export interface PlayerDimensions {
   width: number; // Player width in units
@@ -45,13 +44,12 @@ interface GameState {
   isPreviewing: boolean;
   previewTime: number;
   maxPreviewTime: number;
-  enemies: Enemy[];
   currentRoomId: string | null;
   discoveredSecrets: string[];
   completedRooms: string[];
   currentFloor: number;
   totalScore: number;
-  gamePhase: 'exploration' | 'combat' | 'puzzle' | 'boss';
+  gamePhase: 'exploration' | 'puzzle' | 'boss';
 }
 
 interface GameActions {
@@ -87,11 +85,6 @@ interface GameActions {
   // Game mechanics
   startPreview: () => boolean;
   stopPreview: () => void;
-  
-  // Combat system
-  spawnEnemy: (enemy: Enemy) => void;
-  removeEnemy: (enemyId: string) => void;
-  damageEnemy: (enemyId: string, damage: number) => void;
   
   // Room system
   enterRoom: (roomId: string) => void;
@@ -187,7 +180,6 @@ const useGameStore = create<GameState & GameActions>((set, get) => ({
   isPreviewing: false,
   previewTime: 0,
   maxPreviewTime: 2,
-  enemies: [],
   currentRoomId: null,
   discoveredSecrets: [],
   completedRooms: [],
@@ -481,29 +473,6 @@ const useGameStore = create<GameState & GameActions>((set, get) => ({
     set({ isPreviewing: false, previewTime: 0 });
   },
 
-  // Combat system
-  spawnEnemy: (enemy) => {
-    set((state) => ({
-      enemies: [...state.enemies, enemy]
-    }));
-  },
-
-  removeEnemy: (enemyId) => {
-    set((state) => ({
-      enemies: state.enemies.filter(enemy => enemy.id !== enemyId)
-    }));
-  },
-
-  damageEnemy: (enemyId, damage) => {
-    set((state) => ({
-      enemies: state.enemies.map(enemy => 
-        enemy.id === enemyId 
-          ? { ...enemy, health: Math.max(0, enemy.health - damage) }
-          : enemy
-      )
-    }));
-  },
-
   // Room system
   enterRoom: (roomId) => {
     set({ currentRoomId: roomId });
@@ -564,7 +533,6 @@ const useGameStore = create<GameState & GameActions>((set, get) => ({
       inventory: [],
       isPreviewing: false,
       previewTime: 0,
-      enemies: [],
       currentRoomId: null,
       discoveredSecrets: [],
       completedRooms: [],

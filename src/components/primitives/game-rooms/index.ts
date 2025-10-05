@@ -19,7 +19,6 @@ export { default as BossBiome } from './BossBiome';
 export { default as ChallengeBiome } from './ChallengeBiome';
 export { default as ArenaBiome } from './ArenaBiome';
 export { default as PortalBiome } from './PortalBiome';
-export { default as EnemyBiome } from './EnemyBiome';
 export { default as CryptBiome } from './CryptBiome';
 export { default as TrapBiome } from './TrapBiome';
 export { default as SpecialBiome } from './SpecialBiome';

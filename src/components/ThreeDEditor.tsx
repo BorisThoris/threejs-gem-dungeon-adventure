@@ -15,7 +15,6 @@ import TreasureBiome from "./primitives/game-rooms/TreasureBiome";
 import PuzzleBiome from "./primitives/game-rooms/PuzzleBiome";
 import BossBiome from "./primitives/game-rooms/BossBiome";
 import ArenaBiome from "./primitives/game-rooms/ArenaBiome";
-import EnemyBiome from "./primitives/game-rooms/EnemyBiome";
 import EndBiome from "./primitives/game-rooms/EndBiome";
 import PortalBiome from "./primitives/game-rooms/PortalBiome";
 import TrapBiome from "./primitives/game-rooms/TrapBiome";
@@ -437,24 +436,6 @@ const BIOME_CONFIGS: RoomConfig[] = [
     title: "Arena Biome",
     emoji: "⚔️",
     description: "Arena environment biome for rooms",
-    props: { size: 10 },
-    editableProps: [
-      {
-        key: "size",
-        label: "Room Size",
-        type: "number",
-        min: 5,
-        max: 20,
-        step: 1,
-      },
-    ],
-  },
-  {
-    type: "enemy",
-    component: EnemyBiome,
-    title: "Enemy Biome",
-    emoji: "👾",
-    description: "Enemy environment biome for rooms",
     props: { size: 10 },
     editableProps: [
       {

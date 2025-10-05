@@ -72,7 +72,7 @@ export interface GameState {
   
   // Game State (from gameStore)
   playerStats: PlayerStats;
-  gamePhase: 'exploration' | 'combat' | 'puzzle' | 'boss';
+  gamePhase: 'exploration' | 'puzzle' | 'boss';
   
   // UI State (from breakingStore + wallToggleStore)
   globalBreakingEnabled: boolean;

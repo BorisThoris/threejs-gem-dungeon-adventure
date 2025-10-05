@@ -18,7 +18,7 @@ interface GameState {
   completedRooms: string[];
   currentFloor: number;
   totalScore: number;
-  gamePhase: 'exploration' | 'combat' | 'puzzle' | 'boss';
+  gamePhase: 'exploration' | 'puzzle' | 'boss';
 }
 ```
 
