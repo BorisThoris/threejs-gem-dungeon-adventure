@@ -103,7 +103,7 @@ export const useDoorProgressionStore = create<DoorProgression & DoorProgressionA
       });
       
       // Log state changes in development
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env?.DEV) {
         console.log('Door state change:', stateChange);
       }
       
@@ -134,7 +134,8 @@ export const useDoorProgressionStore = create<DoorProgression & DoorProgressionA
     },
     
     isDoorUnlocked: (doorId: string) => {
-      return get().unlockedDoors.has(doorId);
+      // All doors are unlocked by default
+      return true;
     },
     
     getDoorState: (doorId: string) => {
@@ -145,6 +146,18 @@ export const useDoorProgressionStore = create<DoorProgression & DoorProgressionA
       return get().doorTypes[doorId] || 'standard';
     },
     
+    getUnlockedDoors: () => {
+      return Array.from(get().unlockedDoors);
+    },
+    
+    getProgressionStats: () => {
+      const { unlockedDoors, unlockHistory, progressionLevel } = get();
+      return {
+        totalUnlocked: unlockedDoors.size,
+        progressionLevel,
+        recentUnlocks: unlockHistory.slice(-5) // Last 5 unlocks
+      };
+    },
     
     resetProgression: () => {
       set({

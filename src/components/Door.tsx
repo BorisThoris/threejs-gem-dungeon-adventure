@@ -228,6 +228,11 @@ const Door: React.FC<DoorProps> = React.memo(
       (e: any) => {
         e.stopPropagation();
 
+        // Only respond to left mouse button clicks (button 0)
+        if (e.button !== 0) {
+          return;
+        }
+
         if (!canInteract) {
           // Handle locked/broken door interaction
           console.log(`Door is ${currentState} - cannot interact`);
