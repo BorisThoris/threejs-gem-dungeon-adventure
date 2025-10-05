@@ -88,24 +88,24 @@ export const calculatePlayerSpawnPosition = (
   
   switch (direction) {
     case 'north':
-      // Entering from north door, spawn at south wall of target room, face north (into room)
+      // Spawn near north edge; face toward center (-Z)
       position = new THREE.Vector3(0, 0.5, roomHalfSize - entranceDistance);
-      rotation = new THREE.Euler(0, Math.PI, 0); // Face north (into room)
+      rotation = new THREE.Euler(0, 0, 0);
       break;
     case 'south':
-      // Entering from south door, spawn at north wall of target room, face south (into room)
+      // Spawn near south edge; face toward center (+Z)
       position = new THREE.Vector3(0, 0.5, -roomHalfSize + entranceDistance);
-      rotation = new THREE.Euler(0, 0, 0); // Face south (into room)
+      rotation = new THREE.Euler(0, Math.PI, 0);
       break;
     case 'east':
-      // Entering from east door, spawn at west wall of target room, face east (into room)
+      // Spawn near east edge; face toward center (-X)
       position = new THREE.Vector3(-roomHalfSize + entranceDistance, 0.5, 0);
-      rotation = new THREE.Euler(0, Math.PI / 2, 0); // Face east (into room)
+      rotation = new THREE.Euler(0, -Math.PI / 2, 0);
       break;
     case 'west':
-      // Entering from west door, spawn at east wall of target room, face west (into room)
+      // Spawn near west edge; face toward center (+X)
       position = new THREE.Vector3(roomHalfSize - entranceDistance, 0.5, 0);
-      rotation = new THREE.Euler(0, -Math.PI / 2, 0); // Face west (into room)
+      rotation = new THREE.Euler(0, Math.PI / 2, 0);
       break;
     default:
       position = new THREE.Vector3(0, 0.5, roomHalfSize - entranceDistance);
