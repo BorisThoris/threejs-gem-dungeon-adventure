@@ -65,6 +65,10 @@ export interface GameState {
   loadingProgress: number;
   transition: RoomTransition | null;
   
+  // Room Completion Tracking
+  visitedRooms: Set<string>;
+  completedRooms: Set<string>;
+  
   // Player Movement (from playerMovementStore)
   isMovementEnabled: boolean;
   fromRoomId: string | null;
@@ -88,6 +92,12 @@ export interface GameActions {
   completeTransition: () => void;
   updateRoomState: (roomId: string, updates: Partial<RoomInstance>) => void;
   setLoading: (isLoading: boolean, progress?: number) => void;
+  
+  // Room Completion Tracking
+  markRoomVisited: (roomId: string) => void;
+  markRoomCompleted: (roomId: string) => void;
+  isRoomVisited: (roomId: string) => boolean;
+  isRoomCompleted: (roomId: string) => boolean;
   
   // Player Movement
   enableMovement: () => void;
@@ -173,6 +183,8 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
     isLoading: false,
     loadingProgress: 0,
     transition: null,
+    visitedRooms: new Set(),
+    completedRooms: new Set(),
     isMovementEnabled: true,
     fromRoomId: null,
     toRoomId: null,
@@ -253,9 +265,15 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
         instance.isActive = id === roomId;
       });
 
+      // Mark room as visited when entering
+      const { visitedRooms } = get();
+      const newVisitedRooms = new Set(visitedRooms);
+      newVisitedRooms.add(roomId);
+
       set({ 
         currentRoomId: roomId,
-        roomInstances: newInstances 
+        roomInstances: newInstances,
+        visitedRooms: newVisitedRooms
       });
 
       // Emit room enter event to trigger room cards
@@ -348,6 +366,40 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
 
     setLoading: (isLoading: boolean, progress = 0) => {
       set({ isLoading, loadingProgress: progress });
+    },
+
+    // Room Completion Tracking Actions
+    markRoomVisited: (roomId: string) => {
+      const { visitedRooms } = get();
+      const newVisitedRooms = new Set(visitedRooms);
+      newVisitedRooms.add(roomId);
+      set({ visitedRooms: newVisitedRooms });
+    },
+
+    markRoomCompleted: (roomId: string) => {
+      const { completedRooms, visitedRooms } = get();
+      const newCompletedRooms = new Set(completedRooms);
+      const newVisitedRooms = new Set(visitedRooms);
+      
+      newCompletedRooms.add(roomId);
+      newVisitedRooms.add(roomId); // Completed rooms are also visited
+      
+      set({ 
+        completedRooms: newCompletedRooms,
+        visitedRooms: newVisitedRooms,
+        playerStats: {
+          ...get().playerStats,
+          roomsCompleted: newCompletedRooms.size
+        }
+      });
+    },
+
+    isRoomVisited: (roomId: string) => {
+      return get().visitedRooms.has(roomId);
+    },
+
+    isRoomCompleted: (roomId: string) => {
+      return get().completedRooms.has(roomId);
     },
 
     // Player Movement Actions
@@ -582,6 +634,8 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
         loadingProgress: 0,
         isTransitioning: false,
         transitionProgress: 0,
+        visitedRooms: new Set(),
+        completedRooms: new Set(),
         isMovementEnabled: true,
         fromRoomId: null,
         toRoomId: null,
@@ -608,5 +662,15 @@ export const usePlayerStats = () => useConsolidatedGameStore((state) => state.pl
 export const useGamePhase = () => useConsolidatedGameStore((state) => state.gamePhase);
 export const useBreakingEnabled = () => useConsolidatedGameStore((state) => state.globalBreakingEnabled);
 export const useWallsEnabled = () => useConsolidatedGameStore((state) => state.wallsEnabled);
+
+// Room completion tracking selectors
+export const useVisitedRooms = () => useConsolidatedGameStore((state) => state.visitedRooms);
+export const useCompletedRooms = () => useConsolidatedGameStore((state) => state.completedRooms);
+export const useRoomCompletionActions = () => useConsolidatedGameStore((state) => ({
+  markRoomVisited: state.markRoomVisited,
+  markRoomCompleted: state.markRoomCompleted,
+  isRoomVisited: state.isRoomVisited,
+  isRoomCompleted: state.isRoomCompleted,
+}));
 
 export default useConsolidatedGameStore;

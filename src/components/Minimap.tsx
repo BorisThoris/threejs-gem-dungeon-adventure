@@ -1,6 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 import useMapStore from "../store/mapStore";
-import { useConsolidatedGameStore } from "../store/consolidatedGameStore";
+import {
+  useConsolidatedGameStore,
+  useVisitedRooms,
+  useCompletedRooms,
+} from "../store/consolidatedGameStore";
 import { cameraRotationRefs } from "../utils/cameraRotationRef";
 import type { Room } from "../types/map";
 
@@ -10,8 +14,11 @@ interface MinimapProps {
 }
 
 const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
-  const { currentMap, visitedRooms } = useMapStore();
+  const { currentMap } = useMapStore();
   const { currentRoomId } = useConsolidatedGameStore();
+  const visitedRooms = useVisitedRooms();
+  const completedRooms = useCompletedRooms();
+  const { markRoomCompleted } = useConsolidatedGameStore();
   const [isMinimapVisible, setIsMinimapVisible] = useState(isVisible);
   const [isFullscreenMapVisible, setIsFullscreenMapVisible] = useState(false);
   const [cameraRotation, setCameraRotation] = useState({
@@ -31,7 +38,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
     return unsubscribe;
   }, []);
 
-  // Listen for Tab key to toggle fullscreen map and ESC to close
+  // Listen for Tab key to toggle fullscreen map, ESC to close, and C to complete current room
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Tab") {
@@ -40,12 +47,25 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
       } else if (event.key === "Escape" && isFullscreenMapVisible) {
         event.preventDefault();
         setIsFullscreenMapVisible(false);
+      } else if (
+        event.key === "c" &&
+        currentRoomId &&
+        !completedRooms.has(currentRoomId)
+      ) {
+        // Mark current room as completed (for testing)
+        markRoomCompleted(currentRoomId);
+        console.log(`Room ${currentRoomId} marked as completed!`);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFullscreenMapVisible]);
+  }, [
+    isFullscreenMapVisible,
+    currentRoomId,
+    completedRooms,
+    markRoomCompleted,
+  ]);
 
   // Calculate circular minimap data
   const minimapData = useMemo(() => {
@@ -161,9 +181,12 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
   const getRoomColor = (room: Room) => {
     const isCurrent = room.id === currentRoomId;
     const isVisited = visitedRooms.has(room.id);
+    const isCompleted = completedRooms.has(room.id);
 
     if (isCurrent) {
       return "#00ff00"; // Bright green for current room
+    } else if (isCompleted) {
+      return "#2E7D32"; // Darker green for completed rooms
     } else if (isVisited) {
       return "#4CAF50"; // Green for visited rooms
     } else {
@@ -289,7 +312,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
           zIndex: 1000,
           fontFamily: "monospace",
           color: "#fff",
-          pointerEvents: "auto",
+          pointerEvents: "none",
         }}
       >
         {/* Header */}
@@ -300,6 +323,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
             alignItems: "center",
             marginBottom: "10px",
             fontSize: "12px",
+            pointerEvents: "auto",
           }}
         >
           <span style={{ fontWeight: "bold" }}>MINIMAP</span>
@@ -325,7 +349,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
             width: "calc(100% - 20px)",
             height: "calc(100% - 20px)",
             margin: "0 auto",
-            pointerEvents: "auto",
+            pointerEvents: "none",
           }}
         >
           {/* Circular Background */}
@@ -444,10 +468,21 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                     return null;
                   }
 
-                  const isVisited =
-                    visitedRooms.has(room.id) || visitedRooms.has(connectionId);
-                  const connectionColor = isVisited ? "#d4af37" : "#8b4513";
-                  const connectionOpacity = isVisited ? 0.8 : 0.4;
+                  // Connection is lit if both rooms are visited OR if either room is completed
+                  const roomVisited = visitedRooms.has(room.id);
+                  const connectedRoomVisited = visitedRooms.has(connectionId);
+                  const roomCompleted = completedRooms.has(room.id);
+                  const connectedRoomCompleted =
+                    completedRooms.has(connectionId);
+
+                  const isConnectionLit =
+                    (roomVisited && connectedRoomVisited) ||
+                    roomCompleted ||
+                    connectedRoomCompleted;
+                  const connectionColor = isConnectionLit
+                    ? "#d4af37"
+                    : "#8b4513";
+                  const connectionOpacity = isConnectionLit ? 0.8 : 0.4;
 
                   return (
                     <div
@@ -468,7 +503,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                           connectedRoom.minimapX - room.minimapX
                         )}rad)`,
                         opacity: connectionOpacity,
-                        boxShadow: isVisited
+                        boxShadow: isConnectionLit
                           ? `0 0 4px ${connectionColor}`
                           : "none",
                       }}
@@ -580,9 +615,13 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
           }}
         >
           <div style={{ color: "#00ff00" }}>● Current Room</div>
+          <div style={{ color: "#2E7D32" }}>● Completed</div>
           <div style={{ color: "#4CAF50" }}>● Visited</div>
           <div style={{ color: "#666666" }}>● Unvisited</div>
           <div style={{ color: "#ff0000" }}>▲ Direction</div>
+          <div style={{ color: "#d4af37", marginTop: "4px", fontSize: "7px" }}>
+            Press 'C' to complete current room
+          </div>
         </div>
 
         {/* Room Info */}
@@ -677,6 +716,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
             fontFamily: "'Cinzel', 'Times New Roman', serif",
             color: "#d4af37",
             overflow: "hidden",
+            pointerEvents: "none",
           }}
         >
           {/* Header */}
@@ -692,6 +732,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
               fontWeight: "bold",
               textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
               zIndex: 10,
+              pointerEvents: "auto",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
@@ -721,6 +762,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto",
+              pointerEvents: "none",
             }}
           >
             {/* Map Background - Square */}
@@ -842,11 +884,20 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                     );
                     if (!connectedRoom) return null;
 
-                    const isVisited =
-                      visitedRooms.has(room.id) ||
-                      visitedRooms.has(connectionId);
-                    const connectionColor = isVisited ? "#d4af37" : "#8b4513";
-                    const connectionOpacity = isVisited ? 0.8 : 0.4;
+                    const roomVisited = visitedRooms.has(room.id);
+                    const connectedRoomVisited = visitedRooms.has(connectionId);
+                    const roomCompleted = completedRooms.has(room.id);
+                    const connectedRoomCompleted =
+                      completedRooms.has(connectionId);
+
+                    const isConnectionLit =
+                      (roomVisited && connectedRoomVisited) ||
+                      roomCompleted ||
+                      connectedRoomCompleted;
+                    const connectionColor = isConnectionLit
+                      ? "#d4af37"
+                      : "#8b4513";
+                    const connectionOpacity = isConnectionLit ? 0.8 : 0.4;
 
                     return (
                       <div
@@ -875,7 +926,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                             connectedRoom.minimapX - room.minimapX
                           )}rad)`,
                           opacity: connectionOpacity,
-                          boxShadow: isVisited
+                          boxShadow: isConnectionLit
                             ? `0 0 8px ${connectionColor}`
                             : "none",
                         }}
@@ -888,11 +939,14 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                 {fullscreenMapData.rooms.map((room) => {
                   const isCurrent = room.id === currentRoomId;
                   const isVisited = visitedRooms.has(room.id);
+                  const isCompleted = completedRooms.has(room.id);
 
                   const roomSize = isCurrent ? 40 : 28;
                   const roomColor = getRoomColor(room);
                   const roomGlow = isCurrent
                     ? "0 0 20px rgba(0, 255, 0, 0.6)"
+                    : isCompleted
+                    ? "0 0 15px rgba(46, 125, 50, 0.6)"
                     : isVisited
                     ? "0 0 10px rgba(76, 175, 80, 0.4)"
                     : "none";
@@ -920,12 +974,16 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                         justifyContent: "center",
                         fontSize: isCurrent ? "20px" : "16px",
                         cursor: "pointer",
+                        pointerEvents: "auto",
                         transition: "all 0.3s ease",
                         boxShadow: roomGlow,
                         animation: isCurrent ? "pulse 2s infinite" : "none",
-                        opacity: isVisited || isCurrent ? 1 : 0.6,
+                        opacity:
+                          isVisited || isCurrent || isCompleted ? 1 : 0.6,
                         filter:
-                          isVisited || isCurrent ? "none" : "grayscale(50%)",
+                          isVisited || isCurrent || isCompleted
+                            ? "none"
+                            : "grayscale(50%)",
                       }}
                       onMouseOver={(e) => {
                         e.currentTarget.style.transform = `translate(${
@@ -950,7 +1008,11 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                         // You could add navigation logic here if needed
                       }}
                       title={`${room.type.toUpperCase()} (${room.id})\n${
-                        isVisited ? "Explored" : "Unexplored"
+                        isCompleted
+                          ? "Completed"
+                          : isVisited
+                          ? "Explored"
+                          : "Unexplored"
                       }\n${room.connections?.length || 0} connections`}
                     >
                       {/* Room Icon with enhanced styling */}
@@ -958,7 +1020,9 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                         style={{
                           textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
                           filter:
-                            isVisited || isCurrent ? "none" : "brightness(0.7)",
+                            isVisited || isCurrent || isCompleted
+                              ? "none"
+                              : "brightness(0.7)",
                         }}
                       >
                         {getRoomIcon(room.type)}
@@ -1087,13 +1151,17 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                   fontSize: "12px",
                   opacity: 0.5,
                   marginTop: "2px",
-                  color: visitedRooms.has(fullscreenCurrentRoom.id)
+                  color: completedRooms.has(fullscreenCurrentRoom.id)
+                    ? "#2E7D32"
+                    : visitedRooms.has(fullscreenCurrentRoom.id)
                     ? "#4CAF50"
                     : "#8b4513",
                 }}
               >
                 Status:{" "}
-                {visitedRooms.has(fullscreenCurrentRoom.id)
+                {completedRooms.has(fullscreenCurrentRoom.id)
+                  ? "Completed"
+                  : visitedRooms.has(fullscreenCurrentRoom.id)
                   ? "Explored"
                   : "Unexplored"}
               </div>
