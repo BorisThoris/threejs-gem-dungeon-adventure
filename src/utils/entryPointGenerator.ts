@@ -107,6 +107,82 @@ export function generateEntryPoints(
       );
       break;
 
+    case 'L':
+      // L shape - entry points at the ends of each arm
+      entryPoints.push(
+        createEntry('north', 0, -roomSize / 2),
+        createEntry('east', roomSize / 2, 0),
+        createEntry('south', roomSize / 4, roomSize / 2),
+        createEntry('west', -roomSize / 2, roomSize / 4)
+      );
+      break;
+
+    case 'T':
+      // T shape - entry points at each end
+      entryPoints.push(
+        createEntry('north', 0, -roomSize / 2),
+        createEntry('east', roomSize / 2, 0),
+        createEntry('west', -roomSize / 2, 0),
+        createEntry('south', 0, roomSize / 2)
+      );
+      break;
+
+    case 'U':
+      // U shape - entry points at the open ends
+      entryPoints.push(
+        createEntry('north', -roomSize / 3, -roomSize / 2),
+        createEntry('north', roomSize / 3, -roomSize / 2),
+        createEntry('south', 0, roomSize / 2)
+      );
+      break;
+
+    case 'C':
+      // C shape - entry points at the open side
+      entryPoints.push(
+        createEntry('east', roomSize / 2, 0),
+        createEntry('north', 0, -roomSize / 2),
+        createEntry('south', 0, roomSize / 2)
+      );
+      break;
+
+    case 'H':
+      // H shape - entry points at the ends of each vertical line
+      entryPoints.push(
+        createEntry('north', -roomSize / 3, -roomSize / 2),
+        createEntry('north', roomSize / 3, -roomSize / 2),
+        createEntry('south', -roomSize / 3, roomSize / 2),
+        createEntry('south', roomSize / 3, roomSize / 2)
+      );
+      break;
+
+    case 'plus':
+      // Plus shape - entry points at each arm
+      entryPoints.push(
+        createEntry('north', 0, -roomSize / 2),
+        createEntry('south', 0, roomSize / 2),
+        createEntry('east', roomSize / 2, 0),
+        createEntry('west', -roomSize / 2, 0)
+      );
+      break;
+
+    case 'line':
+      // Line shape - entry points at the ends
+      entryPoints.push(
+        createEntry('north', 0, -roomSize / 2),
+        createEntry('south', 0, roomSize / 2)
+      );
+      break;
+
+    case 'block':
+      // Block shape (2x2) - entry points on all sides
+      entryPoints.push(
+        createEntry('north', 0, -roomSize / 2),
+        createEntry('south', 0, roomSize / 2),
+        createEntry('east', roomSize / 2, 0),
+        createEntry('west', -roomSize / 2, 0)
+      );
+      break;
+
     default:
       // Default to square configuration
       entryPoints.push(

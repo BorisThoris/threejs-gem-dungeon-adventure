@@ -197,14 +197,15 @@ const getRoomConfig = (roomType: string): RoomConfig | null => {
 };
 
 // Simple door positioning helper
-const getDoorPosition = (room: Room, targetRoom: Room, roomSize: number) => {
+const getDoorPosition = (room: Room, targetRoom: Room, roomSize?: number) => {
+  const actualRoomSize = roomSize || room.actualSize || room.size || 10;
   const dx = targetRoom.position.x - room.position.x;
   const dz = targetRoom.position.z - room.position.z;
 
   if (Math.abs(dx) > Math.abs(dz)) {
     // East or West
     return {
-      pos: [dx > 0 ? roomSize / 2 : -roomSize / 2, 0.5, 0] as [
+      pos: [dx > 0 ? actualRoomSize / 2 : -actualRoomSize / 2, 0.5, 0] as [
         number,
         number,
         number
@@ -223,7 +224,7 @@ const getDoorPosition = (room: Room, targetRoom: Room, roomSize: number) => {
   } else {
     // North or South
     return {
-      pos: [0, 0.5, dz > 0 ? roomSize / 2 : -roomSize / 2] as [
+      pos: [0, 0.5, dz > 0 ? actualRoomSize / 2 : -actualRoomSize / 2] as [
         number,
         number,
         number
@@ -268,7 +269,7 @@ const RoomFactory: React.FC<RoomFactoryProps> = ({
   }
 
   // Get room size early for door calculations
-  const roomSize = currentRoom?.size || 8;
+  const roomSize = currentRoom?.actualSize || currentRoom?.size || 8;
 
   // Prepare door data for keyboard interaction
   const doorData =

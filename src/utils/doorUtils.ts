@@ -18,12 +18,15 @@ export interface Room {
 export const calculateDoorPosition = (
   currentRoom: Room,
   targetRoom: Room,
-  roomSize: number = 10
+  roomSize?: number
 ): DoorPosition => {
+  // Use actual room size if available, otherwise fall back to default
+  const actualRoomSize = roomSize || currentRoom.actualSize || currentRoom.size || 10;
+  
   const dx = targetRoom.position.x - currentRoom.position.x;
   const dz = targetRoom.position.z - currentRoom.position.z;
   
-  const roomHalfSize = roomSize / 2;
+  const roomHalfSize = actualRoomSize / 2;
   const entranceDistance = 1;
   
   if (Math.abs(dx) > Math.abs(dz)) {
@@ -65,7 +68,7 @@ export const calculateDoorPosition = (
 export const getRoomDoorPositions = (
   room: Room,
   connectedRooms: Room[],
-  roomSize: number = 10
+  roomSize?: number
 ): Array<DoorPosition & { targetRoomId: string }> => {
   return connectedRooms.map(targetRoom => ({
     ...calculateDoorPosition(room, targetRoom, roomSize),

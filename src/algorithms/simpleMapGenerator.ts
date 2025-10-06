@@ -20,6 +20,11 @@ export interface SimpleMapConfig extends MapConfig {
   useMultiTileRooms?: boolean;
   multiTileChance?: number;
   multiTileMaxSegments?: number;
+  // Room size variations
+  useVariableRoomSizes?: boolean;
+  minRoomSizeMultiplier?: number; // Minimum size as multiplier of base roomSize
+  maxRoomSizeMultiplier?: number; // Maximum size as multiplier of base roomSize
+  sizeVariationChance?: number; // Chance for a room to have variable size
   // Advanced generation
   roomTypeWeights?: Record<string, number>;
   hubChance?: number; // chance to spawn a hub/atrium (plus/block)
@@ -43,6 +48,11 @@ export const defaultSimpleConfig: SimpleMapConfig = {
   useMultiTileRooms: true,
   multiTileChance: 0.35,
   multiTileMaxSegments: 4,
+  // Room size variations
+  useVariableRoomSizes: true,
+  minRoomSizeMultiplier: 1.0, // Same as current size
+  maxRoomSizeMultiplier: 2.0, // Up to 2x larger
+  sizeVariationChance: 0.4, // 40% chance for size variation
   roomTypeWeights: {
     normal: 1.0,
     treasure: 0.3,
@@ -109,6 +119,21 @@ export class SimpleMapGenerator {
     };
     
     const finalMap = ensureRoomConnectivity(map);
+    
+    // Log room generation summary
+    const variableRooms = finalMap.rooms.filter(r => r.actualSize && r.actualSize !== r.size).length;
+    const multiTileRooms = finalMap.rooms.filter(r => r.isMultiTile).length;
+    const shapeStats = finalMap.rooms.reduce((acc, room) => {
+      const shape = room.shape || 'square';
+      acc[shape] = (acc[shape] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    console.log(`\n🎉 Map Generation Complete!`);
+    console.log(`📊 Generated ${finalMap.rooms.length} rooms:`);
+    console.log(`   - Variable size rooms: ${variableRooms}`);
+    console.log(`   - Multi-tile rooms: ${multiTileRooms}`);
+    console.log(`   - Room shapes:`, shapeStats);
     
     return {
       rooms: finalMap.rooms,
@@ -183,8 +208,8 @@ export class SimpleMapGenerator {
     }
   }
 
-  private pickMultiTilePattern(): 'line' | 'L' | 'T' | 'plus' | 'block' {
-    const patterns: Array<'line' | 'L' | 'T' | 'plus' | 'block'> = ['line', 'L', 'T', 'plus', 'block'];
+  private pickMultiTilePattern(): 'line' | 'L' | 'T' | 'plus' | 'block' | 'U' | 'C' | 'H' {
+    const patterns: Array<'line' | 'L' | 'T' | 'plus' | 'block' | 'U' | 'C' | 'H'> = ['line', 'L', 'T', 'plus', 'block', 'U', 'C', 'H'];
     return patterns[Math.floor(Math.random() * patterns.length)];
   }
 
@@ -198,18 +223,24 @@ export class SimpleMapGenerator {
     return directions[Math.floor(Math.random() * directions.length)];
   }
 
-  private getShapeForPattern(pattern: 'line' | 'L' | 'T' | 'plus' | 'block'): 'square' | 'circle' | 'triangle' | 'hexagon' | 'octagon' | 'diamond' | 'star' | 'cross' | 'spiral' {
+  private getShapeForPattern(pattern: 'line' | 'L' | 'T' | 'plus' | 'block' | 'U' | 'C' | 'H'): 'square' | 'circle' | 'triangle' | 'hexagon' | 'octagon' | 'diamond' | 'star' | 'cross' | 'spiral' | 'L' | 'T' | 'U' | 'C' | 'H' | 'plus' | 'line' | 'block' {
     switch (pattern) {
       case 'line':
-        return 'square';
+        return 'line';
       case 'L':
-        return 'diamond';
+        return 'L';
       case 'T':
-        return 'cross';
+        return 'T';
       case 'plus':
-        return 'cross';
+        return 'plus';
       case 'block':
-        return 'square';
+        return 'block';
+      case 'U':
+        return 'U';
+      case 'C':
+        return 'C';
+      case 'H':
+        return 'H';
       default:
         return 'square';
     }
@@ -219,7 +250,7 @@ export class SimpleMapGenerator {
     startX: number,
     startZ: number,
     dir: { dx: number; dz: number },
-    pattern: 'line' | 'L' | 'T' | 'plus' | 'block'
+    pattern: 'line' | 'L' | 'T' | 'plus' | 'block' | 'U' | 'C' | 'H'
   ): Array<{ x: number; z: number }> {
     const tiles: Array<{ x: number; z: number }> = [{ x: startX, z: startZ }];
     const maxSeg = Math.max(2, Math.min(this.config.multiTileMaxSegments ?? 4, 6));
@@ -259,6 +290,35 @@ export class SimpleMapGenerator {
     tiles.push({ x: startX, z: startZ + 1 });
     tiles.push({ x: startX + 1, z: startZ + 1 });
     return tiles;
+
+    if (pattern === 'U') {
+      // U shape: horizontal line with vertical extensions
+      tiles.push({ x: startX + dir.dx, z: startZ + dir.dz });
+      tiles.push({ x: startX + dir.dx * 2, z: startZ + dir.dz * 2 });
+      tiles.push({ x: startX + dir.dx * 2 + perp.dx, z: startZ + dir.dz * 2 + perp.dz });
+      tiles.push({ x: startX + dir.dx + perp.dx, z: startZ + dir.dz + perp.dz });
+      return tiles;
+    }
+
+    if (pattern === 'C') {
+      // C shape: like U but with opening on one side
+      tiles.push({ x: startX + dir.dx, z: startZ + dir.dz });
+      tiles.push({ x: startX + dir.dx * 2, z: startZ + dir.dz * 2 });
+      tiles.push({ x: startX + dir.dx * 2 + perp.dx, z: startZ + dir.dz * 2 + perp.dz });
+      tiles.push({ x: startX + dir.dx + perp.dx, z: startZ + dir.dz + perp.dz });
+      tiles.push({ x: startX + perp.dx, z: startZ + perp.dz });
+      return tiles;
+    }
+
+    if (pattern === 'H') {
+      // H shape: two vertical lines connected by horizontal
+      tiles.push({ x: startX + perp.dx, z: startZ + perp.dz });
+      tiles.push({ x: startX - perp.dx, z: startZ - perp.dz });
+      tiles.push({ x: startX + perp.dx + dir.dx, z: startZ + perp.dz + dir.dz });
+      tiles.push({ x: startX - perp.dx + dir.dx, z: startZ - perp.dz + dir.dz });
+      tiles.push({ x: startX + dir.dx, z: startZ + dir.dz });
+      return tiles;
+    }
   }
 
   private addShapedRooms(): void {
@@ -453,6 +513,19 @@ export class SimpleMapGenerator {
       ? [0.8 + Math.random() * 0.4, 0.8 + Math.random() * 0.4, 0.8 + Math.random() * 0.4]
       : [1, 1, 1];
 
+    // Calculate room size variation
+    let actualRoomSize = this.config.roomSize;
+    let minSize = this.config.minRoomSizeMultiplier || 1.0;
+    let maxSize = this.config.maxRoomSizeMultiplier || 2.0;
+    
+    if (this.config.useVariableRoomSizes && 
+        Math.random() < (this.config.sizeVariationChance || 0.4) &&
+        type !== 'start' && type !== 'end') { // Don't vary start/end room sizes
+      const sizeMultiplier = minSize + Math.random() * (maxSize - minSize);
+      actualRoomSize = this.config.roomSize * sizeMultiplier;
+      console.log(`🔷 Variable size room created: ${roomId} (${type}) - Size: ${actualRoomSize.toFixed(1)} (${sizeMultiplier.toFixed(2)}x)`);
+    }
+
     // Check if this should be a multi-tile room
     const shouldBeMultiTile = this.config.useMultiTileRooms && 
       Math.random() < (this.config.multiTileChance || 0.35) &&
@@ -468,6 +541,7 @@ export class SimpleMapGenerator {
       const direction = this.getRandomDirection();
       tilePositions = this.computePatternTiles(x, z, direction, pattern);
       shape = this.getShapeForPattern(pattern);
+      console.log(`🔷 Multi-tile room created: ${roomId} (${type}) - Shape: ${shape} - Pattern: ${pattern} - Tiles: ${tilePositions.length}`);
     }
 
     const room: Room = {
@@ -476,6 +550,9 @@ export class SimpleMapGenerator {
       type,
       connections: [],
       size: this.config.roomSize, // Keep for backward compatibility
+      minSize: minSize,
+      maxSize: maxSize,
+      actualSize: actualRoomSize,
       isVisited: false,
       isCurrent: false,
       items: this.getItemsForRoomType(type),
@@ -501,7 +578,7 @@ export class SimpleMapGenerator {
             height: ep.height,
             isActive: false,
           }))
-        : generateEntryPoints(roomId, type, isMultiTile ? shape : 'square', this.config.roomSize),
+        : generateEntryPoints(roomId, type, isMultiTile ? shape : 'square', actualRoomSize),
     };
     
     this.rooms.push(room);

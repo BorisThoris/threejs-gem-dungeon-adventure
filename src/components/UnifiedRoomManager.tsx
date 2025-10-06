@@ -24,6 +24,7 @@ interface RoomData {
   id: string;
   name?: string;
   size?: number;
+  actualSize?: number;
   connections?: string[];
   position?: { x: number; z: number };
 }
@@ -43,7 +44,7 @@ interface UnifiedRoomManagerProps {
 }
 
 // Constants
-const ROOM_SIZE = 10;
+const DEFAULT_ROOM_SIZE = 10;
 const WALL_THICKNESS = 0.2;
 const GROUND_LEVEL = -0.5;
 const DOOR_HEIGHT_OFFSET = 1.25;
@@ -56,12 +57,15 @@ const calculateDoorPosition = (
   currentRoom?: RoomData,
   targetRoom?: RoomData
 ): DoorPosition => {
+  // Use actual room size if available
+  const actualRoomSize = currentRoom?.actualSize || roomSize;
+
   // Use proper door positioning based on room positions
   if (currentRoom && targetRoom) {
     const dx = (targetRoom.position?.x || 0) - (currentRoom.position?.x || 0);
     const dz = (targetRoom.position?.z || 0) - (currentRoom.position?.z || 0);
 
-    const roomHalfSize = roomSize / 2;
+    const roomHalfSize = actualRoomSize / 2;
 
     if (Math.abs(dx) > Math.abs(dz)) {
       // East or West
@@ -93,7 +97,7 @@ const calculateDoorPosition = (
   } else {
     // Fallback: distribute doors around perimeter
     const angleStep = (2 * Math.PI) / totalDoors;
-    const radius = roomSize / 2;
+    const radius = actualRoomSize / 2;
     const angle = index * angleStep;
     const x = Math.cos(angle) * radius;
     const z = Math.sin(angle) * radius;
@@ -372,7 +376,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
           if (!room) return null;
 
           const doorPosition = calculateDoorPosition(
-            currentRoom?.size || ROOM_SIZE,
+            currentRoom?.actualSize || currentRoom?.size || DEFAULT_ROOM_SIZE,
             index,
             connectedRooms.length,
             currentRoom,

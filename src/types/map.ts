@@ -22,6 +22,9 @@ export interface Room {
   type: string;
   connections: string[]; // IDs of connected rooms
   size: number; // Room size in units (deprecated - use biome walls instead)
+  minSize?: number; // Minimum room size (defaults to current size)
+  maxSize?: number; // Maximum room size multiplier
+  actualSize?: number; // Actual computed size for this room
   isVisited: boolean;
   isCurrent: boolean;
   // Enhanced room properties
@@ -30,7 +33,7 @@ export interface Room {
   // Entry point system for proper room/hallway alignment
   entryPoints?: EntryPoint[]; // Available entry/exit points for this room
   // New advanced properties
-  shape?: 'square' | 'circle' | 'triangle' | 'hexagon' | 'octagon' | 'diamond' | 'star' | 'cross' | 'spiral';
+  shape?: 'square' | 'circle' | 'triangle' | 'hexagon' | 'octagon' | 'diamond' | 'star' | 'cross' | 'spiral' | 'L' | 'T' | 'U' | 'C' | 'H' | 'plus' | 'line' | 'block';
   width?: number; // For non-square rooms
   height?: number; // For non-square rooms
   rotation?: number; // Room rotation in radians
