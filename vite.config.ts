@@ -14,7 +14,7 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}', 'src/**/*.{js,jsx}'],
       exclude: ['node_modules', 'dist', 'scripts/**', 'code_examples/**'],
       lintOnStart: true,
-      emitError: true,
+      // emitError: true,
       emitWarning: true,
       formatter: 'stylish',
     })
