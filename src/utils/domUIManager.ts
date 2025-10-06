@@ -9,6 +9,7 @@ class DOMUIManager {
   private instructions: HTMLElement | null = null;
   private isInitialized = false;
   private updateInterval: number | null = null;
+  private unsubs: Array<() => void> = [];
 
   init() {
     if (this.isInitialized) return;
@@ -87,7 +88,8 @@ class DOMUIManager {
   }
 
   private setupEventListeners() {
-    uiEvents.on(UI_EVENTS.MOUSE_LOOK_START, () => {
+    // Keep unsubscribe functions to clean up later
+    const offMouseLookStart = uiEvents.on(UI_EVENTS.MOUSE_LOOK_START, () => {
       if (this.mouseLookIndicator) {
         this.mouseLookIndicator.style.display = 'block';
       }
@@ -95,7 +97,7 @@ class DOMUIManager {
       document.body.style.cursor = 'none';
     });
 
-    uiEvents.on(UI_EVENTS.MOUSE_LOOK_END, () => {
+    const offMouseLookEnd = uiEvents.on(UI_EVENTS.MOUSE_LOOK_END, () => {
       if (this.mouseLookIndicator) {
         this.mouseLookIndicator.style.display = 'none';
       }
@@ -104,17 +106,25 @@ class DOMUIManager {
     });
 
     // Subscribe to ref-based player state changes
-    refBasedPlayerState.subscribe(() => {
+    const offPlayerState = refBasedPlayerState.subscribe(() => {
       this.updatePlayerStats(refBasedPlayerState.getStats());
     });
 
-    uiEvents.on(UI_EVENTS.INVENTORY_UPDATE, (inventory) => {
+    const offInventory = uiEvents.on(UI_EVENTS.INVENTORY_UPDATE, (inventory) => {
       this.updateInventory(inventory);
     });
 
-    uiEvents.on(UI_EVENTS.ROOM_CHANGE, (roomName) => {
+    const offRoomChange = uiEvents.on(UI_EVENTS.ROOM_CHANGE, (roomName) => {
       this.updateCurrentRoom(roomName);
     });
+
+    this.unsubs.push(
+      offMouseLookStart,
+      offMouseLookEnd,
+      offPlayerState,
+      offInventory,
+      offRoomChange
+    );
   }
 
   private updatePlayerStats(stats: any) {
@@ -185,6 +195,14 @@ class DOMUIManager {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
       this.updateInterval = null;
+    }
+
+    // Remove all event listeners
+    if (this.unsubs.length) {
+      this.unsubs.forEach(off => {
+        try { off(); } catch {}
+      });
+      this.unsubs = [];
     }
     if (this.mouseLookIndicator) {
       this.mouseLookIndicator.remove();

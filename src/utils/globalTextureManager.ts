@@ -162,12 +162,47 @@ class GlobalTextureManager {
 // Global instance
 export const globalTextureManager = new GlobalTextureManager();
 
-// Cleanup old textures every 30 seconds
-setInterval(() => {
-  globalTextureManager.cleanup();
-}, 30000);
+// Cleanup interval reference for proper cleanup
+let cleanupInterval: number | null = null;
+
+// Start cleanup interval
+const startCleanup = () => {
+  if (cleanupInterval) return; // Already running
+  cleanupInterval = window.setInterval(() => {
+    globalTextureManager.cleanup();
+  }, 30000);
+};
+
+// Stop cleanup interval
+const stopCleanup = () => {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
+};
+
+// Start cleanup when first texture is loaded
+let hasStarted = false;
+const originalGetTexture = globalTextureManager.getTexture.bind(globalTextureManager);
+globalTextureManager.getTexture = async (textureName: string) => {
+  if (!hasStarted) {
+    hasStarted = true;
+    startCleanup();
+  }
+  return originalGetTexture(textureName);
+};
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
+  stopCleanup();
   globalTextureManager.disposeAll();
+});
+
+// Cleanup when app is hidden (mobile/background)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopCleanup();
+  } else if (hasStarted) {
+    startCleanup();
+  }
 });

@@ -54,7 +54,12 @@ let performanceMonitor = {
 };
 
 // Monitor FPS
+let rafId = null;
+let isMonitoring = true;
+
 function updateFPS() {
+  if (!isMonitoring) return;
+  
   performanceMonitor.frameCount++;
   const now = Date.now();
   if (now - performanceMonitor.lastFPSUpdate >= 1000) {
@@ -64,11 +69,34 @@ function updateFPS() {
     performanceMonitor.frameCount = 0;
     performanceMonitor.lastFPSUpdate = now;
   }
-  requestAnimationFrame(updateFPS);
+  rafId = requestAnimationFrame(updateFPS);
 }
 
 // Start FPS monitoring
 updateFPS();
+
+// Stop monitoring when page is about to unload
+window.addEventListener('beforeunload', () => {
+  isMonitoring = false;
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+});
+
+// Stop monitoring when page becomes hidden
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    isMonitoring = false;
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  } else {
+    isMonitoring = true;
+    updateFPS();
+  }
+});
 
 // Expose performance monitoring
 contextBridge.exposeInMainWorld('performanceMonitor', {

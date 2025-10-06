@@ -1,6 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import useGameStore from "../../store/gameStore";
-import { useGameTimer } from "../../hooks/useGameTimer";
 
 interface OptimizedNumberPuzzleProps {
   onComplete: () => void;
@@ -23,26 +28,49 @@ const OptimizedNumberPuzzle: React.FC<OptimizedNumberPuzzleProps> = ({
   const numberRange =
     difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
 
-  // Use event-driven timer instead of React state
-  const { timeLeft, isRunning, isComplete, start, reset } = useGameTimer({
-    id: `number-puzzle-${difficulty}`,
-    duration: 45,
-    onComplete: () => {
-      // Time's up - reset puzzle
-      setPlayerInput("");
-      setMoves(0);
-      setShowNumbers(true);
-      setNumbers(generateNewNumbers());
-      reset();
-    },
-    onTick: (remainingTime) => {
-      // Optional: Add visual feedback based on time remaining
-      if (remainingTime < 10) {
-        // Could emit events for visual effects
+  // Local timer state
+  const [timeLeft, setTimeLeft] = useState(45);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  const intervalRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  const clearTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const start = useCallback(() => {
+    clearTimer();
+    setIsComplete(false);
+    setIsRunning(true);
+    setTimeLeft(45);
+    startTimeRef.current = performance.now();
+    intervalRef.current = window.setInterval(() => {
+      const elapsed = (performance.now() - startTimeRef.current) / 1000;
+      const remaining = Math.max(0, 45 - elapsed);
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        setIsRunning(false);
+        setIsComplete(true);
+        clearTimer();
+        // Time's up - reset puzzle state after a short moment
+        setPlayerInput("");
+        setMoves(0);
+        setShowNumbers(true);
+        setNumbers(generateNewNumbers());
       }
-    },
-    autoStart: false, // We'll start it manually
-  });
+    }, 100);
+  }, [generateNewNumbers]);
+
+  const resetTimer = useCallback(() => {
+    clearTimer();
+    setIsComplete(false);
+    setIsRunning(false);
+    setTimeLeft(45);
+  }, []);
 
   // Generate new numbers
   const generateNewNumbers = useCallback(() => {
@@ -62,9 +90,10 @@ const OptimizedNumberPuzzle: React.FC<OptimizedNumberPuzzleProps> = ({
     setGameComplete(false);
 
     // Start timer after a short delay
-    setTimeout(() => {
+    const t = setTimeout(() => {
       start();
     }, 1000);
+    return () => clearTimeout(t);
   }, [difficulty, start, generateNewNumbers]);
 
   // Hide numbers after 5 seconds
@@ -89,9 +118,10 @@ const OptimizedNumberPuzzle: React.FC<OptimizedNumberPuzzleProps> = ({
         addPoints(points);
         addExperience(points * 0.5);
 
-        setTimeout(() => {
+        const t = setTimeout(() => {
           onComplete();
         }, 2000);
+        return () => clearTimeout(t);
       } else {
         setPlayerInput("");
         setMoves((prev) => prev + 1);

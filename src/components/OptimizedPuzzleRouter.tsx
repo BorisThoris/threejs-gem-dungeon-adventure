@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import OptimizedNumberPuzzle from "./puzzles/OptimizedNumberPuzzle";
-import { useGameTimer } from "../hooks/useGameTimer";
 
 interface OptimizedPuzzleRouterProps {
   isVisible: boolean;
@@ -19,16 +18,40 @@ const OptimizedPuzzleRouter: React.FC<OptimizedPuzzleRouterProps> = ({
 }) => {
   const [currentPuzzle, setCurrentPuzzle] = useState<string | null>(null);
 
-  // Use event-driven timer for puzzle timeout
-  const { timeLeft, isRunning, start, stop, reset } = useGameTimer({
-    id: "puzzle-timeout",
-    duration: 60, // 60 second timeout
-    onComplete: () => {
-      // Auto-exit if puzzle takes too long
-      onExit();
-    },
-    autoStart: false,
-  });
+  // Local timeout (60s)
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  const clearTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const start = useCallback(() => {
+    clearTimer();
+    setIsRunning(true);
+    setTimeLeft(60);
+    startTimeRef.current = performance.now();
+    intervalRef.current = window.setInterval(() => {
+      const elapsed = (performance.now() - startTimeRef.current) / 1000;
+      const remaining = Math.max(0, 60 - elapsed);
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        setIsRunning(false);
+        clearTimer();
+        onExit();
+      }
+    }, 100);
+  }, [onExit]);
+
+  const stop = useCallback(() => {
+    clearTimer();
+    setIsRunning(false);
+  }, []);
 
   // Start puzzle timer when visible
   useEffect(() => {
@@ -40,6 +63,13 @@ const OptimizedPuzzleRouter: React.FC<OptimizedPuzzleRouterProps> = ({
       stop();
     }
   }, [isVisible, puzzleType, start, stop]);
+
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      clearTimer();
+    };
+  }, []);
 
   // Handle puzzle completion
   const handlePuzzleComplete = () => {

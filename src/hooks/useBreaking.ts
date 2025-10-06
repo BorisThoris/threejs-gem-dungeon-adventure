@@ -33,44 +33,51 @@ export const useBreaking = (options: BreakingOptions = {}) => {
     onFragmentDestroyed
   } = options;
 
+  // External state snapshot for UI only; updated sparsely
   const [fragments, setFragments] = useState<Fragment[]>([]);
   const [isBroken, setIsBroken] = useState(false);
   const fragmentCounter = useRef(0);
+  const fragmentsRef = useRef<Fragment[]>([]);
+  const lastUiSyncMsRef = useRef(0);
 
-  // Physics simulation for fragments
+  // Physics simulation for fragments (no React setState per frame)
   useFrame((state, delta) => {
-    setFragments(prevFragments => {
-      const updatedFragments = prevFragments.map(fragment => {
-        // Apply gravity
-        fragment.velocity.y -= 9.81 * delta;
-        
-        // Update position
-        fragment.mesh.position.add(
-          fragment.velocity.clone().multiplyScalar(delta)
-        );
-        
-        // Update rotation
-        fragment.mesh.rotation.x += fragment.angularVelocity.x * delta;
-        fragment.mesh.rotation.y += fragment.angularVelocity.y * delta;
-        fragment.mesh.rotation.z += fragment.angularVelocity.z * delta;
-        
-        // Update lifetime
-        fragment.lifetime -= delta * 1000;
-        
-        return fragment;
-      });
+    if (fragmentsRef.current.length === 0) return;
+
+    const current = fragmentsRef.current;
+
+    for (let i = current.length - 1; i >= 0; i--) {
+      const fragment = current[i];
+      // Apply gravity
+      fragment.velocity.y -= 9.81 * delta;
+
+      // Update position
+      fragment.mesh.position.add(
+        fragment.velocity.clone().multiplyScalar(delta)
+      );
+
+      // Update rotation
+      fragment.mesh.rotation.x += fragment.angularVelocity.x * delta;
+      fragment.mesh.rotation.y += fragment.angularVelocity.y * delta;
+      fragment.mesh.rotation.z += fragment.angularVelocity.z * delta;
+
+      // Update lifetime
+      fragment.lifetime -= delta * 1000;
 
       // Remove expired fragments
-      const activeFragments = updatedFragments.filter(fragment => {
-        if (fragment.lifetime <= 0 || fragment.mesh.position.y < -10) {
-          onFragmentDestroyed?.(fragment.id);
-          return false;
-        }
-        return true;
-      });
+      if (fragment.lifetime <= 0 || fragment.mesh.position.y < -10) {
+        onFragmentDestroyed?.(fragment.id);
+        current.splice(i, 1);
+      }
+    }
 
-      return activeFragments;
-    });
+    // Throttle UI sync to ~10 Hz
+    const nowMs = state.clock.elapsedTime * 1000;
+    if (nowMs - lastUiSyncMsRef.current > 100) {
+      lastUiSyncMsRef.current = nowMs;
+      // Shallow copy for state consumers
+      setFragments([...fragmentsRef.current]);
+    }
   });
 
   const breakObject = useCallback((
@@ -133,7 +140,10 @@ export const useBreaking = (options: BreakingOptions = {}) => {
           return fragment;
         });
 
-        setFragments(prev => [...prev, ...newFragments]);
+        // Update ref immediately; UI will sync on next throttle
+        fragmentsRef.current = [...fragmentsRef.current, ...newFragments];
+        // Also push a one-time state update so consumers can react to spawn
+        setFragments(fragmentsRef.current.slice());
         setIsBroken(true);
         
         onFragmentCreated?.(newFragments);
@@ -146,6 +156,7 @@ export const useBreaking = (options: BreakingOptions = {}) => {
   }, [isBroken, minSizeForFracture, maxSizeForFracture, onFragmentCreated]);
 
   const reset = useCallback(() => {
+    fragmentsRef.current = [];
     setFragments([]);
     setIsBroken(false);
   }, []);
