@@ -106,7 +106,17 @@ const StartScreenContent: React.FC = () => {
   const [isPaused, setIsPaused] = React.useState(false);
   const [enabledBiomeCategories, setEnabledBiomeCategories] = useState<
     string[]
-  >([]);
+  >([
+    "buff",
+    "resource",
+    "puzzle",
+    "transport",
+    "obstacle",
+    "special",
+    "religious",
+    "social",
+    "geometric",
+  ]);
 
   // Initialize DOM UI manager
   React.useEffect(() => {
