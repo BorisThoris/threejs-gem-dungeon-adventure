@@ -39,6 +39,7 @@ export interface RoomConfig {
   emoji: string;
   description: string;
   props?: any;
+  availableActions?: any[];
   editableProps?: any[];
   category: "rooms" | "biome" | "object" | "element";
   subcategory?: string;
