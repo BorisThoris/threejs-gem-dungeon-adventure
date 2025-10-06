@@ -76,8 +76,9 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
     );
     const maxDistance = Math.max(...distancesFromCenter);
 
-    // Minimap radius (pixels)
-    const minimapRadius = 80;
+    // Minimap radius (pixels) - dynamic based on container size
+    const containerSize = Math.min(window.innerWidth * 0.25, 400) - 40; // 25vw minus padding
+    const minimapRadius = containerSize / 2;
     const worldRadius = Math.max(maxDistance, 5); // Minimum radius to prevent division by zero
     const scale = minimapRadius / worldRadius;
 
@@ -279,8 +280,12 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
           position: "fixed",
           top: "20px",
           right: "20px",
-          width: "200px",
-          height: "200px",
+          width: "25vw",
+          height: "25vw",
+          maxWidth: "400px",
+          maxHeight: "400px",
+          minWidth: "200px",
+          minHeight: "200px",
           zIndex: 1000,
           fontFamily: "monospace",
           color: "#fff",
@@ -317,8 +322,8 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
         <div
           style={{
             position: "relative",
-            width: "180px",
-            height: "180px",
+            width: "calc(100% - 20px)",
+            height: "calc(100% - 20px)",
             margin: "0 auto",
             pointerEvents: "auto",
           }}
@@ -439,6 +444,11 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                     return null;
                   }
 
+                  const isVisited =
+                    visitedRooms.has(room.id) || visitedRooms.has(connectionId);
+                  const connectionColor = isVisited ? "#d4af37" : "#8b4513";
+                  const connectionOpacity = isVisited ? 0.8 : 0.4;
+
                   return (
                     <div
                       key={`connection-${room.id}-${connectionId}`}
@@ -446,33 +456,21 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                         position: "absolute",
                         left: `${minimapData.minimapRadius + room.minimapX}px`,
                         top: `${minimapData.minimapRadius + room.minimapZ}px`,
-                        width: `${Math.abs(
-                          connectedRoom.minimapX - room.minimapX
+                        width: `${Math.sqrt(
+                          Math.pow(connectedRoom.minimapX - room.minimapX, 2) +
+                            Math.pow(connectedRoom.minimapZ - room.minimapZ, 2)
                         )}px`,
-                        height: `${Math.abs(
-                          connectedRoom.minimapZ - room.minimapZ
-                        )}px`,
-                        borderLeft:
-                          connectedRoom.minimapX > room.minimapX
-                            ? "1px solid #555"
-                            : "none",
-                        borderRight:
-                          connectedRoom.minimapX < room.minimapX
-                            ? "1px solid #555"
-                            : "none",
-                        borderTop:
-                          connectedRoom.minimapZ > room.minimapZ
-                            ? "1px solid #555"
-                            : "none",
-                        borderBottom:
-                          connectedRoom.minimapZ < room.minimapZ
-                            ? "1px solid #555"
-                            : "none",
+                        height: "2px",
+                        backgroundColor: connectionColor,
                         transformOrigin: "0 0",
                         transform: `rotate(${Math.atan2(
                           connectedRoom.minimapZ - room.minimapZ,
                           connectedRoom.minimapX - room.minimapX
                         )}rad)`,
+                        opacity: connectionOpacity,
+                        boxShadow: isVisited
+                          ? `0 0 4px ${connectionColor}`
+                          : "none",
                       }}
                     />
                   );
@@ -725,7 +723,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
               margin: "0 auto",
             }}
           >
-            {/* Map Background with Parchment Style - Square */}
+            {/* Map Background - Square */}
             <div
               style={{
                 position: "absolute",
@@ -742,6 +740,8 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                   )
                 `,
                 backdropFilter: "blur(1px)",
+                borderRadius: "15px",
+                boxShadow: "0 0 30px rgba(0, 0, 0, 0.3)",
               }}
             >
               {/* Map Content Container - Rotates with camera */}
