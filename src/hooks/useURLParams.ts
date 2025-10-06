@@ -11,7 +11,18 @@ export interface URLParams {
   // 3D Editor state
   type?: string;
   category?: 'rooms' | 'biomes' | 'objects' | 'elements';
+  subcategory?: string;
   tab?: 'demo' | 'game';
+  
+  // Component types
+  componentType?: string;
+  objectType?: string;
+  elementType?: string;
+  
+  // Component props (serialized as JSON)
+  componentProps?: string;
+  objectProps?: string;
+  elementProps?: string;
   
   // Camera state
   cameraX?: string;

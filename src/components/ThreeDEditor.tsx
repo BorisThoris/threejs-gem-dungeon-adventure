@@ -76,6 +76,245 @@ interface RoomConfig {
   editableProps?: PropConfig[];
 }
 
+// Function to generate action cards for biomes
+const generateBiomeActionCards = (biomeType: string): ActionCard[] => {
+  const baseCards: ActionCard[] = [];
+
+  switch (biomeType) {
+    case "coffee":
+      return [
+        {
+          id: "brew_coffee",
+          title: "Brew Coffee",
+          description: "Brew a fresh cup of coffee for energy boost",
+          icon: "☕",
+          action: () => console.log("Brewing coffee..."),
+          cost: 0,
+        },
+        {
+          id: "coffee_break",
+          title: "Coffee Break",
+          description: "Take a relaxing coffee break to restore energy",
+          icon: "🛋️",
+          action: () => console.log("Taking coffee break..."),
+          cost: 10,
+        },
+      ];
+
+    case "meditation":
+      return [
+        {
+          id: "meditate",
+          title: "Meditate",
+          description: "Focus your mind and gain defense boost",
+          icon: "🧘",
+          action: () => console.log("Meditating..."),
+          cost: 0,
+        },
+        {
+          id: "deep_meditation",
+          title: "Deep Meditation",
+          description: "Advanced meditation for greater benefits",
+          icon: "🕉️",
+          action: () => console.log("Deep meditation..."),
+          cost: 50,
+        },
+      ];
+
+    case "library":
+      return [
+        {
+          id: "read_book",
+          title: "Read Book",
+          description: "Read a book to gain knowledge and experience",
+          icon: "📚",
+          action: () => console.log("Reading book..."),
+          cost: 0,
+        },
+        {
+          id: "research",
+          title: "Research",
+          description: "Conduct research to unlock new abilities",
+          icon: "🔬",
+          action: () => console.log("Researching..."),
+          cost: 25,
+        },
+      ];
+
+    case "shop":
+      return [
+        {
+          id: "browse_items",
+          title: "Browse Items",
+          description: "Look at available items for purchase",
+          icon: "🛒",
+          action: () => console.log("Browsing items..."),
+          cost: 0,
+        },
+        {
+          id: "buy_item",
+          title: "Buy Item",
+          description: "Purchase useful items and upgrades",
+          icon: "💰",
+          action: () => console.log("Buying item..."),
+          cost: 100,
+        },
+      ];
+
+    case "treasure":
+      return [
+        {
+          id: "search_treasure",
+          title: "Search Treasure",
+          description: "Search for hidden treasures and rewards",
+          icon: "💎",
+          action: () => console.log("Searching treasure..."),
+          cost: 0,
+        },
+        {
+          id: "open_chest",
+          title: "Open Chest",
+          description: "Open treasure chests for valuable loot",
+          icon: "📦",
+          action: () => console.log("Opening chest..."),
+          cost: 20,
+        },
+      ];
+
+    case "puzzle":
+      return [
+        {
+          id: "solve_puzzle",
+          title: "Solve Puzzle",
+          description: "Attempt to solve the room's puzzle",
+          icon: "🧩",
+          action: () => console.log("Solving puzzle..."),
+          cost: 0,
+        },
+        {
+          id: "hint",
+          title: "Get Hint",
+          description: "Get a hint to help solve the puzzle",
+          icon: "💡",
+          action: () => console.log("Getting hint..."),
+          cost: 15,
+        },
+      ];
+
+    case "arena":
+      return [
+        {
+          id: "enter_arena",
+          title: "Enter Arena",
+          description: "Enter the arena for combat challenges",
+          icon: "⚔️",
+          action: () => console.log("Entering arena..."),
+          cost: 0,
+        },
+        {
+          id: "challenge_fighter",
+          title: "Challenge Fighter",
+          description: "Challenge a fighter to gain experience",
+          icon: "🥊",
+          action: () => console.log("Challenging fighter..."),
+          cost: 30,
+        },
+      ];
+
+    case "boss":
+      return [
+        {
+          id: "face_boss",
+          title: "Face Boss",
+          description: "Challenge the boss for ultimate rewards",
+          icon: "👹",
+          action: () => console.log("Facing boss..."),
+          cost: 0,
+        },
+        {
+          id: "prepare_battle",
+          title: "Prepare Battle",
+          description: "Prepare for the upcoming boss battle",
+          icon: "🛡️",
+          action: () => console.log("Preparing battle..."),
+          cost: 50,
+        },
+      ];
+
+    case "garden":
+      return [
+        {
+          id: "tend_garden",
+          title: "Tend Garden",
+          description: "Tend to the garden for peaceful benefits",
+          icon: "🌱",
+          action: () => console.log("Tending garden..."),
+          cost: 0,
+        },
+        {
+          id: "harvest_plants",
+          title: "Harvest Plants",
+          description: "Harvest plants for useful materials",
+          icon: "🌿",
+          action: () => console.log("Harvesting plants..."),
+          cost: 10,
+        },
+      ];
+
+    case "kitchen":
+      return [
+        {
+          id: "cook_meal",
+          title: "Cook Meal",
+          description: "Cook a nutritious meal for health benefits",
+          icon: "🍳",
+          action: () => console.log("Cooking meal..."),
+          cost: 0,
+        },
+        {
+          id: "prepare_food",
+          title: "Prepare Food",
+          description: "Prepare food items for future use",
+          icon: "🥘",
+          action: () => console.log("Preparing food..."),
+          cost: 15,
+        },
+      ];
+
+    case "bedroom":
+      return [
+        {
+          id: "rest",
+          title: "Rest",
+          description: "Rest to restore health and energy",
+          icon: "🛏️",
+          action: () => console.log("Resting..."),
+          cost: 0,
+        },
+        {
+          id: "deep_sleep",
+          title: "Deep Sleep",
+          description: "Get a deep sleep for maximum restoration",
+          icon: "😴",
+          action: () => console.log("Deep sleeping..."),
+          cost: 20,
+        },
+      ];
+
+    default:
+      return [
+        {
+          id: "explore",
+          title: "Explore",
+          description: "Explore this area for potential discoveries",
+          icon: "🔍",
+          action: () => console.log("Exploring..."),
+          cost: 0,
+        },
+      ];
+  }
+};
+
 interface PropConfig {
   key: string;
   label: string;
@@ -319,6 +558,7 @@ const BIOME_CONFIGS: RoomConfig[] = [
     emoji: "☕",
     description: "Coffee environment biome for rooms",
     props: { size: 10 },
+    availableActions: generateBiomeActionCards("coffee"),
     editableProps: [
       {
         key: "size",
@@ -1300,7 +1540,19 @@ const EditorScene: React.FC<{
       : ELEMENT_CONFIGS;
   const selectedConfig = configs.find((config) => config.type === selectedType);
 
-  if (!selectedConfig) {
+  // Add action cards to biomes if they don't have them, or use existing ones
+  const configWithActions = selectedConfig
+    ? {
+        ...selectedConfig,
+        availableActions:
+          selectedConfig.availableActions ||
+          (selectedCategory === "biomes"
+            ? generateBiomeActionCards(selectedType)
+            : selectedConfig.availableActions),
+      }
+    : null;
+
+  if (!configWithActions) {
     return (
       <Html position={[0, 0, 0]}>
         <div
@@ -1320,7 +1572,7 @@ const EditorScene: React.FC<{
     );
   }
 
-  const Component = selectedConfig.component;
+  const Component = configWithActions.component;
 
   return (
     <Suspense
@@ -1341,12 +1593,14 @@ const EditorScene: React.FC<{
       }
     >
       <Component {...currentProps} />
-      {showActionCards && selectedConfig.availableActions && (
-        <RoomActionCards
-          cards={selectedConfig.availableActions}
-          isVisible={true}
-        />
-      )}
+      {showActionCards &&
+        configWithActions.availableActions &&
+        configWithActions.availableActions.length > 0 && (
+          <RoomActionCards
+            cards={configWithActions.availableActions}
+            isVisible={true}
+          />
+        )}
     </Suspense>
   );
 };
@@ -1850,7 +2104,7 @@ const ThreeDEditor: React.FC = () => {
         </div>
 
         {/* Selected Item Info */}
-        {selectedConfig && (
+        {configWithActions && (
           <div
             style={{
               background: "#333",
@@ -1866,24 +2120,24 @@ const ThreeDEditor: React.FC = () => {
                 color: "#4CAF50",
               }}
             >
-              {selectedConfig.emoji} {selectedConfig.title}
+              {configWithActions.emoji} {configWithActions.title}
             </h3>
             <p
               style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#ccc" }}
             >
-              {selectedConfig.description}
+              {configWithActions.description}
             </p>
             <div style={{ fontSize: "12px", color: "#888" }}>
-              Type: {selectedConfig.type}
+              Type: {configWithActions.type}
             </div>
           </div>
         )}
 
-        {/* 3D Object Parameters */}
-        {selectedCategory === "objects" && selectedConfig && (
+        {/* 3D Component Parameters */}
+        {configWithActions && (
           <div style={{ marginBottom: "20px" }}>
             <h3 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
-              ⚙️ Object Parameters
+              ⚙️ Component Parameters
             </h3>
             <div
               style={{ display: "flex", flexDirection: "column", gap: "5px" }}
@@ -1905,24 +2159,27 @@ const ThreeDEditor: React.FC = () => {
                 {showPropsEditor ? "❌ Hide Props Editor" : "⚙️ Edit Props"}
               </button>
 
-              <button
-                onClick={() => setShowActionCards(!showActionCards)}
-                style={{
-                  padding: "10px",
-                  background: showActionCards
-                    ? "linear-gradient(45deg, #FF6B6B, #FF8E8E)"
-                    : "linear-gradient(45deg, #FFD700, #FFA500)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                }}
-              >
-                {showActionCards
-                  ? "❌ Hide Action Cards"
-                  : "🎮 Show Action Cards"}
-              </button>
+              {configWithActions.availableActions &&
+                configWithActions.availableActions.length > 0 && (
+                  <button
+                    onClick={() => setShowActionCards(!showActionCards)}
+                    style={{
+                      padding: "10px",
+                      background: showActionCards
+                        ? "linear-gradient(45deg, #FF6B6B, #FF8E8E)"
+                        : "linear-gradient(45deg, #FFD700, #FFA500)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {showActionCards
+                      ? "❌ Hide Action Cards"
+                      : "🎮 Show Action Cards"}
+                  </button>
+                )}
             </div>
           </div>
         )}
