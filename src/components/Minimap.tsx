@@ -10,8 +10,8 @@ interface MinimapProps {
 }
 
 const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
-  const { currentMap, currentRoomId, visitedRooms } = useMapStore();
-  const { currentRoomId: gameCurrentRoomId } = useConsolidatedGameStore();
+  const { currentMap, visitedRooms } = useMapStore();
+  const { currentRoomId } = useConsolidatedGameStore();
   const [isMinimapVisible, setIsMinimapVisible] = useState(isVisible);
   const [isFullscreenMapVisible, setIsFullscreenMapVisible] = useState(false);
   const [cameraRotation, setCameraRotation] = useState({
@@ -55,9 +55,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
     if (rooms.length === 0) return null;
 
     // Find current room to center the map on
-    const currentRoom = rooms.find(
-      (room) => room.id === currentRoomId || room.id === gameCurrentRoomId
-    );
+    const currentRoom = rooms.find((room) => room.id === currentRoomId);
 
     // Use current room position as center, or fallback to geometric center
     const centerX = currentRoom
@@ -101,7 +99,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
         ),
       })),
     };
-  }, [currentMap, currentRoomId, gameCurrentRoomId]);
+  }, [currentMap, currentRoomId]);
 
   // Calculate fullscreen map data (dynamic sizing)
   const fullscreenMapData = useMemo(() => {
@@ -111,9 +109,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
     if (rooms.length === 0) return null;
 
     // Find current room to center the map on
-    const currentRoom = rooms.find(
-      (room) => room.id === currentRoomId || room.id === gameCurrentRoomId
-    );
+    const currentRoom = rooms.find((room) => room.id === currentRoomId);
 
     // Use current room position as center, or fallback to geometric center
     const centerX = currentRoom
@@ -158,12 +154,11 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
         ),
       })),
     };
-  }, [currentMap, currentRoomId, gameCurrentRoomId]);
+  }, [currentMap, currentRoomId]);
 
   // Get room color based on state
   const getRoomColor = (room: Room) => {
-    const isCurrent =
-      room.id === currentRoomId || room.id === gameCurrentRoomId;
+    const isCurrent = room.id === currentRoomId;
     const isVisited = visitedRooms.has(room.id);
 
     if (isCurrent) {
@@ -217,13 +212,17 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
     }
   };
 
-  // Get current room for highlighting
+  // Get current room for highlighting (small minimap)
   const currentRoom = useMemo(() => {
     if (!minimapData) return null;
-    return minimapData.rooms.find(
-      (room) => room.id === currentRoomId || room.id === gameCurrentRoomId
-    );
-  }, [minimapData, currentRoomId, gameCurrentRoomId]);
+    return minimapData.rooms.find((room) => room.id === currentRoomId);
+  }, [minimapData, currentRoomId]);
+
+  // Get current room for fullscreen map
+  const fullscreenCurrentRoom = useMemo(() => {
+    if (!fullscreenMapData) return null;
+    return fullscreenMapData.rooms.find((room) => room.id === currentRoomId);
+  }, [fullscreenMapData, currentRoomId]);
 
   // Toggle minimap visibility
   const handleToggle = () => {
@@ -482,8 +481,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
 
               {/* Rooms */}
               {minimapData.rooms.map((room) => {
-                const isCurrent =
-                  room.id === currentRoomId || room.id === gameCurrentRoomId;
+                const isCurrent = room.id === currentRoomId;
 
                 // Skip rooms outside circular bounds
                 if (room.distanceFromCenter > minimapData.worldRadius) {
@@ -888,8 +886,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
 
                 {/* Rooms - Enhanced Diablo Style */}
                 {fullscreenMapData.rooms.map((room) => {
-                  const isCurrent =
-                    room.id === currentRoomId || room.id === gameCurrentRoomId;
+                  const isCurrent = room.id === currentRoomId;
                   const isVisited = visitedRooms.has(room.id);
 
                   const roomSize = isCurrent ? 40 : 28;
@@ -1023,8 +1020,8 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
             </div>
           </div>
 
-          {/* Enhanced Room Info */}
-          {currentRoom && (
+          {/* Enhanced Room Info - Always Shows Current Active Room */}
+          {fullscreenCurrentRoom ? (
             <div
               style={{
                 marginTop: "30px",
@@ -1051,7 +1048,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                   fontSize: "24px",
                 }}
               >
-                {currentRoom.type.toUpperCase()}
+                {fullscreenCurrentRoom.type.toUpperCase()}
               </div>
               <div
                 style={{
@@ -1061,7 +1058,7 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                   textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
                 }}
               >
-                {currentRoom.connections?.length || 0} Connected Areas
+                {fullscreenCurrentRoom.connections?.length || 0} Connected Areas
               </div>
               <div
                 style={{
@@ -1072,7 +1069,73 @@ const Minimap: React.FC<MinimapProps> = ({ isVisible = true, onToggle }) => {
                   fontStyle: "italic",
                 }}
               >
-                Room ID: {currentRoom.id}
+                Room ID: {fullscreenCurrentRoom.id}
+              </div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  opacity: 0.5,
+                  marginTop: "5px",
+                  color: "#8b4513",
+                }}
+              >
+                Position: ({fullscreenCurrentRoom.position.x},{" "}
+                {fullscreenCurrentRoom.position.z})
+              </div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  opacity: 0.5,
+                  marginTop: "2px",
+                  color: visitedRooms.has(fullscreenCurrentRoom.id)
+                    ? "#4CAF50"
+                    : "#8b4513",
+                }}
+              >
+                Status:{" "}
+                {visitedRooms.has(fullscreenCurrentRoom.id)
+                  ? "Explored"
+                  : "Unexplored"}
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                marginTop: "30px",
+                fontSize: "20px",
+                textAlign: "center",
+                background: `
+                  linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(160, 82, 45, 0.1) 100%)
+                `,
+                border: "2px solid rgba(212, 175, 55, 0.3)",
+                borderRadius: "10px",
+                padding: "20px 30px",
+                backdropFilter: "blur(5px)",
+                boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)",
+                maxWidth: "400px",
+                margin: "30px auto 0",
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: "10px",
+                  color: "#d4af37",
+                  textShadow: "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                  fontSize: "24px",
+                }}
+              >
+                NO ACTIVE ROOM
+              </div>
+              <div
+                style={{
+                  fontSize: "14px",
+                  opacity: 0.6,
+                  color: "#8b4513",
+                  fontStyle: "italic",
+                }}
+              >
+                Consolidated Store ID: {currentRoomId || "None"}
               </div>
             </div>
           )}

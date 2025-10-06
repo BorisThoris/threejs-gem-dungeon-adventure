@@ -227,6 +227,12 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
 
           updateRoom(detectedRoomId);
 
+          // Also update map store to keep it in sync
+          if (detectedRoomId) {
+            mapStore.setCurrentRoom(detectedRoomId);
+            mapStore.markRoomVisited(detectedRoomId);
+          }
+
           if (detectedRoomId) {
             const room = currentMap?.rooms.find(
               (r: RoomData) => r.id === detectedRoomId
@@ -256,7 +262,14 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
           }
         }
       },
-      [currentMap, updateRoom, updateGamePhase, onRoomEnter, onRoomExit]
+      [
+        currentMap,
+        updateRoom,
+        updateGamePhase,
+        onRoomEnter,
+        onRoomExit,
+        mapStore,
+      ]
     );
 
     // Main detection loop
