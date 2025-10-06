@@ -63,6 +63,7 @@ export const GAME_EVENTS = {
   PLAYER_MOVEMENT: 'player_movement',
   UI_UPDATE: 'ui_update',
   CAMERA_SET_ROTATION: 'camera_set_rotation',
+  CAMERA_ROTATION_CHANGE: 'camera_rotation_change',
 } as const;
 
 export type GameEventType = typeof GAME_EVENTS[keyof typeof GAME_EVENTS];

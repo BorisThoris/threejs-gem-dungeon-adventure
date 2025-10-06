@@ -3,6 +3,7 @@ import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { uiEvents, UI_EVENTS } from "../utils/uiEvents";
 import { gameEvents, GAME_EVENTS } from "../utils/gameEvents";
+import { cameraRotationRefs } from "../utils/cameraRotationRef";
 
 export const useMouseLook = () => {
   const { camera } = useThree();
@@ -75,6 +76,18 @@ export const useMouseLook = () => {
       camera.rotation.order = "YXZ";
       camera.rotation.y = euler.current.y;
       camera.rotation.x = euler.current.x;
+
+      // Update global camera rotation refs
+      cameraRotationRefs.updateRotation({
+        y: euler.current.y,
+        x: euler.current.x,
+      });
+
+      // Emit camera rotation change event for UI components
+      gameEvents.emit(GAME_EVENTS.CAMERA_ROTATION_CHANGE, {
+        y: euler.current.y,
+        x: euler.current.x,
+      });
     };
 
     const handleMouseMove = (event: MouseEvent) => {

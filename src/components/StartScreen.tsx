@@ -7,6 +7,7 @@ import { Player } from "./Player";
 import { SafeSpawnArea } from "./SafeSpawnArea";
 import UnifiedRoomManager from "./UnifiedRoomManager";
 import MapUI from "./MapUI";
+import Minimap from "./Minimap";
 import Cursor from "./Cursor";
 import PauseMenu from "./PauseMenu";
 import EventDrivenActionCards from "./EventDrivenActionCards";
@@ -225,6 +226,9 @@ const StartScreenContent: React.FC = () => {
 
       {/* Map UI Overlay */}
       <MapUI />
+
+      {/* Minimap */}
+      <Minimap />
 
       {/* Cursor - Outside Canvas so it's always visible */}
       {!isPaused && <Cursor />}
