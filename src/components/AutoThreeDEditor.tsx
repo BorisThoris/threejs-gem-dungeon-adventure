@@ -5,6 +5,7 @@ import { Physics } from "@react-three/rapier";
 import * as THREE from "three";
 import SharedNavigation from "./SharedNavigation";
 import Door from "./Door";
+import { useURLParams, parseJSON, serializeJSON } from "../hooks/useURLParams";
 
 // Import all room components
 import StartRoom from "./primitives/game-rooms/StartRoom";
@@ -2915,20 +2916,81 @@ const LoadingFallback: React.FC = () => (
 
 // Main editor component
 const AutoThreeDEditor: React.FC = () => {
+  const { urlParams, updateURL, getParam } = useURLParams();
+
   const [selectedCategory, setSelectedCategory] = useState<
     "rooms" | "biomes" | "objects" | "elements"
-  >("rooms");
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("all");
+  >(
+    () =>
+      (getParam("category") as "rooms" | "biomes" | "objects" | "elements") ||
+      "rooms"
+  );
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(
+    () => getParam("subcategory") || "all"
+  );
   const [selectedComponent, setSelectedComponent] = useState<RoomConfig | null>(
-    null
+    () => {
+      const componentType = getParam("componentType");
+      const category = getParam("category") as
+        | "rooms"
+        | "biomes"
+        | "objects"
+        | "elements";
+      console.log(
+        "AutoThreeDEditor: Initializing with componentType:",
+        componentType,
+        "category:",
+        category
+      );
+      if (componentType) {
+        let configs = ROOM_CONFIGS;
+        if (category === "biomes") configs = BIOME_CONFIGS;
+        else if (category === "objects") configs = OBJECT_CONFIGS;
+        else if (category === "elements") configs = ELEMENT_CONFIGS;
+
+        console.log(
+          "AutoThreeDEditor: Looking in configs:",
+          configs.length,
+          "items"
+        );
+        const found = configs.find((config) => config.type === componentType);
+        console.log("AutoThreeDEditor: Found component:", found);
+        return found || null;
+      }
+      return null;
+    }
   );
-  const [selectedObject, setSelectedObject] = useState<RoomConfig | null>(null);
+  const [selectedObject, setSelectedObject] = useState<RoomConfig | null>(
+    () => {
+      const objectType = getParam("objectType");
+      if (objectType) {
+        return (
+          OBJECT_CONFIGS.find((config) => config.type === objectType) || null
+        );
+      }
+      return null;
+    }
+  );
   const [selectedElement, setSelectedElement] = useState<RoomConfig | null>(
-    null
+    () => {
+      const elementType = getParam("elementType");
+      if (elementType) {
+        return (
+          ELEMENT_CONFIGS.find((config) => config.type === elementType) || null
+        );
+      }
+      return null;
+    }
   );
-  const [componentProps, setComponentProps] = useState<any>({});
-  const [objectProps, setObjectProps] = useState<any>({});
-  const [elementProps, setElementProps] = useState<any>({});
+  const [componentProps, setComponentProps] = useState<any>(() =>
+    parseJSON(getParam("componentProps"), {})
+  );
+  const [objectProps, setObjectProps] = useState<any>(() =>
+    parseJSON(getParam("objectProps"), {})
+  );
+  const [elementProps, setElementProps] = useState<any>(() =>
+    parseJSON(getParam("elementProps"), {})
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -2937,20 +2999,38 @@ const AutoThreeDEditor: React.FC = () => {
     loadComponents();
   }, []);
 
+  // Update URL when category changes
+  useEffect(() => {
+    updateURL({
+      category: selectedCategory,
+    });
+  }, [selectedCategory, updateURL]);
+
+  // Update URL when subcategory changes
+  useEffect(() => {
+    updateURL({
+      subcategory: selectedSubcategory,
+    });
+  }, [selectedSubcategory, updateURL]);
+
   const loadComponents = async () => {
     try {
       setIsLoading(true);
 
-      // Set default selections
-      if (ROOM_CONFIGS.length > 0) {
+      // Only set default selections if no URL parameters are present
+      const componentType = getParam("componentType");
+      const objectType = getParam("objectType");
+      const elementType = getParam("elementType");
+
+      if (!componentType && ROOM_CONFIGS.length > 0) {
         setSelectedComponent(ROOM_CONFIGS[0]);
         setComponentProps(ROOM_CONFIGS[0].props || {});
       }
-      if (OBJECT_CONFIGS.length > 0) {
+      if (!objectType && OBJECT_CONFIGS.length > 0) {
         setSelectedObject(OBJECT_CONFIGS[0]);
         setObjectProps(OBJECT_CONFIGS[0].props || {});
       }
-      if (ELEMENT_CONFIGS.length > 0) {
+      if (!elementType && ELEMENT_CONFIGS.length > 0) {
         setSelectedElement(ELEMENT_CONFIGS[0]);
         setElementProps(ELEMENT_CONFIGS[0].props || {});
       }
@@ -2968,37 +3048,52 @@ const AutoThreeDEditor: React.FC = () => {
   const handleComponentSelect = (component: RoomConfig) => {
     setSelectedComponent(component);
     setComponentProps(component.props || {});
+    updateURL({
+      componentType: component.type,
+      componentProps: serializeJSON(component.props || {}),
+    });
   };
 
   const handleObjectSelect = (object: RoomConfig) => {
     setSelectedObject(object);
     setObjectProps(object.props || {});
+    updateURL({
+      objectType: object.type,
+      objectProps: serializeJSON(object.props || {}),
+    });
   };
 
   const handleElementSelect = (element: RoomConfig) => {
     setSelectedElement(element);
     setElementProps(element.props || {});
+    updateURL({
+      elementType: element.type,
+      elementProps: serializeJSON(element.props || {}),
+    });
   };
 
   const handlePropChange = (key: string, value: any) => {
-    setComponentProps((prev: any) => ({
-      ...prev,
-      [key]: value,
-    }));
+    const newProps = { ...componentProps, [key]: value };
+    setComponentProps(newProps);
+    updateURL({
+      componentProps: serializeJSON(newProps),
+    });
   };
 
   const handleObjectPropChange = (key: string, value: any) => {
-    setObjectProps((prev: any) => ({
-      ...prev,
-      [key]: value,
-    }));
+    const newProps = { ...objectProps, [key]: value };
+    setObjectProps(newProps);
+    updateURL({
+      objectProps: serializeJSON(newProps),
+    });
   };
 
   const handleElementPropChange = (key: string, value: any) => {
-    setElementProps((prev: any) => ({
-      ...prev,
-      [key]: value,
-    }));
+    const newProps = { ...elementProps, [key]: value };
+    setElementProps(newProps);
+    updateURL({
+      elementProps: serializeJSON(newProps),
+    });
   };
 
   if (isLoading) {

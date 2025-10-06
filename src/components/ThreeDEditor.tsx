@@ -3,6 +3,14 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment, Text, Html } from "@react-three/drei";
 import { Physics, RigidBody } from "@react-three/rapier";
 import RoomActionCards, { type ActionCard } from "./RoomActionCards";
+import {
+  useURLParams,
+  parseCameraPosition,
+  serializeCameraPosition,
+  parseBoolean,
+  parseJSON,
+  serializeJSON,
+} from "../hooks/useURLParams";
 
 // Import room components from new structure
 import StartRoom from "./primitives/game-rooms/StartRoom";
@@ -1345,32 +1353,42 @@ const EditorScene: React.FC<{
 
 // Main 3D Editor Component
 const ThreeDEditor: React.FC = () => {
+  const { urlParams, updateURL, getParam } = useURLParams();
+
   // Initialize state from URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const [selectedType, setSelectedType] = useState(
-    urlParams.get("type") || "start"
-  );
+  const [selectedType, setSelectedType] = useState(getParam("type") || "start");
   const [selectedCategory, setSelectedCategory] = useState<
     "rooms" | "biomes" | "objects" | "elements"
   >(
-    (urlParams.get("category") as
-      | "rooms"
-      | "biomes"
-      | "objects"
-      | "elements") || "rooms"
+    (getParam("category") as "rooms" | "biomes" | "objects" | "elements") ||
+      "rooms"
   );
   const [activeTab, setActiveTab] = useState<"demo" | "game">(
-    (urlParams.get("tab") as "demo" | "game") || "game"
+    (getParam("tab") as "demo" | "game") || "game"
   );
 
   const [cameraPosition, setCameraPosition] = useState<
     [number, number, number]
-  >([10, 10, 10]);
+  >(() =>
+    parseCameraPosition(
+      getParam("cameraX"),
+      getParam("cameraY"),
+      getParam("cameraZ")
+    )
+  );
 
-  const [currentProps, setCurrentProps] = useState<any>({});
-  const [showPropsEditor, setShowPropsEditor] = useState<boolean>(false);
-  const [showRoomInfo, setShowRoomInfo] = useState<boolean>(false);
-  const [showActionCards, setShowActionCards] = useState<boolean>(false);
+  const [currentProps, setCurrentProps] = useState<any>(() =>
+    parseJSON(getParam("props"), {})
+  );
+  const [showPropsEditor, setShowPropsEditor] = useState<boolean>(() =>
+    parseBoolean(getParam("showPropsEditor"))
+  );
+  const [showRoomInfo, setShowRoomInfo] = useState<boolean>(() =>
+    parseBoolean(getParam("showRoomInfo"))
+  );
+  const [showActionCards, setShowActionCards] = useState<boolean>(() =>
+    parseBoolean(getParam("showActionCards"))
+  );
 
   // Handle ESC key to return to main app
   React.useEffect(() => {
@@ -1384,31 +1402,49 @@ const ThreeDEditor: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
-  // Function to update URL parameters
-  const updateURL = (updates: {
-    type?: string;
-    category?: string;
-    tab?: string;
-  }) => {
-    const newParams = new URLSearchParams(window.location.search);
-
-    if (updates.type !== undefined) newParams.set("type", updates.type);
-    if (updates.category !== undefined)
-      newParams.set("category", updates.category);
-    if (updates.tab !== undefined) newParams.set("tab", updates.tab);
-
-    const newURL = `${window.location.pathname}?${newParams.toString()}`;
-    window.history.replaceState({}, "", newURL);
-  };
-
   // Update URL when selections change
-  React.useEffect(() => {
+  useEffect(() => {
     updateURL({
       type: selectedType,
       category: selectedCategory,
       tab: activeTab,
     });
-  }, [selectedType, selectedCategory, activeTab]);
+  }, [selectedType, selectedCategory, activeTab, updateURL]);
+
+  // Update URL when camera position changes
+  useEffect(() => {
+    updateURL(serializeCameraPosition(cameraPosition));
+  }, [cameraPosition, updateURL]);
+
+  // Update URL when props change
+  useEffect(() => {
+    updateURL({
+      props: serializeJSON(currentProps),
+    });
+  }, [currentProps, updateURL]);
+
+  // Update URL when UI state changes
+  useEffect(() => {
+    updateURL({
+      showPropsEditor: showPropsEditor.toString(),
+      showRoomInfo: showRoomInfo.toString(),
+      showActionCards: showActionCards.toString(),
+    });
+  }, [showPropsEditor, showRoomInfo, showActionCards, updateURL]);
+
+  // Update URL when search query changes
+  useEffect(() => {
+    updateURL({
+      searchQuery: searchQuery || undefined,
+    });
+  }, [searchQuery, updateURL]);
+
+  // Update URL when collapsed groups change
+  useEffect(() => {
+    updateURL({
+      collapsedGroups: serializeJSON(Array.from(collapsedGroups)),
+    });
+  }, [collapsedGroups, updateURL]);
 
   // Update props when selection changes
   React.useEffect(() => {
@@ -1435,7 +1471,9 @@ const ThreeDEditor: React.FC = () => {
   const selectedConfig = configs.find((config) => config.type === selectedType);
 
   // State for search functionality
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(
+    () => getParam("searchQuery") || ""
+  );
 
   // Filter configs based on search query
   const filteredConfigs = configs.filter(
@@ -1457,7 +1495,7 @@ const ThreeDEditor: React.FC = () => {
 
   // State for collapsible groups
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
-    new Set()
+    () => new Set(parseJSON(getParam("collapsedGroups"), []))
   );
 
   // Auto-collapse groups with multiple variants

@@ -184,6 +184,72 @@ const PauseMenu: React.FC<PauseMenuProps> = ({ isVisible, onUnpause }) => {
             >
               🧩 3D Mosaic Creator
             </button>
+            <button
+              className="menu-button"
+              onClick={() => (window.location.href = "?url-test=true")}
+              style={{
+                padding: "12px 24px",
+                fontSize: "1.2rem",
+                background: "linear-gradient(45deg, #2196F3, #1976D2)",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontFamily: "monospace",
+                fontWeight: "bold",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 15px rgba(33, 150, 243, 0.4)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                margin: "5px",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 20px rgba(33, 150, 243, 0.6)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 15px rgba(33, 150, 243, 0.4)";
+              }}
+            >
+              🔗 URL Param Test
+            </button>
+            <button
+              className="menu-button"
+              onClick={() => (window.location.href = "?url-debug=true")}
+              style={{
+                padding: "12px 24px",
+                fontSize: "1.2rem",
+                background: "linear-gradient(45deg, #FF9800, #F57C00)",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontFamily: "monospace",
+                fontWeight: "bold",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 15px rgba(255, 152, 0, 0.4)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                margin: "5px",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 20px rgba(255, 152, 0, 0.6)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 15px rgba(255, 152, 0, 0.4)";
+              }}
+            >
+              🐛 URL Debug
+            </button>
           </>
         )}
       </div>

@@ -5,6 +5,8 @@ import RoomBuilderPage from "./pages/RoomBuilderPage";
 import TexturePainterLauncher from "./components/TexturePainterLauncher";
 import MosaicCreatorLauncher from "./components/MosaicCreatorLauncher";
 import TexturePainterExample from "./components/TexturePainterExample";
+import URLParamTest from "./components/URLParamTest";
+import URLDebugTest from "./components/URLDebugTest";
 import { ThemeProvider } from "./themes";
 import "./App.css";
 
@@ -17,6 +19,8 @@ function App() {
   const showMosaicCreator = urlParams.get("mosaic-creator") === "true";
   const showTexturePainterExample =
     urlParams.get("texture-painter-example") === "true";
+  const showURLParamTest = urlParams.get("url-test") === "true";
+  const showURLDebugTest = urlParams.get("url-debug") === "true";
 
   // Add CSS class to root element for editor mode
   React.useEffect(() => {
@@ -71,6 +75,22 @@ function App() {
     return (
       <ThemeProvider>
         <TexturePainterExample />
+      </ThemeProvider>
+    );
+  }
+
+  if (showURLParamTest) {
+    return (
+      <ThemeProvider>
+        <URLParamTest />
+      </ThemeProvider>
+    );
+  }
+
+  if (showURLDebugTest) {
+    return (
+      <ThemeProvider>
+        <URLDebugTest />
       </ThemeProvider>
     );
   }
