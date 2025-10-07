@@ -55,10 +55,45 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
 
   // Use ref to maintain stable pattern reference
   const patternRef = useRef<number[]>([]);
+  // Track timeouts to avoid orphan animations
+  const activeTimeouts = useRef<number[]>([]);
 
   // Refs for animated elements
   const blockRefs = useRef<THREE.Mesh[]>([]);
   const bookRef = useRef<THREE.Mesh>(null);
+
+  // Utility: register timeout so we can clear on phase changes
+  const addTimeout = (fn: () => void, ms: number) => {
+    const id = window.setTimeout(fn, ms);
+    activeTimeouts.current.push(id);
+    return id;
+  };
+
+  // Utility: clear all outstanding timeouts
+  const clearActiveTimeouts = () => {
+    activeTimeouts.current.forEach((id) => clearTimeout(id));
+    activeTimeouts.current = [];
+  };
+
+  // Utility: reset all blocks to default visuals
+  const resetAllBlocksVisuals = () => {
+    blockRefs.current.forEach((ref, index) => {
+      if (!ref) return;
+      ref.scale.set(1, 1, 1);
+      ref.rotation.x = 0;
+      ref.rotation.z = 0;
+      const mat = ref.material as THREE.MeshStandardMaterial;
+      if (mat && mat.emissiveIntensity !== undefined) {
+        const isRed = redBlocks.has(index);
+        mat.emissiveIntensity = isRed ? 0.8 : 0.2;
+      }
+      // Ensure position returns to base for shake recovery
+      const base = memoryBlocks[index].position;
+      ref.position.x = base[0];
+      ref.position.y = base[1];
+      ref.position.z = base[2];
+    });
+  };
 
   const playerDimensions = useConsolidatedGameStore(
     (state) => state.playerStats.dimensions
@@ -138,7 +173,9 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     onDoorsLock?.();
 
     // Show pattern after a short delay
-    setTimeout(() => {
+    clearActiveTimeouts();
+    resetAllBlocksVisuals();
+    addTimeout(() => {
       showPattern(newPattern);
     }, 1000);
   };
@@ -158,13 +195,13 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         );
         highlightBlock(blockId);
         stepIndex++;
-        setTimeout(showNextStep, 1200);
+        addTimeout(showNextStep, 1200);
       } else {
         // Pattern shown, now player's turn
         console.log(
           "DEBUG: Pattern display complete, switching to playing phase"
         );
-        setTimeout(() => {
+        addTimeout(() => {
           setGamePhase("playing");
         }, 1000);
       }
@@ -178,8 +215,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     console.log("DEBUG: Handling wrong guess for block", blockId);
 
     // Add to shaking and red blocks
-    setShakingBlocks((prev) => new Set(prev).add(blockId));
-    setRedBlocks((prev) => new Set(prev).add(blockId));
+    // Note: per-cube feedback is applied only if NOT final failure
 
     // Pause interaction briefly
     setIsInteractionPaused(true);
@@ -194,38 +230,31 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
       setCandlesLit(newCandlesLit);
     }
 
-    // Reset visual effects after delay
-    setTimeout(() => {
-      setShakingBlocks((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(blockId);
-        return newSet;
-      });
-      setRedBlocks((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(blockId);
-        return newSet;
-      });
-    }, 600);
-
     // If all candles are out, trigger failure effect
     if (newWrongGuesses >= candlesLit.length) {
       console.log("DEBUG: All candles out - triggering failure effect");
-      setTimeout(() => {
+      // Ensure no single-cube feedback remains
+      setShakingBlocks(new Set([0, 1, 2, 3]));
+      setRedBlocks(new Set([0, 1, 2, 3]));
+      resetAllBlocksVisuals();
+      clearActiveTimeouts();
+      addTimeout(() => {
         setFailureEffect(true);
         // All blocks turn red and shake
         setRedBlocks(new Set([0, 1, 2, 3]));
         setShakingBlocks(new Set([0, 1, 2, 3]));
 
         // Apply damage after effect
-        setTimeout(() => {
+        addTimeout(() => {
           console.log("DEBUG: Applying damage and unlocking doors");
           loseLife();
           onDoorsUnlock?.();
           setIsInteractionPaused(false);
           // Reset everything
-          setTimeout(() => {
+          addTimeout(() => {
             console.log("DEBUG: Resetting game state");
+            clearActiveTimeouts();
+            resetAllBlocksVisuals();
             setGameStarted(false);
             setLevel(1);
             setScore(0);
@@ -237,15 +266,34 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
             setShakingBlocks(new Set());
             setIsInteractionPaused(false);
           }, 2000);
-        }, 1500);
+        }, 900);
       }, 500);
     } else {
       // Not all candles out: replay the current pattern after a brief pause
-      setTimeout(() => {
+      // Apply single-cube feedback briefly
+      setShakingBlocks((prev) => new Set(prev).add(blockId));
+      setRedBlocks((prev) => new Set(prev).add(blockId));
+      addTimeout(() => {
+        setShakingBlocks((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(blockId);
+          return newSet;
+        });
+        setRedBlocks((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(blockId);
+          return newSet;
+        });
+        resetAllBlocksVisuals();
+      }, 600);
+
+      addTimeout(() => {
         setIsInteractionPaused(false);
         setPlayerSequence([]);
+        clearActiveTimeouts();
+        resetAllBlocksVisuals();
         setGamePhase("showing");
-        setTimeout(() => {
+        addTimeout(() => {
           showPattern(patternRef.current);
         }, 400);
       }, 700);
@@ -266,7 +314,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
       material.emissiveIntensity = 1.0;
 
       // Reset after delay
-      setTimeout(() => {
+      addTimeout(() => {
         blockRef.scale.copy(originalScale);
         material.emissiveIntensity = originalEmissive;
       }, 600);
@@ -326,7 +374,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
           addPoints(50);
           addExperience(25);
 
-          setTimeout(() => {
+          addTimeout(() => {
             setGameStarted(false);
             setLevel(1);
             setScore(0);
@@ -340,7 +388,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
           }, 3000);
         } else {
           // Start next level
-          setTimeout(() => {
+          addTimeout(() => {
             const newPattern = generatePattern(level + 3);
             setCurrentPattern(newPattern);
             patternRef.current = newPattern; // Update ref as well
@@ -369,8 +417,9 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         // Gentle rotation
         blockRef.rotation.y = time * 0.5 + index;
 
-        // Shaking animation for wrong guesses
-        if (shakingBlocks.has(index)) {
+        // Shaking animation (failure state shakes all cubes)
+        const shouldShake = failureEffect || shakingBlocks.has(index);
+        if (shouldShake) {
           const shakeIntensity = 0.1;
           blockRef.position.x =
             memoryBlocks[index].position[0] +
