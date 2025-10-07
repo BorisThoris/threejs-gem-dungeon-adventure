@@ -35,6 +35,9 @@ export { default as DungeonAltar } from './DungeonAltar';
 export { default as DungeonThrone } from './DungeonThrone';
 export { default as DungeonGate } from './DungeonGate';
 
+// Furniture elements
+export { default as Table } from './Table';
+
 // Dungeon elements
 export { default as Barrel } from './Barrel';
 export { default as Brazier } from './Brazier';

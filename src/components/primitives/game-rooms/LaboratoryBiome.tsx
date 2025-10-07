@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Text } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
+import { useFrame } from "@react-three/fiber";
 import useGameStore from "../../../store/gameStore";
 import { getBiomeScale } from "../../../utils/biomeScaling";
 import RoomActionCards from "../../RoomActionCards";
@@ -24,12 +25,38 @@ const LaboratoryBiome: React.FC<LaboratoryBiomeProps> = ({
   const scale = getBiomeScale(playerDimensions);
   const biomeSize = size;
 
+  // Refs for animated elements
+  const vialRef = useRef<THREE.Mesh>(null);
+  const equipmentRefs = useRef<THREE.Mesh[]>([]);
+
   const { cards, isVisible, showCards, hideCards } = useRoomActions({
     roomType: "laboratory",
     onExperimentComplete: () => {
       setExperimentComplete(true);
       onExperimentComplete?.();
     },
+  });
+
+  // Animation frame for glowing effects
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+
+    // Animate experiment vial bubbling
+    if (vialRef.current && experimenting) {
+      const bubbleIntensity = Math.sin(time * 4) * 0.2 + 0.8;
+      vialRef.current.material.emissiveIntensity = bubbleIntensity;
+
+      // Slight rotation for bubbling effect
+      vialRef.current.rotation.y = Math.sin(time * 2) * 0.1;
+    }
+
+    // Animate equipment glowing
+    equipmentRefs.current.forEach((equipmentRef, index) => {
+      if (equipmentRef && experimenting) {
+        const glowIntensity = Math.sin(time * 3 + index) * 0.3 + 0.7;
+        equipmentRef.material.emissiveIntensity = glowIntensity;
+      }
+    });
   });
 
   return (
@@ -66,9 +93,19 @@ const LaboratoryBiome: React.FC<LaboratoryBiomeProps> = ({
             </mesh>
 
             {/* Equipment Top */}
-            <mesh position={[0, 0.3, 0]} castShadow>
+            <mesh
+              ref={(el) => {
+                if (el) equipmentRefs.current[i] = el;
+              }}
+              position={[0, 0.3, 0]}
+              castShadow
+            >
               <cylinderGeometry args={[0.2, 0.2, 0.4]} />
-              <meshStandardMaterial color="#455A64" />
+              <meshStandardMaterial
+                color="#455A64"
+                emissive="#00E676"
+                emissiveIntensity={experimenting ? 0.5 : 0.1}
+              />
             </mesh>
 
             {/* Glowing Effect */}
@@ -76,10 +113,32 @@ const LaboratoryBiome: React.FC<LaboratoryBiomeProps> = ({
               <pointLight
                 position={[0, 0.5, 0]}
                 color="#00E676"
-                intensity={0.5}
-                distance={2}
+                intensity={0.8}
+                distance={3}
               />
             )}
+
+            {/* Chemical bubbles */}
+            {experimenting &&
+              Array.from({ length: 5 }).map((_, j) => (
+                <mesh
+                  key={j}
+                  position={[
+                    (Math.random() - 0.5) * 0.3,
+                    Math.random() * 0.4 + 0.2,
+                    (Math.random() - 0.5) * 0.3,
+                  ]}
+                >
+                  <sphereGeometry args={[0.02]} />
+                  <meshStandardMaterial
+                    color="#00E676"
+                    emissive="#00E676"
+                    emissiveIntensity={0.8}
+                    transparent
+                    opacity={0.7}
+                  />
+                </mesh>
+              ))}
           </group>
         );
       })}
@@ -93,11 +152,51 @@ const LaboratoryBiome: React.FC<LaboratoryBiomeProps> = ({
 
         {/* Experiment Vial */}
         {experimenting && (
-          <mesh position={[0, 0.2, 0]} castShadow>
+          <mesh ref={vialRef} position={[0, 0.2, 0]} castShadow>
             <cylinderGeometry args={[0.2, 0.2, 0.3]} />
-            <meshStandardMaterial color="#00E676" />
+            <meshStandardMaterial
+              color="#00E676"
+              emissive="#00E676"
+              emissiveIntensity={0.8}
+            />
           </mesh>
         )}
+
+        {/* Vial glow aura */}
+        {experimenting && (
+          <mesh position={[0, 0.2, 0]}>
+            <cylinderGeometry args={[0.25, 0.25, 0.35]} />
+            <meshStandardMaterial
+              color="#00E676"
+              transparent
+              opacity={0.2}
+              emissive="#00E676"
+              emissiveIntensity={0.3}
+            />
+          </mesh>
+        )}
+
+        {/* Chemical reaction particles */}
+        {experimenting &&
+          Array.from({ length: 8 }).map((_, i) => (
+            <mesh
+              key={i}
+              position={[
+                (Math.random() - 0.5) * 0.6,
+                Math.random() * 0.5 + 0.1,
+                (Math.random() - 0.5) * 0.6,
+              ]}
+            >
+              <sphereGeometry args={[0.03]} />
+              <meshStandardMaterial
+                color={i % 2 === 0 ? "#00E676" : "#FF6B35"}
+                emissive={i % 2 === 0 ? "#00E676" : "#FF6B35"}
+                emissiveIntensity={0.9}
+                transparent
+                opacity={0.8}
+              />
+            </mesh>
+          ))}
       </group>
 
       {/* Chemical Storage */}

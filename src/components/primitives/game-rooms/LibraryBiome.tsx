@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import type { Item } from "../../../types/map";
 import ItemSprite from "../objects/ItemSprite";
 import OptimizedPuzzleRouter from "../../OptimizedPuzzleRouter";
@@ -17,9 +18,36 @@ const LibraryBiome: React.FC<LibraryBiomeProps> = ({ books = [] }) => {
   const [showPuzzle, setShowPuzzle] = useState(false);
   const [puzzleCompleted, setPuzzleCompleted] = useState(false);
 
+  // Refs for animated elements
+  const bookRefs = useRef<THREE.Mesh[]>([]);
+  const tableRef = useRef<THREE.Mesh>(null);
+
   const { cards, isVisible, showCards, hideCards } = useRoomActions({
     roomType: "library",
     onPuzzleStart: () => setShowPuzzle(true),
+  });
+
+  // Animation frame for magical effects
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+
+    // Animate books glowing
+    bookRefs.current.forEach((bookRef, index) => {
+      if (bookRef) {
+        const glowIntensity = Math.sin(time * 2 + index) * 0.2 + 0.3;
+        bookRef.material.emissiveIntensity = glowIntensity;
+
+        // Slight floating animation
+        const floatOffset = Math.sin(time * 1.5 + index) * 0.02;
+        bookRef.position.y += floatOffset * 0.1;
+      }
+    });
+
+    // Animate reading table glow
+    if (tableRef.current && isReading) {
+      const glowIntensity = Math.sin(time * 3) * 0.3 + 0.7;
+      tableRef.current.material.emissiveIntensity = glowIntensity;
+    }
   });
 
   // Create simple bookshelf models instead of loading VOX
@@ -47,7 +75,6 @@ const LibraryBiome: React.FC<LibraryBiomeProps> = ({ books = [] }) => {
         </mesh>
       </RigidBody>
 
-
       {/* Bookshelves */}
       {Array.from({ length: 4 }).map((_, i) => {
         const angle = (i * Math.PI) / 2;
@@ -66,6 +93,9 @@ const LibraryBiome: React.FC<LibraryBiomeProps> = ({ books = [] }) => {
             {Array.from({ length: 6 }).map((_, j) => (
               <mesh
                 key={j}
+                ref={(el) => {
+                  if (el) bookRefs.current[j + i * 6] = el;
+                }}
                 position={[
                   ((j % 3) - 1) * 0.3,
                   Math.floor(j / 3) * 0.4 - 0.4,
@@ -75,6 +105,8 @@ const LibraryBiome: React.FC<LibraryBiomeProps> = ({ books = [] }) => {
                 <boxGeometry args={[0.25, 0.3, 0.05]} />
                 <meshLambertMaterial
                   color={j % 2 === 0 ? "#8B0000" : "#000080"}
+                  emissive={j % 2 === 0 ? "#8B0000" : "#000080"}
+                  emissiveIntensity={0.2}
                 />
               </mesh>
             ))}
@@ -84,10 +116,28 @@ const LibraryBiome: React.FC<LibraryBiomeProps> = ({ books = [] }) => {
 
       {/* Central Reading Table */}
       <group position={[0, 0, 0]}>
-        <mesh position={[0, 0.4, 0]}>
+        <mesh ref={tableRef} position={[0, 0.4, 0]}>
           <boxGeometry args={[2, 0.1, 2]} />
-          <meshLambertMaterial color="#DEB887" />
+          <meshLambertMaterial
+            color="#DEB887"
+            emissive="#FFD700"
+            emissiveIntensity={isReading ? 0.3 : 0.1}
+          />
         </mesh>
+
+        {/* Magical reading aura */}
+        {isReading && (
+          <mesh position={[0, 0.4, 0]}>
+            <boxGeometry args={[2.2, 0.15, 2.2]} />
+            <meshLambertMaterial
+              color="#FFD700"
+              transparent
+              opacity={0.2}
+              emissive="#FFD700"
+              emissiveIntensity={0.4}
+            />
+          </mesh>
+        )}
 
         {/* Table Legs */}
         {[
@@ -126,9 +176,36 @@ const LibraryBiome: React.FC<LibraryBiomeProps> = ({ books = [] }) => {
               Math.floor(index / 3) * 1.5 - 0.5,
             ]}
           >
-            <sphereGeometry args={[0.3, 8, 8]} />
-            <meshBasicMaterial color="#FFD700" transparent opacity={0.3} />
+            <sphereGeometry args={[0.4, 8, 8]} />
+            <meshBasicMaterial
+              color="#FFD700"
+              transparent
+              opacity={0.2}
+              emissive="#FFD700"
+              emissiveIntensity={0.3}
+            />
           </mesh>
+
+          {/* Floating magical particles around books */}
+          {Array.from({ length: 3 }).map((_, particleIndex) => (
+            <mesh
+              key={`particle-${particleIndex}`}
+              position={[
+                ((index % 3) - 1) * 1.5 + (Math.random() - 0.5) * 0.5,
+                1.2 + Math.sin(Date.now() * 0.002 + particleIndex) * 0.2,
+                Math.floor(index / 3) * 1.5 - 0.5 + (Math.random() - 0.5) * 0.5,
+              ]}
+            >
+              <sphereGeometry args={[0.05]} />
+              <meshBasicMaterial
+                color="#FFD700"
+                emissive="#FFD700"
+                emissiveIntensity={0.8}
+                transparent
+                opacity={0.7}
+              />
+            </mesh>
+          ))}
         </group>
       ))}
 

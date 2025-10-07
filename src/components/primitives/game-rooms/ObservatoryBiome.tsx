@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Text } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
+import { useFrame } from "@react-three/fiber";
 import useGameStore from "../../../store/gameStore";
 import { getBiomeScale } from "../../../utils/biomeScaling";
 import RoomActionCards from "../../RoomActionCards";
@@ -24,12 +25,39 @@ const ObservatoryBiome: React.FC<ObservatoryBiomeProps> = ({
   const scale = getBiomeScale(playerDimensions);
   const biomeSize = size;
 
+  // Refs for animated elements
+  const telescopeRef = useRef<THREE.Mesh>(null);
+  const starRefs = useRef<THREE.Mesh[]>([]);
+
   const { cards, isVisible, showCards, hideCards } = useRoomActions({
     roomType: "observatory",
     onObservationComplete: () => {
       setDiscoveryMade(true);
       onObservationComplete?.();
     },
+  });
+
+  // Animation frame for cosmic effects
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+
+    // Animate telescope lens glow
+    if (telescopeRef.current && observing) {
+      const glowIntensity = Math.sin(time * 2) * 0.3 + 0.7;
+      telescopeRef.current.material.emissiveIntensity = glowIntensity;
+    }
+
+    // Animate stars twinkling
+    starRefs.current.forEach((starRef, index) => {
+      if (starRef) {
+        const twinkleIntensity = Math.sin(time * 3 + index) * 0.4 + 0.6;
+        starRef.material.emissiveIntensity = twinkleIntensity;
+
+        // Slight position variation for twinkling
+        const twinkleOffset = Math.sin(time * 4 + index) * 0.01;
+        starRef.position.y += twinkleOffset * 0.1;
+      }
+    });
   });
 
   return (
@@ -58,10 +86,28 @@ const ObservatoryBiome: React.FC<ObservatoryBiomeProps> = ({
         </mesh>
 
         {/* Telescope Lens */}
-        <mesh position={[0, 2, 0]} castShadow>
+        <mesh ref={telescopeRef} position={[0, 2, 0]} castShadow>
           <cylinderGeometry args={[0.4, 0.4, 0.1]} />
-          <meshStandardMaterial color="#E0E0E0" />
+          <meshStandardMaterial
+            color="#E0E0E0"
+            emissive="#E3F2FD"
+            emissiveIntensity={observing ? 0.8 : 0.2}
+          />
         </mesh>
+
+        {/* Lens glow aura */}
+        {observing && (
+          <mesh position={[0, 2, 0]}>
+            <cylinderGeometry args={[0.5, 0.5, 0.15]} />
+            <meshStandardMaterial
+              color="#E3F2FD"
+              transparent
+              opacity={0.3}
+              emissive="#E3F2FD"
+              emissiveIntensity={0.4}
+            />
+          </mesh>
+        )}
 
         {/* Star Light */}
         {observing && (
@@ -121,17 +167,47 @@ const ObservatoryBiome: React.FC<ObservatoryBiomeProps> = ({
       {/* Star Field Effect */}
       {observing && (
         <>
-          {Array.from({ length: 20 }).map((_, i) => {
-            const angle = (i / 20) * Math.PI * 2;
-            const radius = 8;
+          {Array.from({ length: 30 }).map((_, i) => {
+            const angle = (i / 30) * Math.PI * 2;
+            const radius = 8 + Math.sin(i) * 2;
             const x = Math.cos(angle) * radius;
             const z = Math.sin(angle) * radius;
             const y = 3 + Math.random() * 2;
 
             return (
-              <mesh key={i} position={[x, y, z]}>
-                <sphereGeometry args={[0.02]} />
-                <meshStandardMaterial color="#E3F2FD" />
+              <mesh
+                key={i}
+                ref={(el) => {
+                  if (el) starRefs.current[i] = el;
+                }}
+                position={[x, y, z]}
+              >
+                <sphereGeometry args={[0.03 + Math.random() * 0.02]} />
+                <meshStandardMaterial
+                  color="#E3F2FD"
+                  emissive="#E3F2FD"
+                  emissiveIntensity={0.8}
+                />
+              </mesh>
+            );
+          })}
+
+          {/* Constellation lines */}
+          {Array.from({ length: 5 }).map((_, i) => {
+            const startAngle = (i / 5) * Math.PI * 2;
+            const endAngle = ((i + 1) / 5) * Math.PI * 2;
+            const radius = 8;
+
+            return (
+              <mesh key={`line-${i}`} position={[0, 4, 0]}>
+                <cylinderGeometry args={[0.01, 0.01, radius]} />
+                <meshStandardMaterial
+                  color="#E3F2FD"
+                  emissive="#E3F2FD"
+                  emissiveIntensity={0.3}
+                  transparent
+                  opacity={0.6}
+                />
               </mesh>
             );
           })}

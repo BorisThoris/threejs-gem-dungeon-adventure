@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Text } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
+import { useFrame } from "@react-three/fiber";
 import useGameStore from "../../../store/gameStore";
 import { getBiomeScale } from "../../../utils/biomeScaling";
 import RoomActionCards from "../../RoomActionCards";
@@ -22,12 +23,39 @@ const TreasureBiome: React.FC<TreasureBiomeProps> = ({
   const biomeSize = size;
   const [treasureOpened, setTreasureOpened] = useState(false);
 
+  // Refs for animated elements
+  const chestRef = useRef<THREE.Mesh>(null);
+  const coinsRefs = useRef<THREE.Mesh[]>([]);
+
   const { cards, isVisible, showCards, hideCards } = useRoomActions({
     roomType: "treasure",
     onTreasureOpen: () => {
       setTreasureOpened(true);
       onTreasureOpen?.();
     },
+  });
+
+  // Animation frame for glowing effects
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+
+    // Animate coins floating and glowing
+    coinsRefs.current.forEach((coinRef, index) => {
+      if (coinRef) {
+        const floatOffset = Math.sin(time * 2 + index) * 0.1;
+        coinRef.position.y = 0.1 + floatOffset;
+
+        // Pulsing glow
+        const glowIntensity = Math.sin(time * 3 + index) * 0.2 + 0.5;
+        coinRef.material.emissiveIntensity = glowIntensity;
+      }
+    });
+
+    // Chest glow animation
+    if (chestRef.current && treasureOpened) {
+      const pulseIntensity = Math.sin(time * 2) * 0.3 + 0.7;
+      chestRef.current.material.emissiveIntensity = pulseIntensity;
+    }
   });
 
   return (
@@ -58,14 +86,26 @@ const TreasureBiome: React.FC<TreasureBiomeProps> = ({
         </mesh>
 
         {/* Chest */}
-        <mesh position={[0, 0.3, 0]}>
+        <mesh ref={chestRef} position={[0, 0.3, 0]}>
           <boxGeometry args={[2.2, 0.8, 1.7]} />
           <meshStandardMaterial
             color={treasureOpened ? "#4CAF50" : "#8B4513"}
-            emissive={treasureOpened ? "#4CAF50" : "#000000"}
-            emissiveIntensity={treasureOpened ? 0.2 : 0}
+            emissive={treasureOpened ? "#4CAF50" : "#FFD700"}
+            emissiveIntensity={treasureOpened ? 0.5 : 0.1}
             transparent
             opacity={0.3}
+          />
+        </mesh>
+
+        {/* Magical aura around chest */}
+        <mesh position={[0, 0.3, 0]}>
+          <boxGeometry args={[2.5, 1, 2]} />
+          <meshStandardMaterial
+            color="#FFD700"
+            transparent
+            opacity={0.1}
+            emissive="#FFD700"
+            emissiveIntensity={0.3}
           />
         </mesh>
       </group>
@@ -82,24 +122,49 @@ const TreasureBiome: React.FC<TreasureBiomeProps> = ({
 
       {/* Treasure Pile */}
       <group position={[0, 0.1, 0]}>
-        {Array.from({ length: 8 }).map((_, i) => (
-          <mesh
-            key={i}
-            position={[
-              (Math.random() - 0.5) * 3,
-              0.1,
-              (Math.random() - 0.5) * 3,
-            ]}
-            castShadow
-          >
-            <boxGeometry args={[0.2, 0.2, 0.2]} />
-            <meshStandardMaterial
-              color="#FFD700"
-              emissive="#FFD700"
-              emissiveIntensity={0.3}
-            />
-          </mesh>
-        ))}
+        {Array.from({ length: 12 }).map((_, i) => {
+          const angle = (i / 12) * Math.PI * 2;
+          const radius = 1.5 + Math.random() * 1;
+          const x = Math.cos(angle) * radius;
+          const z = Math.sin(angle) * radius;
+
+          return (
+            <mesh
+              key={i}
+              ref={(el) => {
+                if (el) coinsRefs.current[i] = el;
+              }}
+              position={[x, 0.1, z]}
+              castShadow
+            >
+              <boxGeometry args={[0.15, 0.15, 0.15]} />
+              <meshStandardMaterial
+                color="#FFD700"
+                emissive="#FFD700"
+                emissiveIntensity={0.4}
+              />
+            </mesh>
+          );
+        })}
+
+        {/* Magical gems */}
+        {Array.from({ length: 6 }).map((_, i) => {
+          const angle = (i / 6) * Math.PI * 2;
+          const radius = 2.5;
+          const x = Math.cos(angle) * radius;
+          const z = Math.sin(angle) * radius;
+
+          return (
+            <mesh key={`gem-${i}`} position={[x, 0.2, z]} castShadow>
+              <octahedronGeometry args={[0.1]} />
+              <meshStandardMaterial
+                color={i % 2 === 0 ? "#FF00FF" : "#00FFFF"}
+                emissive={i % 2 === 0 ? "#FF00FF" : "#00FFFF"}
+                emissiveIntensity={0.6}
+              />
+            </mesh>
+          );
+        })}
       </group>
 
       {/* Room Title */}

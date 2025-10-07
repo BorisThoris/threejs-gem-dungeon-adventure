@@ -41,6 +41,7 @@ import BarrierBiome from "./BarrierBiome";
 import MazeBiome from "./MazeBiome";
 import BridgeBiome from "./BridgeBiome";
 import StatueBiome from "./StatueBiome";
+import MemoryGamePuzzleBiome from "./MemoryGamePuzzleBiome";
 
 // Biome component mapping
 const BIOME_COMPONENTS = {
@@ -73,6 +74,7 @@ const BIOME_COMPONENTS = {
   maze: MazeBiome,
   bridge: BridgeBiome,
   statue: StatueBiome,
+  "memory-puzzle": MemoryGamePuzzleBiome,
 };
 
 export interface MultiBiomeRoomProps {

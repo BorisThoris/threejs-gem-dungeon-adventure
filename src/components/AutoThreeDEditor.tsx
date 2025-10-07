@@ -12,10 +12,6 @@ import { useRoomActions } from "../hooks/useRoomActions";
 import { mapToRoomType, hasActionCards } from "../utils/roomTypeMapper";
 import RoomActionCards from "./RoomActionCards";
 
-// Import player state for debugging
-import { usePlayerStats } from "../store/consolidatedGameStore";
-import PatternValidationTest from "./PatternValidationTest";
-
 // Import configuration arrays
 import { ROOM_CONFIGS } from "../configs/roomConfigs";
 import { BIOME_CONFIGS } from "../configs/biomeConfigs";
@@ -39,22 +35,11 @@ const LoadingFallback: React.FC = () => (
 );
 
 // Main editor component
-const ThreeDEditor: React.FC = () => {
+const AutoThreeDEditor: React.FC = () => {
   const { urlParams, updateURL, getParam } = useURLParams();
 
-  // ALL HOOKS MUST BE CALLED FIRST - NO CONDITIONAL RETURNS BEFORE THIS POINT
-
   // Add show action cards state
-  const [showActionCards, setShowActionCards] = useState<boolean>(true);
-
-  // Add debugging states
-  const [showDoors, setShowDoors] = useState<boolean>(true);
-  const [showPlayerState, setShowPlayerState] = useState<boolean>(true);
-  const [doorsLocked, setDoorsLocked] = useState<boolean>(false);
-  const [showPatternTest, setShowPatternTest] = useState<boolean>(false);
-
-  // Get player stats for debugging
-  const playerStats = usePlayerStats();
+  const [showActionCards, setShowActionCards] = useState<boolean>(false);
 
   // Add consolidated card system for biomes (will be updated after getCurrentSelection is defined)
   const [roomActionCards, setRoomActionCards] = useState<any[]>([]);
@@ -78,7 +63,7 @@ const ThreeDEditor: React.FC = () => {
         | "objects"
         | "elements";
       console.log(
-        "ThreeDEditor: Initializing with componentType:",
+        "AutoThreeDEditor: Initializing with componentType:",
         componentType,
         "category:",
         category
@@ -90,12 +75,12 @@ const ThreeDEditor: React.FC = () => {
         else if (category === "elements") configs = ELEMENT_CONFIGS;
 
         console.log(
-          "ThreeDEditor: Looking in configs:",
+          "AutoThreeDEditor: Looking in configs:",
           configs.length,
           "items"
         );
         const found = configs.find((config) => config.type === componentType);
-        console.log("ThreeDEditor: Found component:", found);
+        console.log("AutoThreeDEditor: Found component:", found);
         return found || null;
       }
       return null;
@@ -189,170 +174,6 @@ const ThreeDEditor: React.FC = () => {
     });
   }, [selectedSubcategory, updateURL]);
 
-  // Get current configs based on selected category and subcategory
-  const getCurrentConfigs = () => {
-    let configs = [];
-    switch (selectedCategory) {
-      case "rooms":
-        configs = ROOM_CONFIGS;
-        break;
-      case "biomes":
-        configs = BIOME_CONFIGS;
-        break;
-      case "objects":
-        configs = OBJECT_CONFIGS;
-        break;
-      case "elements":
-        configs = ELEMENT_CONFIGS;
-        break;
-      default:
-        return ROOM_CONFIGS;
-    }
-
-    // Filter by subcategory if not "all"
-    if (selectedCategory === "biomes" && selectedSubcategory !== "all") {
-      return configs.filter(
-        (config: RoomConfig) => config.subcategory === selectedSubcategory
-      );
-    }
-
-    return configs;
-  };
-
-  // Get current selection based on category
-  const getCurrentSelection = useCallback(() => {
-    switch (selectedCategory) {
-      case "rooms":
-        return selectedComponent;
-      case "biomes":
-        return selectedComponent;
-      case "objects":
-        return selectedObject;
-      case "elements":
-        return selectedElement;
-      default:
-        return selectedComponent;
-    }
-  }, [selectedCategory, selectedComponent, selectedObject, selectedElement]);
-
-  // Update room action cards when component changes
-  useEffect(() => {
-    const currentComponent = getCurrentSelection();
-    console.log("ThreeDEditor: Card effect triggered", {
-      selectedCategory,
-      currentComponent: currentComponent?.type,
-      hasComponent: !!currentComponent,
-    });
-
-    if (selectedCategory === "biomes" && currentComponent) {
-      const roomType = mapToRoomType(currentComponent.type);
-      console.log("ThreeDEditor: Mapped room type:", roomType);
-
-      if (roomType) {
-        // Simple function to get cards without hooks
-        const getRoomCardsForType = (roomType: string): any[] => {
-          switch (roomType) {
-            case "portal":
-              return [
-                {
-                  id: "activate_portal",
-                  title: "Activate Portal",
-                  description: "Activate the portal to travel",
-                  icon: "🌀",
-                  action: () => console.log("Portal activated in editor"),
-                  cost: 0,
-                },
-                {
-                  id: "study_portal",
-                  title: "Study Portal",
-                  description: "Study the portal's magical properties",
-                  icon: "🔮",
-                  action: () => console.log("Portal studied in editor"),
-                  cost: 0,
-                },
-              ];
-            case "coffee":
-              return [
-                {
-                  id: "brew_coffee",
-                  title: "Brew Coffee",
-                  description: "Brew a fresh cup of coffee for energy boost",
-                  icon: "☕",
-                  action: () => console.log("Coffee brewed in editor"),
-                  cost: 0,
-                },
-                {
-                  id: "coffee_break",
-                  title: "Coffee Break",
-                  description: "Take a relaxing coffee break to restore energy",
-                  icon: "🛋️",
-                  action: () => console.log("Coffee break taken in editor"),
-                  cost: 10,
-                },
-              ];
-            default:
-              return [];
-          }
-        };
-        const cards = getRoomCardsForType(roomType);
-        console.log("ThreeDEditor: Generated cards:", cards);
-        setRoomActionCards(cards);
-      } else {
-        console.log("ThreeDEditor: No room type found, clearing cards");
-        setRoomActionCards([]);
-      }
-    } else {
-      console.log("ThreeDEditor: Not biomes or no component, clearing cards");
-      setRoomActionCards([]);
-    }
-  }, [
-    selectedCategory,
-    selectedComponent,
-    selectedObject,
-    selectedElement,
-    getCurrentSelection,
-  ]);
-
-  // Get current props based on category with debugging callbacks
-  const getCurrentProps = () => {
-    const baseProps = (() => {
-      switch (selectedCategory) {
-        case "rooms":
-          return componentProps;
-        case "biomes":
-          return componentProps;
-        case "objects":
-          return objectProps;
-        case "elements":
-          return elementProps;
-        default:
-          return componentProps;
-      }
-    })();
-
-    // Add debugging callbacks for memory game biome
-    const selection = getCurrentSelection();
-    if (selection?.type === "memory-puzzle") {
-      return {
-        ...baseProps,
-        onDoorsLock: () => {
-          console.log("DEBUG: Doors locked!");
-          setDoorsLocked(true);
-        },
-        onDoorsUnlock: () => {
-          console.log("DEBUG: Doors unlocked!");
-          setDoorsLocked(false);
-        },
-        onRoomComplete: () => {
-          console.log("DEBUG: Room completed!");
-        },
-      };
-    }
-
-    return baseProps;
-  };
-
-  // Event handlers
   const handleComponentSelect = (component: RoomConfig) => {
     setSelectedComponent(component);
     setComponentProps(component.props || {});
@@ -404,7 +225,6 @@ const ThreeDEditor: React.FC = () => {
     });
   };
 
-  // CONDITIONAL RENDERING - NOW SAFE TO DO AFTER ALL HOOKS
   if (isLoading) {
     return (
       <div
@@ -459,6 +279,135 @@ const ThreeDEditor: React.FC = () => {
     );
   }
 
+  // Get current configs based on selected category and subcategory
+  const getCurrentConfigs = () => {
+    let configs = [];
+    switch (selectedCategory) {
+      case "rooms":
+        configs = ROOM_CONFIGS;
+        break;
+      case "biomes":
+        configs = BIOME_CONFIGS;
+        break;
+      case "objects":
+        configs = OBJECT_CONFIGS;
+        break;
+      case "elements":
+        configs = ELEMENT_CONFIGS;
+        break;
+      default:
+        return ROOM_CONFIGS;
+    }
+
+    // Filter by subcategory if not "all"
+    if (selectedCategory === "biomes" && selectedSubcategory !== "all") {
+      return configs.filter(
+        (config: RoomConfig) => config.subcategory === selectedSubcategory
+      );
+    }
+
+    return configs;
+  };
+
+  // Get current selection based on category
+  const getCurrentSelection = useCallback(() => {
+    switch (selectedCategory) {
+      case "rooms":
+        return selectedComponent;
+      case "biomes":
+        return selectedComponent;
+      case "objects":
+        return selectedObject;
+      case "elements":
+        return selectedElement;
+      default:
+        return selectedComponent;
+    }
+  }, [selectedCategory, selectedComponent, selectedObject, selectedElement]);
+
+  // Update room action cards when component changes
+  useEffect(() => {
+    const currentComponent = getCurrentSelection();
+    if (selectedCategory === "biomes" && currentComponent) {
+      const roomType = mapToRoomType(currentComponent.type);
+      if (roomType) {
+        // Simple function to get cards without hooks
+        const getRoomCardsForType = (roomType: string): any[] => {
+          switch (roomType) {
+            case "portal":
+              return [
+                {
+                  id: "activate_portal",
+                  title: "Activate Portal",
+                  description: "Activate the portal to travel",
+                  icon: "🌀",
+                  action: () => console.log("Portal activated in editor"),
+                  cost: 0,
+                },
+                {
+                  id: "study_portal",
+                  title: "Study Portal",
+                  description: "Study the portal's magical properties",
+                  icon: "🔮",
+                  action: () => console.log("Portal studied in editor"),
+                  cost: 0,
+                },
+              ];
+            case "coffee":
+              return [
+                {
+                  id: "brew_coffee",
+                  title: "Brew Coffee",
+                  description: "Brew a fresh cup of coffee for energy boost",
+                  icon: "☕",
+                  action: () => console.log("Coffee brewed in editor"),
+                  cost: 0,
+                },
+                {
+                  id: "coffee_break",
+                  title: "Coffee Break",
+                  description: "Take a relaxing coffee break to restore energy",
+                  icon: "🛋️",
+                  action: () => console.log("Coffee break taken in editor"),
+                  cost: 10,
+                },
+              ];
+            default:
+              return [];
+          }
+        };
+        const cards = getRoomCardsForType(roomType);
+        setRoomActionCards(cards);
+      } else {
+        setRoomActionCards([]);
+      }
+    } else {
+      setRoomActionCards([]);
+    }
+  }, [
+    selectedCategory,
+    selectedComponent,
+    selectedObject,
+    selectedElement,
+    getCurrentSelection,
+  ]);
+
+  // Get current props based on category
+  const getCurrentProps = () => {
+    switch (selectedCategory) {
+      case "rooms":
+        return componentProps;
+      case "biomes":
+        return componentProps;
+      case "objects":
+        return objectProps;
+      case "elements":
+        return elementProps;
+      default:
+        return componentProps;
+    }
+  };
+
   // Handle category selection
   const handleCategorySelect = (
     category: "rooms" | "biomes" | "objects" | "elements"
@@ -486,24 +435,6 @@ const ThreeDEditor: React.FC = () => {
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#1a1a1a" }}>
-      {/* Custom scrollbar styles */}
-      <style>{`
-        .category-scroll::-webkit-scrollbar {
-          width: 6px;
-        }
-        .category-scroll::-webkit-scrollbar-track {
-          background: #333;
-          border-radius: 3px;
-        }
-        .category-scroll::-webkit-scrollbar-thumb {
-          background: #666;
-          border-radius: 3px;
-        }
-        .category-scroll::-webkit-scrollbar-thumb:hover {
-          background: #888;
-        }
-      `}</style>
-
       {/* Navigation */}
       <SharedNavigation currentPage="editor" />
 
@@ -515,37 +446,15 @@ const ThreeDEditor: React.FC = () => {
           padding: "20px",
           overflowY: "auto",
           borderRight: "1px solid #444",
-          display: "flex",
-          flexDirection: "column",
-          height: "100vh",
-          position: "relative",
         }}
       >
         <h2 style={{ color: "white", marginBottom: "20px" }}>3D Editor</h2>
 
         {/* Category Tabs */}
         <div style={{ marginBottom: "20px" }}>
-          <div
-            className="category-scroll"
-            style={{
-              display: "flex",
-              gap: "5px",
-              marginBottom: "15px",
-              flexWrap: "wrap",
-              maxHeight: "120px",
-              overflowY: "auto",
-              paddingRight: "5px",
-              // Custom scrollbar styling
-              scrollbarWidth: "thin",
-              scrollbarColor: "#666 #333",
-            }}
-          >
+          <div style={{ display: "flex", gap: "5px", marginBottom: "15px" }}>
             {[
-              {
-                key: "rooms",
-                label: "🏠 Rooms",
-                count: ROOM_CONFIGS.length,
-              },
+              { key: "rooms", label: "🏠 Rooms", count: ROOM_CONFIGS.length },
               {
                 key: "biomes",
                 label: "🌍 Biomes",
@@ -642,25 +551,8 @@ const ThreeDEditor: React.FC = () => {
         </div>
 
         {/* Current Category Items */}
-        <div
-          style={{
-            marginBottom: "30px",
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <div
-            className="category-scroll"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-              flex: 1,
-              overflowY: "auto",
-              paddingRight: "5px",
-            }}
-          >
+        <div style={{ marginBottom: "30px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {getCurrentConfigs().map((item: RoomConfig) => (
               <button
                 key={item.type}
@@ -695,109 +587,43 @@ const ThreeDEditor: React.FC = () => {
 
         {/* Properties Panel */}
         {getCurrentSelection() && (
-          <div style={{ marginTop: "20px", flexShrink: 0 }}>
+          <div style={{ marginTop: "20px" }}>
             <h3 style={{ color: "#4CAF50", marginBottom: "15px" }}>
               Properties
             </h3>
 
-            {/* Debugging Controls */}
-            <div
-              style={{
-                marginBottom: "20px",
-                padding: "10px",
-                background: "#333",
-                borderRadius: "5px",
-              }}
-            >
-              <h4
-                style={{
-                  color: "#FFD700",
-                  marginBottom: "10px",
-                  fontSize: "14px",
-                }}
-              >
-                🐛 Debug Controls
-              </h4>
-
-              <div style={{ marginBottom: "8px" }}>
-                <label
-                  style={{
-                    color: "white",
-                    fontSize: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "5px",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={showDoors}
-                    onChange={(e) => setShowDoors(e.target.checked)}
-                    style={{ margin: 0 }}
-                  />
-                  Show Doors
-                </label>
-              </div>
-
-              <div style={{ marginBottom: "8px" }}>
-                <label
-                  style={{
-                    color: "white",
-                    fontSize: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "5px",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={showPlayerState}
-                    onChange={(e) => setShowPlayerState(e.target.checked)}
-                    style={{ margin: 0 }}
-                  />
-                  Show Player State
-                </label>
-              </div>
-
-              <div style={{ marginBottom: "8px" }}>
-                <label
-                  style={{
-                    color: "white",
-                    fontSize: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "5px",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={showPatternTest}
-                    onChange={(e) => setShowPatternTest(e.target.checked)}
-                    style={{ margin: 0 }}
-                  />
-                  Show Pattern Test
-                </label>
-              </div>
-
-              {doorsLocked && (
-                <div
-                  style={{
-                    color: "#FF6B6B",
-                    fontSize: "12px",
-                    marginTop: "5px",
-                  }}
-                >
-                  🔒 Doors are LOCKED
+            {/* Action Cards Button for Biomes */}
+            {selectedCategory === "biomes" &&
+              getCurrentSelection() &&
+              hasActionCards(getCurrentSelection()!.type) &&
+              roomActionCards &&
+              roomActionCards.length > 0 && (
+                <div style={{ marginBottom: "15px" }}>
+                  <button
+                    onClick={() => setShowActionCards(!showActionCards)}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      background: showActionCards
+                        ? "linear-gradient(45deg, #FF6B6B, #FF8E8E)"
+                        : "linear-gradient(45deg, #FFD700, #FFA500)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {showActionCards
+                      ? "❌ Hide Action Cards"
+                      : "🎮 Show Action Cards"}
+                  </button>
                 </div>
               )}
-            </div>
 
             <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-              }}
+              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
             >
               {getCurrentSelection()?.editableProps?.map((prop) => (
                 <div key={prop.key}>
@@ -898,235 +724,30 @@ const ThreeDEditor: React.FC = () => {
                   return <Component {...getCurrentProps()} />;
                 })()}
 
-              {/* Debug Doors - Show around the room */}
-              {showDoors && getCurrentSelection() && (
-                <>
-                  {/* North Door */}
-                  <Door
-                    position={[0, 0.5, 5]}
-                    rotation={[0, 0, 0]}
-                    targetRoomId="north-room"
-                    showLabel={true}
-                    state={doorsLocked ? "locked" : "closed"}
-                    type={doorsLocked ? "locked" : "standard"}
-                    isLocked={doorsLocked}
-                    onDoorClick={() => console.log("North door clicked")}
-                  />
-
-                  {/* South Door */}
-                  <Door
-                    position={[0, 0.5, -5]}
-                    rotation={[0, Math.PI, 0]}
-                    targetRoomId="south-room"
-                    showLabel={true}
-                    state={doorsLocked ? "locked" : "closed"}
-                    type={doorsLocked ? "locked" : "standard"}
-                    isLocked={doorsLocked}
-                    onDoorClick={() => console.log("South door clicked")}
-                  />
-
-                  {/* East Door */}
-                  <Door
-                    position={[5, 0.5, 0]}
-                    rotation={[0, -Math.PI / 2, 0]}
-                    targetRoomId="east-room"
-                    showLabel={true}
-                    state={doorsLocked ? "locked" : "closed"}
-                    type={doorsLocked ? "locked" : "standard"}
-                    isLocked={doorsLocked}
-                    onDoorClick={() => console.log("East door clicked")}
-                  />
-
-                  {/* West Door */}
-                  <Door
-                    position={[-5, 0.5, 0]}
-                    rotation={[0, Math.PI / 2, 0]}
-                    targetRoomId="west-room"
-                    showLabel={true}
-                    state={doorsLocked ? "locked" : "closed"}
-                    type={doorsLocked ? "locked" : "standard"}
-                    isLocked={doorsLocked}
-                    onDoorClick={() => console.log("West door clicked")}
-                  />
-                </>
-              )}
-
-              {/* Debug info in 3D scene */}
+              {/* Action Cards for Biomes */}
               {selectedCategory === "biomes" &&
+                getCurrentSelection() &&
+                hasActionCards(getCurrentSelection()!.type) &&
                 showActionCards &&
                 roomActionCards &&
                 roomActionCards.length > 0 && (
-                  <Html position={[0, 5, 0]}>
-                    <div
-                      style={{
-                        background: "rgba(0,0,0,0.8)",
-                        color: "white",
-                        padding: "10px",
-                        borderRadius: "5px",
-                        fontSize: "12px",
-                      }}
-                    >
-                      DEBUG: {roomActionCards.length} cards available
-                    </div>
-                  </Html>
-                )}
-
-              {/* Player State Display */}
-              {showPlayerState && (
-                <Html position={[0, 8, 0]}>
-                  <div
-                    style={{
-                      background: "rgba(0,0,0,0.9)",
-                      color: "white",
-                      padding: "15px",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                      minWidth: "200px",
-                      border: "2px solid #4CAF50",
+                  <RoomActionCards
+                    cards={roomActionCards}
+                    isVisible={true}
+                    onCardClick={(card) => {
+                      console.log(
+                        "Card clicked in AutoThreeDEditor:",
+                        card.title
+                      );
                     }}
-                  >
-                    <h4 style={{ margin: "0 0 10px 0", color: "#4CAF50" }}>
-                      👤 Player State
-                    </h4>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "5px",
-                      }}
-                    >
-                      <div>
-                        <strong>Lives:</strong> {playerStats.lives}/
-                        {playerStats.maxLives}
-                      </div>
-                      <div>
-                        <strong>Level:</strong> {playerStats.level}
-                      </div>
-                      <div>
-                        <strong>XP:</strong> {playerStats.experience}
-                      </div>
-                      <div>
-                        <strong>Points:</strong> {playerStats.points}
-                      </div>
-                      <div>
-                        <strong>Keys:</strong> {playerStats.keys}
-                      </div>
-                      <div>
-                        <strong>Bombs:</strong> {playerStats.bombs}
-                      </div>
-                      <div>
-                        <strong>Floor:</strong> {playerStats.currentFloor}
-                      </div>
-                      <div>
-                        <strong>Rooms:</strong> {playerStats.roomsCompleted}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        marginTop: "8px",
-                        fontSize: "10px",
-                        color: "#888",
-                      }}
-                    >
-                      <div>
-                        <strong>Size:</strong> {playerStats.size.toFixed(1)}x
-                      </div>
-                      <div>
-                        <strong>Speed:</strong> {playerStats.speed.toFixed(1)}x
-                      </div>
-                      <div>
-                        <strong>Strength:</strong>{" "}
-                        {playerStats.strength.toFixed(1)}x
-                      </div>
-                      <div>
-                        <strong>Defense:</strong> {playerStats.defense}
-                      </div>
-                    </div>
-                  </div>
-                </Html>
-              )}
+                  />
+                )}
             </Suspense>
           </Physics>
         </Canvas>
-
-        {/* Action Cards Toggle Button */}
-        {selectedCategory === "biomes" &&
-          roomActionCards &&
-          roomActionCards.length > 0 && (
-            <button
-              onClick={() => setShowActionCards(!showActionCards)}
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                zIndex: 1001,
-                width: "40px",
-                height: "40px",
-                background: showActionCards ? "#FF6B6B" : "#4CAF50",
-                color: "white",
-                border: "none",
-                borderRadius: "50%",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "18px",
-                fontWeight: "bold",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                transition: "background 0.2s ease",
-              }}
-            >
-              {showActionCards ? "✕" : "🎮"}
-            </button>
-          )}
-
-        {/* Action Cards Overlay - Outside Canvas */}
-        {selectedCategory === "biomes" &&
-          showActionCards &&
-          roomActionCards &&
-          roomActionCards.length > 0 && (
-            <div
-              style={{
-                position: "absolute",
-                top: "70px",
-                right: "20px",
-                zIndex: 1000,
-                maxWidth: "300px",
-              }}
-            >
-              <RoomActionCards
-                cards={roomActionCards}
-                isVisible={true}
-                onCardClick={(card) => {
-                  console.log("Card clicked in ThreeDEditor:", card.title);
-                }}
-              />
-            </div>
-          )}
-
-        {/* Pattern Test Overlay */}
-        {showPatternTest && (
-          <div
-            style={{
-              position: "absolute",
-              top: "20px",
-              left: "20px",
-              zIndex: 1002,
-              background: "rgba(0,0,0,0.9)",
-              color: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              maxWidth: "400px",
-              maxHeight: "80vh",
-              overflow: "auto",
-            }}
-          >
-            <PatternValidationTest />
-          </div>
-        )}
       </div>
     </div>
   );
 };
 
-export default ThreeDEditor;
+export default AutoThreeDEditor;

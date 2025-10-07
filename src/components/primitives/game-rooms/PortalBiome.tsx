@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Text } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
+import { useFrame } from "@react-three/fiber";
 import useGameStore from "../../../store/gameStore";
 import { getBiomeScale } from "../../../utils/biomeScaling";
 
@@ -24,6 +25,11 @@ const PortalBiome: React.FC<PortalBiomeProps> = ({
   const [isActivated, setIsActivated] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Refs for animated elements
+  const portalCoreRef = useRef<THREE.Mesh>(null);
+  const outerRingRef = useRef<THREE.Mesh>(null);
+  const innerRingRef = useRef<THREE.Mesh>(null);
+
   const handlePortalActivation = () => {
     if (isActivated) return;
 
@@ -39,6 +45,25 @@ const PortalBiome: React.FC<PortalBiomeProps> = ({
     setTimeout(() => setIsAnimating(false), 3000);
   };
 
+  // Animation frame for glowing effects
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+
+    // Rotate portal rings
+    if (outerRingRef.current) {
+      outerRingRef.current.rotation.y = time * 0.5;
+    }
+    if (innerRingRef.current) {
+      innerRingRef.current.rotation.y = -time * 0.8;
+    }
+
+    // Pulsing glow effect
+    if (portalCoreRef.current) {
+      const pulseIntensity = Math.sin(time * 3) * 0.3 + 0.7;
+      portalCoreRef.current.material.emissiveIntensity = pulseIntensity;
+    }
+  });
+
   return (
     <group>
       {/* Floor */}
@@ -52,27 +77,28 @@ const PortalBiome: React.FC<PortalBiomeProps> = ({
       {/* Portal Ring */}
       <group position={[0, 1, 0]}>
         {/* Outer Ring */}
-        <mesh position={[0, 0, 0]} castShadow>
+        <mesh ref={outerRingRef} position={[0, 0, 0]} castShadow>
           <torusGeometry args={[2.5, 0.3, 16, 100]} />
           <meshStandardMaterial
             color={isActivated ? "#00ffff" : "#6600cc"}
             emissive={isActivated ? "#00ffff" : "#330066"}
-            emissiveIntensity={isActivated ? 0.8 : 0.3}
+            emissiveIntensity={isActivated ? 1.2 : 0.5}
           />
         </mesh>
 
         {/* Inner Ring */}
-        <mesh position={[0, 0, 0]} castShadow>
+        <mesh ref={innerRingRef} position={[0, 0, 0]} castShadow>
           <torusGeometry args={[1.8, 0.2, 16, 100]} />
           <meshStandardMaterial
             color={isActivated ? "#ff00ff" : "#9900ff"}
             emissive={isActivated ? "#ff00ff" : "#6600cc"}
-            emissiveIntensity={isActivated ? 1.0 : 0.5}
+            emissiveIntensity={isActivated ? 1.5 : 0.7}
           />
         </mesh>
 
         {/* Portal Core */}
         <mesh
+          ref={portalCoreRef}
           position={[0, 0, 0]}
           onClick={handlePortalActivation}
           onPointerOver={(e) => {
@@ -191,26 +217,28 @@ const PortalBiome: React.FC<PortalBiomeProps> = ({
       )}
 
       {/* Floating Energy Particles */}
-      {isActivated &&
-        Array.from({ length: 12 }).map((_, i) => (
-          <mesh
-            key={i}
-            position={[
-              (Math.random() - 0.5) * 6,
-              Math.random() * 3 + 1,
-              (Math.random() - 0.5) * 6,
-            ]}
-          >
-            <sphereGeometry args={[0.08]} />
+      {Array.from({ length: 20 }).map((_, i) => {
+        const angle = (i / 20) * Math.PI * 2;
+        const radius = 4 + Math.sin(Date.now() * 0.001 + i) * 0.5;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = Math.sin(Date.now() * 0.002 + i) * 0.5 + 2;
+
+        return (
+          <mesh key={i} position={[x, y, z]}>
+            <sphereGeometry
+              args={[0.06 + Math.sin(Date.now() * 0.003 + i) * 0.02]}
+            />
             <meshStandardMaterial
-              color="#00ffff"
-              emissive="#00ffff"
-              emissiveIntensity={0.8}
+              color={isActivated ? "#00ffff" : "#6600cc"}
+              emissive={isActivated ? "#00ffff" : "#9900ff"}
+              emissiveIntensity={isActivated ? 1.0 : 0.4}
               transparent
-              opacity={0.7}
+              opacity={0.8}
             />
           </mesh>
-        ))}
+        );
+      })}
 
       {/* Portal Runes */}
       {Array.from({ length: 8 }).map((_, i) => {
@@ -218,16 +246,30 @@ const PortalBiome: React.FC<PortalBiomeProps> = ({
         const radius = 3.5;
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
+        const glowIntensity = Math.sin(Date.now() * 0.002 + i) * 0.3 + 0.7;
 
         return (
-          <mesh key={i} position={[x, 0.1, z]}>
-            <boxGeometry args={[0.2, 0.1, 0.2]} />
-            <meshStandardMaterial
-              color="#6600cc"
-              emissive="#9900ff"
-              emissiveIntensity={0.6}
-            />
-          </mesh>
+          <group key={i} position={[x, 0.1, z]}>
+            <mesh>
+              <boxGeometry args={[0.2, 0.1, 0.2]} />
+              <meshStandardMaterial
+                color="#6600cc"
+                emissive="#9900ff"
+                emissiveIntensity={glowIntensity}
+              />
+            </mesh>
+            {/* Glow aura */}
+            <mesh>
+              <boxGeometry args={[0.3, 0.15, 0.3]} />
+              <meshStandardMaterial
+                color="#9900ff"
+                transparent
+                opacity={0.2}
+                emissive="#9900ff"
+                emissiveIntensity={glowIntensity * 0.5}
+              />
+            </mesh>
+          </group>
         );
       })}
 

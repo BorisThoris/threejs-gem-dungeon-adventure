@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Text } from "@react-three/drei";
+import { RigidBody } from "@react-three/rapier";
+import { useFrame } from "@react-three/fiber";
 import useGameStore from "../../../store/gameStore";
+import { getBiomeScale } from "../../../utils/biomeScaling";
+import RoomActionCards from "../../RoomActionCards";
+import { useRoomActions } from "../../../hooks/useRoomActions";
 
 interface ArenaBiomeProps {
   onRewardClaim?: () => void;
@@ -11,6 +16,15 @@ const ArenaBiome: React.FC<ArenaBiomeProps> = ({ onRewardClaim }) => {
   const [isFighting, setIsFighting] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [roundsWon, setRoundsWon] = useState(0);
+
+  // Refs for animated elements
+  const arenaRingRef = useRef<THREE.Mesh>(null);
+  const torchRefs = useRef<THREE.Mesh[]>([]);
+
+  const { cards, isVisible, showCards, hideCards } = useRoomActions({
+    roomType: "arena",
+    onFightStart: () => setIsFighting(true),
+  });
 
   const handleFight = () => {
     if (isFighting) return;
@@ -35,6 +49,25 @@ const ArenaBiome: React.FC<ArenaBiomeProps> = ({ onRewardClaim }) => {
     }, 4000);
   };
 
+  // Animation frame for combat effects
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+
+    // Animate arena ring glow
+    if (arenaRingRef.current && isFighting) {
+      const glowIntensity = Math.sin(time * 4) * 0.3 + 0.7;
+      arenaRingRef.current.material.emissiveIntensity = glowIntensity;
+    }
+
+    // Animate torches flickering
+    torchRefs.current.forEach((torchRef, index) => {
+      if (torchRef) {
+        const flickerIntensity = Math.sin(time * 6 + index) * 0.2 + 0.8;
+        torchRef.material.emissiveIntensity = flickerIntensity;
+      }
+    });
+  });
+
   return (
     <group>
       <mesh position={[0, -0.5, 0]} receiveShadow>
@@ -45,10 +78,28 @@ const ArenaBiome: React.FC<ArenaBiomeProps> = ({ onRewardClaim }) => {
       {/* Arena Ring */}
       <group position={[0, 0, 0]}>
         {/* Outer Ring */}
-        <mesh position={[0, 0.1, 0]} castShadow>
+        <mesh ref={arenaRingRef} position={[0, 0.1, 0]} castShadow>
           <torusGeometry args={[4, 0.5, 16, 100]} />
-          <meshStandardMaterial color="#8B4513" />
+          <meshStandardMaterial
+            color="#8B4513"
+            emissive="#FF4500"
+            emissiveIntensity={isFighting ? 0.5 : 0.1}
+          />
         </mesh>
+
+        {/* Combat glow aura */}
+        {isFighting && (
+          <mesh position={[0, 0.1, 0]}>
+            <torusGeometry args={[4.2, 0.7, 16, 100]} />
+            <meshStandardMaterial
+              color="#FF4500"
+              transparent
+              opacity={0.3}
+              emissive="#FF4500"
+              emissiveIntensity={0.4}
+            />
+          </mesh>
+        )}
 
         {/* Inner Ring */}
         <mesh position={[0, 0.1, 0]} castShadow>
@@ -283,7 +334,13 @@ const ArenaBiome: React.FC<ArenaBiomeProps> = ({ onRewardClaim }) => {
               <cylinderGeometry args={[0.1, 0.1, 2, 8]} />
               <meshStandardMaterial color="#8B4513" />
             </mesh>
-            <mesh position={[0, 2.2, 0]} castShadow>
+            <mesh
+              ref={(el) => {
+                if (el) torchRefs.current[i] = el;
+              }}
+              position={[0, 2.2, 0]}
+              castShadow
+            >
               <sphereGeometry args={[0.2]} />
               <meshStandardMaterial
                 color="#FF4500"
@@ -291,6 +348,27 @@ const ArenaBiome: React.FC<ArenaBiomeProps> = ({ onRewardClaim }) => {
                 emissiveIntensity={0.8}
               />
             </mesh>
+
+            {/* Torch flame particles */}
+            {Array.from({ length: 3 }).map((_, j) => (
+              <mesh
+                key={j}
+                position={[
+                  (Math.random() - 0.5) * 0.3,
+                  2.2 + Math.random() * 0.5,
+                  (Math.random() - 0.5) * 0.3,
+                ]}
+              >
+                <sphereGeometry args={[0.05]} />
+                <meshStandardMaterial
+                  color="#FFD700"
+                  emissive="#FFD700"
+                  emissiveIntensity={0.9}
+                  transparent
+                  opacity={0.8}
+                />
+              </mesh>
+            ))}
           </group>
         );
       })}

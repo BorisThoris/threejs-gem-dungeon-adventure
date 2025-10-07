@@ -31,6 +31,7 @@ import BarrierBiome from "../components/primitives/game-rooms/BarrierBiome";
 import MazeBiome from "../components/primitives/game-rooms/MazeBiome";
 import BridgeBiome from "../components/primitives/game-rooms/BridgeBiome";
 import StatueBiome from "../components/primitives/game-rooms/StatueBiome";
+import MemoryGamePuzzleBiome from "../components/primitives/game-rooms/MemoryGamePuzzleBiome";
 
 export interface RoomConfig {
   type: string;
@@ -152,6 +153,26 @@ export const BIOME_CONFIGS: RoomConfig[] = [
     title: "Puzzle Biome",
     emoji: "🧩",
     description: "Puzzle environment biome for rooms",
+    props: { size: 10 },
+    category: "biome",
+    subcategory: "puzzle",
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "memory-puzzle",
+    component: MemoryGamePuzzleBiome,
+    title: "Memory Puzzle Biome",
+    emoji: "🧠",
+    description: "Memory game puzzle biome with floating blocks",
     props: { size: 10 },
     category: "biome",
     subcategory: "puzzle",
