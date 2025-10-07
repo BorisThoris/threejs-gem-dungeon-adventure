@@ -52,7 +52,7 @@ const GlobalActionCards: React.FC = () => {
     showCards: showActionCards,
     hideCards,
   } = useRoomActions({
-    roomType: actionRoomType || "meditation", // fallback to meditation
+    roomType: (actionRoomType || "meditation") as any, // fallback to meditation
     ...callbacks,
   });
 
@@ -87,6 +87,11 @@ const GlobalActionCards: React.FC = () => {
     return null;
   }
 
+  // CARDS DISABLED - Keep logic but don't render cards
+  return null;
+
+  // Original card rendering logic (commented out but preserved):
+  /*
   return (
     <RoomActionCards
       cards={cards}
@@ -98,6 +103,7 @@ const GlobalActionCards: React.FC = () => {
       }}
     />
   );
+  */
 };
 
 export default GlobalActionCards;

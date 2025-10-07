@@ -38,10 +38,10 @@ const LoadingFallback: React.FC = () => (
 const AutoThreeDEditor: React.FC = () => {
   const { urlParams, updateURL, getParam } = useURLParams();
 
-  // Add show action cards state
+  // Add show action cards state - DISABLED (but keep logic)
   const [showActionCards, setShowActionCards] = useState<boolean>(false);
 
-  // Add consolidated card system for biomes (will be updated after getCurrentSelection is defined)
+  // Add consolidated card system for biomes - DISABLED (but keep logic)
   const [roomActionCards, setRoomActionCards] = useState<any[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<
@@ -225,6 +225,90 @@ const AutoThreeDEditor: React.FC = () => {
     });
   };
 
+  // Get current selection based on category
+  const getCurrentSelection = useCallback(() => {
+    switch (selectedCategory) {
+      case "rooms":
+        return selectedComponent;
+      case "biomes":
+        return selectedComponent;
+      case "objects":
+        return selectedObject;
+      case "elements":
+        return selectedElement;
+      default:
+        return selectedComponent;
+    }
+  }, [selectedCategory, selectedComponent, selectedObject, selectedElement]);
+
+  // Update room action cards when component changes - DISABLED (but keep logic)
+  useEffect(() => {
+    const currentComponent = getCurrentSelection();
+    if (selectedCategory === "biomes" && currentComponent) {
+      const roomType = mapToRoomType(currentComponent.type);
+      if (roomType) {
+        // Simple function to get cards without hooks
+        const getRoomCardsForType = (roomType: string): any[] => {
+          switch (roomType) {
+            case "portal":
+              return [
+                {
+                  id: "activate_portal",
+                  title: "Activate Portal",
+                  description: "Activate the portal to travel",
+                  icon: "🌀",
+                  action: () => console.log("Portal activated in editor"),
+                  cost: 0,
+                },
+                {
+                  id: "study_portal",
+                  title: "Study Portal",
+                  description: "Study the portal's magical properties",
+                  icon: "🔮",
+                  action: () => console.log("Portal studied in editor"),
+                  cost: 0,
+                },
+              ];
+            case "coffee":
+              return [
+                {
+                  id: "brew_coffee",
+                  title: "Brew Coffee",
+                  description: "Brew a fresh cup of coffee for energy boost",
+                  icon: "☕",
+                  action: () => console.log("Coffee brewed in editor"),
+                  cost: 0,
+                },
+                {
+                  id: "coffee_break",
+                  title: "Coffee Break",
+                  description: "Take a relaxing coffee break to restore energy",
+                  icon: "🛋️",
+                  action: () => console.log("Coffee break taken in editor"),
+                  cost: 10,
+                },
+              ];
+            default:
+              return [];
+          }
+        };
+        const cards = getRoomCardsForType(roomType);
+        // CARDS DISABLED - Generate cards but don't use them
+        setRoomActionCards([]);
+      } else {
+        setRoomActionCards([]);
+      }
+    } else {
+      setRoomActionCards([]);
+    }
+  }, [
+    selectedCategory,
+    selectedComponent,
+    selectedObject,
+    selectedElement,
+    getCurrentSelection,
+  ]);
+
   if (isLoading) {
     return (
       <div
@@ -308,89 +392,6 @@ const AutoThreeDEditor: React.FC = () => {
 
     return configs;
   };
-
-  // Get current selection based on category
-  const getCurrentSelection = useCallback(() => {
-    switch (selectedCategory) {
-      case "rooms":
-        return selectedComponent;
-      case "biomes":
-        return selectedComponent;
-      case "objects":
-        return selectedObject;
-      case "elements":
-        return selectedElement;
-      default:
-        return selectedComponent;
-    }
-  }, [selectedCategory, selectedComponent, selectedObject, selectedElement]);
-
-  // Update room action cards when component changes
-  useEffect(() => {
-    const currentComponent = getCurrentSelection();
-    if (selectedCategory === "biomes" && currentComponent) {
-      const roomType = mapToRoomType(currentComponent.type);
-      if (roomType) {
-        // Simple function to get cards without hooks
-        const getRoomCardsForType = (roomType: string): any[] => {
-          switch (roomType) {
-            case "portal":
-              return [
-                {
-                  id: "activate_portal",
-                  title: "Activate Portal",
-                  description: "Activate the portal to travel",
-                  icon: "🌀",
-                  action: () => console.log("Portal activated in editor"),
-                  cost: 0,
-                },
-                {
-                  id: "study_portal",
-                  title: "Study Portal",
-                  description: "Study the portal's magical properties",
-                  icon: "🔮",
-                  action: () => console.log("Portal studied in editor"),
-                  cost: 0,
-                },
-              ];
-            case "coffee":
-              return [
-                {
-                  id: "brew_coffee",
-                  title: "Brew Coffee",
-                  description: "Brew a fresh cup of coffee for energy boost",
-                  icon: "☕",
-                  action: () => console.log("Coffee brewed in editor"),
-                  cost: 0,
-                },
-                {
-                  id: "coffee_break",
-                  title: "Coffee Break",
-                  description: "Take a relaxing coffee break to restore energy",
-                  icon: "🛋️",
-                  action: () => console.log("Coffee break taken in editor"),
-                  cost: 10,
-                },
-              ];
-            default:
-              return [];
-          }
-        };
-        const cards = getRoomCardsForType(roomType);
-        setRoomActionCards(cards);
-      } else {
-        setRoomActionCards([]);
-      }
-    } else {
-      setRoomActionCards([]);
-    }
-  }, [
-    selectedCategory,
-    selectedComponent,
-    selectedObject,
-    selectedElement,
-    getCurrentSelection,
-  ]);
 
   // Get current props based on category
   const getCurrentProps = () => {
@@ -593,7 +594,9 @@ const AutoThreeDEditor: React.FC = () => {
             </h3>
 
             {/* Action Cards Button for Biomes */}
-            {selectedCategory === "biomes" &&
+            {/* Action Cards Toggle - DISABLED */}
+            {false &&
+              selectedCategory === "biomes" &&
               getCurrentSelection() &&
               hasActionCards(getCurrentSelection()!.type) &&
               roomActionCards &&
@@ -724,8 +727,9 @@ const AutoThreeDEditor: React.FC = () => {
                   return <Component {...getCurrentProps()} />;
                 })()}
 
-              {/* Action Cards for Biomes */}
-              {selectedCategory === "biomes" &&
+              {/* Action Cards for Biomes - DISABLED */}
+              {false &&
+                selectedCategory === "biomes" &&
                 getCurrentSelection() &&
                 hasActionCards(getCurrentSelection()!.type) &&
                 showActionCards &&

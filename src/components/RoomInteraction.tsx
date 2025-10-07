@@ -19,7 +19,7 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
 
   const actionRoomType = mapToRoomType(room.type);
   const { cards, isVisible, hideCards } = useRoomActions({
-    roomType: actionRoomType || "meditation", // fallback to meditation
+    roomType: (actionRoomType || "meditation") as any, // fallback to meditation
     onPuzzleStart: () => onInteraction("puzzle", room.id),
     onShopOpen: () => onInteraction("shop", room.id),
     onChallengeStart: () => onInteraction("challenge", room.id),
@@ -31,23 +31,24 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
   // Cards are now shown based on room loading, not proximity
   if (!actionRoomType) return null;
 
+  // CARDS DISABLED - Keep logic but don't render cards
+  return null;
+
+  // Original card rendering logic (commented out but preserved):
+  /*
   return (
     <>
-      {/* Action Cards - Shown when room is loaded */}
-      {actionRoomType && (
-        <RoomActionCards
-          cards={cards}
-          isVisible={isVisible}
-          onCardClick={(card) => {
-            // Card clicked
-            // Handle the actual interaction through the card
-            onInteraction(card.id, room.id);
-            hideCards();
-          }}
-        />
-      )}
+      <RoomActionCards
+        cards={cards}
+        isVisible={isVisible}
+        onCardClick={(card) => {
+          onInteraction(card.id, room.id);
+          hideCards();
+        }}
+      />
     </>
   );
+  */
 };
 
 export default RoomInteraction;

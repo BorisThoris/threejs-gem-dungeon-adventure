@@ -31,34 +31,38 @@ const getRoomTypeForActions = (roomType: string) => {
       return "end";
     case "normal":
       return "normal";
-    case "enemy":
-      return "enemy";
     case "secret":
       return "secret";
-    case "memory-chamber":
-      return "memory-chamber";
     case "trap":
       return "trap";
-    case "cursed-room":
-      return "cursed-room";
     case "devil-room":
-      return "devil-room";
+      return "devil";
     case "angel-room":
-      return "angel-room";
+      return "angel";
     case "coffee":
       return "coffee";
-    case "library-upgrade":
-      return "library-upgrade";
     case "portal":
       return "portal";
+    case "gym":
+      return "gym";
+    case "workshop":
+      return "workshop";
+    case "kitchen":
+      return "kitchen";
+    case "bedroom":
+      return "bedroom";
+    case "garden":
+      return "garden";
     case "laboratory":
       return "laboratory";
     case "observatory":
       return "observatory";
-    case "vault":
-      return "vault";
-    case "shrine":
-      return "shrine";
+    case "stairs":
+      return "stairs";
+    case "middle-stairs":
+      return "middle-stairs";
+    case "memory-game-puzzle":
+      return "memory-game-puzzle";
     default:
       return null;
   }
@@ -94,73 +98,95 @@ const EventDrivenActionCards: React.FC = () => {
     []
   );
 
-  // Get action room type
-  const actionRoomType = useMemo(() => {
+  // Get room type for actions
+  const roomType = useMemo(() => {
     return currentRoom ? getRoomTypeForActions(currentRoom.type) : null;
   }, [currentRoom]);
 
-  // Get room actions
   const {
     cards,
     isVisible: cardsVisible,
-    showCards: showActionCards,
+    showCards,
     hideCards,
   } = useRoomActions({
-    roomType: actionRoomType || "meditation",
+    roomType: roomType || "meditation",
     ...callbacks,
   });
 
-  // Listen to room enter/exit events
+  // Handle room changes
   useEffect(() => {
-    const unsubscribeRoomEnter = gameEvents.on(
-      GAME_EVENTS.ROOM_ENTER,
-      (room) => {
-        // Room entered via event
-        setCurrentRoom(room);
-
-        // Show cards immediately when room loads
-        showActionCards();
+    const state = getState();
+    if (state.currentRoom && state.currentRoom !== currentRoom) {
+      setCurrentRoom(state.currentRoom);
+      // Show cards after a short delay
+      setTimeout(() => {
+        showCards();
         setIsVisible(true);
-      }
-    );
+      }, 500);
+    }
+  }, [getState, currentRoom, showCards]);
 
-    const unsubscribeRoomExit = gameEvents.on(GAME_EVENTS.ROOM_EXIT, (room) => {
-      // Room exited via event
-      setCurrentRoom(null);
-      hideCards();
-      setIsVisible(false);
-    });
-
-    const unsubscribeGamePhase = gameEvents.on(
-      GAME_EVENTS.GAME_PHASE_CHANGE,
-      (phase) => {
-        // Game phase changed via event
+  // Handle game events
+  useEffect(() => {
+    const handleGameEvent = (event: any) => {
+      switch (event.type) {
+        case GAME_EVENTS.ROOM_ENTERED:
+          if (event.room) {
+            setCurrentRoom(event.room);
+            setTimeout(() => {
+              showCards();
+              setIsVisible(true);
+            }, 500);
+          }
+          break;
+        case GAME_EVENTS.ROOM_EXITED:
+          hideCards();
+          setIsVisible(false);
+          setCurrentRoom(null);
+          break;
+        case GAME_EVENTS.CARDS_HIDE:
+          hideCards();
+          setIsVisible(false);
+          break;
+        case GAME_EVENTS.CARDS_SHOW:
+          showCards();
+          setIsVisible(true);
+          break;
+        default:
+          break;
       }
-    );
+    };
+
+    // Subscribe to game events
+    gameEvents.on("*", handleGameEvent);
 
     return () => {
-      unsubscribeRoomEnter();
-      unsubscribeRoomExit();
-      unsubscribeGamePhase();
+      gameEvents.off("*", handleGameEvent);
     };
-  }, [showActionCards, hideCards]);
+  }, [showCards, hideCards]);
 
-  // Don't show cards if no room or no action room type
-  if (!currentRoom || !actionRoomType) {
+  // Don't render if no room or no room type
+  if (!currentRoom || !roomType) {
     return null;
   }
 
+  // CARDS DISABLED - Keep all logic but don't render cards
+  return null;
+
+  // Original card rendering logic (commented out but preserved):
+  /*
   return (
     <RoomActionCards
       cards={cards}
       isVisible={isVisible && cardsVisible}
       onCardClick={(card) => {
-        // Card clicked
+        // Handle card click
         hideCards();
         setIsVisible(false);
       }}
     />
   );
+  */
 };
 
 export default EventDrivenActionCards;

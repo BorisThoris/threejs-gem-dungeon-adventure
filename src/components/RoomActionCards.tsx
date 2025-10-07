@@ -69,28 +69,36 @@ const RoomActionCards: React.FC<RoomActionCardsProps> = ({
           onMouseLeave={() => setHoveredCard(null)}
           style={{
             background: isSelected
-              ? "linear-gradient(135deg, #00ff00, #00cc00)"
+              ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
               : isHovered
-              ? "linear-gradient(135deg, #333, #555)"
-              : "linear-gradient(135deg, #222, #444)",
-            border: isSelected
-              ? "2px solid #00ff00"
-              : isHovered
-              ? "2px solid #666"
-              : "2px solid #333",
+              ? "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+              : isDisabled
+              ? "linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%)"
+              : isAffordable
+              ? "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+              : "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+            color: "white",
+            padding: "12px 16px",
+            margin: "8px 0",
             borderRadius: "12px",
-            padding: "1rem",
-            minWidth: "200px",
-            maxWidth: "250px",
             cursor: isDisabled ? "not-allowed" : "pointer",
-            opacity: isDisabled ? 0.5 : 1,
-            transform: isHovered ? "translateY(-5px)" : "translateY(0)",
-            transition: "all 0.3s ease",
-            boxShadow: isSelected
-              ? "0 0 20px rgba(0, 255, 0, 0.5)"
+            transform: isSelected
+              ? "scale(1.05)"
               : isHovered
-              ? "0 5px 15px rgba(0, 0, 0, 0.3)"
-              : "0 2px 8px rgba(0, 0, 0, 0.2)",
+              ? "scale(1.02)"
+              : "scale(1)",
+            transition: "all 0.2s ease",
+            boxShadow: isSelected
+              ? "0 8px 25px rgba(0,0,0,0.3)"
+              : isHovered
+              ? "0 6px 20px rgba(0,0,0,0.2)"
+              : "0 4px 15px rgba(0,0,0,0.1)",
+            border: isSelected
+              ? "2px solid #fff"
+              : isHovered
+              ? "2px solid rgba(255,255,255,0.8)"
+              : "2px solid transparent",
+            opacity: isDisabled ? 0.6 : 1,
             position: "relative",
             overflow: "hidden",
           }}
@@ -100,94 +108,67 @@ const RoomActionCards: React.FC<RoomActionCardsProps> = ({
             style={{
               display: "flex",
               alignItems: "center",
-              marginBottom: "0.5rem",
+              justifyContent: "space-between",
+              marginBottom: "8px",
             }}
           >
-            <div
-              style={{
-                fontSize: "2rem",
-                marginRight: "0.5rem",
-                filter: isDisabled ? "grayscale(100%)" : "none",
-              }}
-            >
-              {card.icon}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "20px" }}>{card.icon}</span>
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                }}
+              >
+                {card.title}
+              </h3>
             </div>
-            <h3
-              style={{
-                color: isSelected ? "#000" : "#fff",
-                fontSize: "1.1rem",
-                fontWeight: "bold",
-                margin: 0,
-                textShadow: isSelected
-                  ? "none"
-                  : "0 1px 2px rgba(0, 0, 0, 0.5)",
-              }}
-            >
-              {card.title}
-            </h3>
+            {card.cost && (
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.2)",
+                  padding: "4px 8px",
+                  borderRadius: "12px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                }}
+              >
+                💰 {card.cost}
+              </div>
+            )}
           </div>
 
           {/* Card Description */}
           <p
             style={{
-              color: isSelected ? "#333" : "#ccc",
-              fontSize: "0.9rem",
-              margin: "0 0 0.5rem 0",
-              lineHeight: 1.3,
+              margin: 0,
+              fontSize: "14px",
+              lineHeight: "1.4",
+              opacity: 0.9,
+              textShadow: "0 1px 2px rgba(0,0,0,0.3)",
             }}
           >
             {card.description}
           </p>
 
-          {/* Cost Display */}
-          {card.cost && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginTop: "0.5rem",
-              }}
-            >
-              <span
-                style={{
-                  color: isAffordable ? "#00ff00" : "#ff0000",
-                  fontSize: "0.8rem",
-                  fontWeight: "bold",
-                }}
-              >
-                💰 {card.cost} points
-              </span>
-              {!isAffordable && (
-                <span
-                  style={{
-                    color: "#ff0000",
-                    fontSize: "0.7rem",
-                    fontStyle: "italic",
-                  }}
-                >
-                  Not enough points
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Cooldown Display */}
-          {card.cooldown && card.cooldown > 0 && (
+          {/* Cooldown Indicator */}
+          {card.cooldown && (
             <div
               style={{
                 position: "absolute",
-                top: "0.5rem",
-                right: "0.5rem",
-                background: "rgba(255, 0, 0, 0.8)",
-                color: "#fff",
-                padding: "0.2rem 0.5rem",
-                borderRadius: "4px",
-                fontSize: "0.7rem",
-                fontWeight: "bold",
+                top: "8px",
+                right: "8px",
+                background: "rgba(255,0,0,0.8)",
+                color: "white",
+                padding: "2px 6px",
+                borderRadius: "8px",
+                fontSize: "10px",
+                fontWeight: "600",
               }}
             >
-              {card.cooldown}s
+              ⏱️ {card.cooldown}s
             </div>
           )}
 
@@ -200,29 +181,18 @@ const RoomActionCards: React.FC<RoomActionCardsProps> = ({
                 left: 0,
                 right: 0,
                 bottom: 0,
-                background: "rgba(0, 0, 0, 0.5)",
+                background: "rgba(0,0,0,0.5)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: "12px",
               }}
             >
-              <span
-                style={{
-                  color: "#ff0000",
-                  fontSize: "0.8rem",
-                  fontWeight: "bold",
-                  textAlign: "center",
-                }}
-              >
-                {card.cost && !isAffordable
-                  ? "Insufficient Points"
-                  : "Unavailable"}
-              </span>
+              <span style={{ fontSize: "24px" }}>🔒</span>
             </div>
           )}
 
-          {/* Hover Effect */}
+          {/* Hover Effect Overlay */}
           {isHovered && !isDisabled && (
             <div
               style={{
@@ -232,7 +202,7 @@ const RoomActionCards: React.FC<RoomActionCardsProps> = ({
                 right: 0,
                 bottom: 0,
                 background:
-                  "linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent)",
+                  "linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)",
                 animation: "shimmer 1.5s infinite",
               }}
             />
@@ -242,39 +212,55 @@ const RoomActionCards: React.FC<RoomActionCardsProps> = ({
     });
   }, [cards, selectedCard, hoveredCard, canAfford, handleCardClick]);
 
-  if (!isVisible || cards.length === 0) return null;
+  // Don't render if not visible or no cards
+  if (!isVisible || !cards || cards.length === 0) {
+    return null;
+  }
 
+  // CARDS DISABLED - Keep all logic but don't render cards
+  return null;
+
+  // Original card rendering logic (commented out but preserved):
+  /*
   return (
     <div
       style={{
         position: "fixed",
-        bottom: "2rem",
+        top: "50%",
         left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 100,
-        display: "flex",
-        gap: "1rem",
-        alignItems: "center",
-        justifyContent: "center",
-        flexWrap: "wrap",
-        maxWidth: "90vw",
-        padding: "0 1rem",
+        transform: "translate(-50%, -50%)",
+        zIndex: 1000,
+        maxWidth: "400px",
+        width: "100%",
+        maxHeight: "80vh",
+        overflowY: "auto",
+        padding: "20px",
+        background: "rgba(0,0,0,0.9)",
+        borderRadius: "16px",
+        border: "2px solid rgba(255,255,255,0.1)",
+        boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+        backdropFilter: "blur(10px)",
       }}
     >
-      {renderedCards}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+        }}
+      >
+        {renderedCards}
+      </div>
 
       <style>{`
         @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
       `}</style>
     </div>
   );
+  */
 };
 
 export default RoomActionCards;

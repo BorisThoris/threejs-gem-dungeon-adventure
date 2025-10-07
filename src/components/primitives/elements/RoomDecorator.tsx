@@ -10,6 +10,7 @@ import {
   BreakablePotionBottle,
   BreakableCrystal,
   BreakableSkull,
+  BreakableFloatingText,
 } from "./index";
 
 interface RoomDecoratorProps {

@@ -97,8 +97,8 @@ const ThreeDEditor: React.FC = () => {
 
   // ALL HOOKS MUST BE CALLED FIRST - NO CONDITIONAL RETURNS BEFORE THIS POINT
 
-  // Add show action cards state
-  const [showActionCards, setShowActionCards] = useState<boolean>(true);
+  // Add show action cards state - DISABLED (but keep logic)
+  const [showActionCards, setShowActionCards] = useState<boolean>(false);
 
   // Add player stats editor state
   const [showStatsEditor, setShowStatsEditor] = useState<boolean>(false);
@@ -116,7 +116,7 @@ const ThreeDEditor: React.FC = () => {
   // Get full game store for stats editor
   const gameStore = useConsolidatedGameStore();
 
-  // Add consolidated card system for biomes (will be updated after getCurrentSelection is defined)
+  // Add consolidated card system for biomes - DISABLED (but keep logic)
   const [roomActionCards, setRoomActionCards] = useState<any[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<
@@ -356,7 +356,8 @@ const ThreeDEditor: React.FC = () => {
         };
         const cards = getRoomCardsForType(roomType);
         console.log("ThreeDEditor: Generated cards:", cards);
-        setRoomActionCards(cards);
+        // CARDS DISABLED - Generate cards but don't use them
+        setRoomActionCards([]);
       } else {
         console.log("ThreeDEditor: No room type found, clearing cards");
         setRoomActionCards([]);
@@ -1057,8 +1058,9 @@ const ThreeDEditor: React.FC = () => {
                 </>
               )}
 
-              {/* Debug info in 3D scene */}
-              {selectedCategory === "biomes" &&
+              {/* Debug info in 3D scene - DISABLED */}
+              {false &&
+                selectedCategory === "biomes" &&
                 showActionCards &&
                 roomActionCards &&
                 roomActionCards.length > 0 && (
@@ -1155,8 +1157,9 @@ const ThreeDEditor: React.FC = () => {
           </Physics>
         </Canvas>
 
-        {/* Action Cards Toggle Button */}
-        {selectedCategory === "biomes" &&
+        {/* Action Cards Toggle Button - DISABLED */}
+        {false &&
+          selectedCategory === "biomes" &&
           roomActionCards &&
           roomActionCards.length > 0 && (
             <button
@@ -1219,8 +1222,9 @@ const ThreeDEditor: React.FC = () => {
           {showStatsEditor ? "✕" : "📊"}
         </button>
 
-        {/* Action Cards Overlay - Outside Canvas */}
-        {selectedCategory === "biomes" &&
+        {/* Action Cards Overlay - DISABLED */}
+        {false &&
+          selectedCategory === "biomes" &&
           showActionCards &&
           roomActionCards &&
           roomActionCards.length > 0 && (
@@ -1271,13 +1275,6 @@ const ThreeDEditor: React.FC = () => {
                 Player Stats
               </h4>
               <div style={{ display: "grid", gap: "8px" }}>
-                <StatInput
-                  label="Health"
-                  value={gameStore.playerStats.health}
-                  onChange={(value) => gameStore.setHealth(value)}
-                  min={0}
-                  max={100}
-                />
                 <StatInput
                   label="Lives"
                   value={gameStore.playerStats.lives}
