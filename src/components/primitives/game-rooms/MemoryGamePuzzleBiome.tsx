@@ -52,6 +52,16 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
   const [redBlocks, setRedBlocks] = useState<Set<number>>(new Set());
   const [isInteractionPaused, setIsInteractionPaused] = useState(false);
   const [failureEffect, setFailureEffect] = useState(false);
+  // Dynamic blocks and spawn animation
+  const [blocks, setBlocks] = useState<MemoryBlock[]>([]);
+  const [isSpawning, setIsSpawning] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const spawnStartTimeRef = useRef<number | null>(null);
+  const exitStartTimeRef = useRef<number | null>(null);
+
+  // Book state
+  const [bookBroken, setBookBroken] = useState(false);
+  const [failureCount, setFailureCount] = useState(0);
 
   // Use ref to maintain stable pattern reference
   const patternRef = useRef<number[]>([]);
@@ -88,11 +98,37 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         mat.emissiveIntensity = isRed ? 0.8 : 0.2;
       }
       // Ensure position returns to base for shake recovery
-      const base = memoryBlocks[index].position;
+      const base = blocks[index]?.position || memoryBlocks[index].position;
       ref.position.x = base[0];
       ref.position.y = base[1];
       ref.position.z = base[2];
     });
+  };
+
+  // Utility: start cube exit animation
+  const startCubeExitAnimation = () => {
+    setIsExiting(true);
+    exitStartTimeRef.current = Date.now();
+
+    addTimeout(() => {
+      // After exit animation, clear blocks and reset game
+      setBlocks([]);
+      setIsExiting(false);
+      setGameStarted(false);
+      setGamePhase("waiting");
+      setCurrentPattern([]);
+      setPlayerSequence([]);
+      setCurrentStep(0);
+      setScore(0);
+      setLevel(1);
+      setCandlesLit([true, true]);
+      setWrongGuesses(0);
+      setShakingBlocks(new Set());
+      setRedBlocks(new Set());
+      setFailureEffect(false);
+      setIsInteractionPaused(false);
+      patternRef.current = [];
+    }, 2000); // 2 second exit animation
   };
 
   const playerDimensions = useConsolidatedGameStore(
@@ -143,21 +179,53 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
 
   // Generate random pattern
   const generatePattern = (length: number): number[] => {
-    const pattern = Array.from({ length }, () => Math.floor(Math.random() * 4));
+    const maxIndex = Math.max(2, blocks.length || 4);
+    const pattern = Array.from({ length }, () =>
+      Math.floor(Math.random() * maxIndex)
+    );
     console.log("DEBUG: Generated pattern:", pattern);
     return pattern;
   };
 
   // Start the memory game
   const startMemoryGame = () => {
-    if (gameStarted) return;
+    if (gameStarted || bookBroken) return;
 
     setGameStarted(true);
     setGamePhase("showing");
-    const newPattern = generatePattern(level + 2); // Start with 3 steps, increase by 1 each level
-    console.log("DEBUG: Setting current pattern to:", newPattern);
-    setCurrentPattern(newPattern);
-    patternRef.current = newPattern; // Update ref as well
+    // Generate 2-5 cubes positioned in a circle, spawn animated
+    const count = 2 + Math.floor(Math.random() * 4); // 2..5
+    const radius = 2.2;
+    const palette = [
+      { c: "#FF6B6B", e: "#FF4444" },
+      { c: "#4ECDC4", e: "#44CCCC" },
+      { c: "#45B7D1", e: "#44AACC" },
+      { c: "#96CEB4", e: "#88CCAA" },
+      { c: "#FFD93D", e: "#E1C12F" },
+    ];
+    const created: MemoryBlock[] = Array.from({ length: count }).map((_, i) => {
+      const ang = (i / count) * Math.PI * 2;
+      const x = Math.cos(ang) * radius;
+      const z = Math.sin(ang) * radius;
+      const y = 1.4 + Math.sin(i) * 0.2;
+      const p = palette[i % palette.length];
+      return {
+        id: i,
+        position: [x, y, z],
+        color: p.c,
+        emissiveColor: p.e,
+        pattern: [i],
+      };
+    });
+    setBlocks(created);
+    setIsSpawning(true);
+    spawnStartTimeRef.current = null;
+
+    // Temporary pattern; regenerate once blocks exist
+    const tempPattern = Array.from({ length: level + 2 }, () => 0);
+    console.log("DEBUG: Setting current pattern to:", tempPattern);
+    setCurrentPattern(tempPattern);
+    patternRef.current = tempPattern; // Update ref as well
     setPlayerSequence([]);
     setCurrentStep(0);
 
@@ -176,7 +244,11 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     clearActiveTimeouts();
     resetAllBlocksVisuals();
     addTimeout(() => {
-      showPattern(newPattern);
+      // Generate pattern after blocks are spawned
+      const properPattern = generatePattern(level + 2);
+      setCurrentPattern(properPattern);
+      patternRef.current = properPattern;
+      showPattern(properPattern);
     }, 1000);
   };
 
@@ -234,15 +306,21 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     if (newWrongGuesses >= candlesLit.length) {
       console.log("DEBUG: All candles out - triggering failure effect");
       // Ensure no single-cube feedback remains
-      setShakingBlocks(new Set([0, 1, 2, 3]));
-      setRedBlocks(new Set([0, 1, 2, 3]));
+      setShakingBlocks(
+        new Set(Array.from({ length: blocks.length }, (_, i) => i))
+      );
+      setRedBlocks(new Set(Array.from({ length: blocks.length }, (_, i) => i)));
       resetAllBlocksVisuals();
       clearActiveTimeouts();
       addTimeout(() => {
         setFailureEffect(true);
         // All blocks turn red and shake
-        setRedBlocks(new Set([0, 1, 2, 3]));
-        setShakingBlocks(new Set([0, 1, 2, 3]));
+        setRedBlocks(
+          new Set(Array.from({ length: blocks.length }, (_, i) => i))
+        );
+        setShakingBlocks(
+          new Set(Array.from({ length: blocks.length }, (_, i) => i))
+        );
 
         // Apply damage after effect
         addTimeout(() => {
@@ -250,22 +328,19 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
           loseLife();
           onDoorsUnlock?.();
           setIsInteractionPaused(false);
-          // Reset everything
-          addTimeout(() => {
-            console.log("DEBUG: Resetting game state");
-            clearActiveTimeouts();
-            resetAllBlocksVisuals();
-            setGameStarted(false);
-            setLevel(1);
-            setScore(0);
-            setGamePhase("waiting");
-            setCandlesLit([true, true]);
-            setWrongGuesses(0);
-            setFailureEffect(false);
-            setRedBlocks(new Set());
-            setShakingBlocks(new Set());
-            setIsInteractionPaused(false);
-          }, 2000);
+
+          // Increment failure count
+          const newFailureCount = failureCount + 1;
+          setFailureCount(newFailureCount);
+
+          // Break book after 2 failures
+          if (newFailureCount >= 2) {
+            console.log("DEBUG: Book broken after 2 failures");
+            setBookBroken(true);
+          }
+
+          // Start exit animation
+          startCubeExitAnimation();
         }, 900);
       }, 500);
     } else {
@@ -324,6 +399,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
   // Handle block click
   const handleBlockClick = (blockId: number) => {
     if (gamePhase !== "playing" || isInteractionPaused) return;
+    if (blocks.length === 0) return; // safety
 
     console.log("DEBUG: Player clicked block", blockId);
     console.log("DEBUG: Current step:", playerSequence.length);
@@ -333,7 +409,8 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     );
 
     // Check if this individual click is correct
-    const expectedBlockId = patternRef.current[playerSequence.length];
+    const expectedBlockId =
+      patternRef.current[playerSequence.length] % Math.max(1, blocks.length);
     const isCorrectClick = blockId === expectedBlockId;
 
     console.log("DEBUG: Click correct?", isCorrectClick);
@@ -374,18 +451,8 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
           addPoints(50);
           addExperience(25);
 
-          addTimeout(() => {
-            setGameStarted(false);
-            setLevel(1);
-            setScore(0);
-            setGamePhase("waiting");
-            setCandlesLit([true, true]);
-            setWrongGuesses(0);
-            setRedBlocks(new Set());
-            setShakingBlocks(new Set());
-            setFailureEffect(false);
-            setIsInteractionPaused(false);
-          }, 3000);
+          // Start exit animation on success
+          startCubeExitAnimation();
         } else {
           // Start next level
           addTimeout(() => {
@@ -408,11 +475,59 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
 
-    // Animate floating blocks
+    // Initialize spawn start
+    if (isSpawning && spawnStartTimeRef.current == null) {
+      spawnStartTimeRef.current = time;
+    }
+
+    // Initialize exit start
+    if (isExiting && exitStartTimeRef.current == null) {
+      exitStartTimeRef.current = time;
+    }
+
+    // Animate floating/spawned blocks
     blockRefs.current.forEach((blockRef, index) => {
       if (blockRef) {
-        const floatOffset = Math.sin(time * 2 + index) * 0.1;
-        blockRef.position.y = memoryBlocks[index].position[1] + floatOffset;
+        const target = blocks[index]?.position;
+        if (!target) return;
+
+        if (isSpawning && spawnStartTimeRef.current != null) {
+          const t = Math.min(1, (time - spawnStartTimeRef.current) / 0.8);
+          const origin: [number, number, number] = [0, -1.0, 0];
+          const spiral = (1 - t) * 0.5;
+          const angle = t * 4 + index;
+          blockRef.position.x =
+            origin[0] * (1 - t) + target[0] * t + Math.sin(angle) * spiral;
+          blockRef.position.y = origin[1] * (1 - t) + target[1] * t;
+          blockRef.position.z =
+            origin[2] * (1 - t) + target[2] * t + Math.cos(angle) * spiral;
+          if (t >= 1 && index === blocks.length - 1) {
+            setIsSpawning(false);
+          }
+        } else if (isExiting && exitStartTimeRef.current != null) {
+          // Exit animation - cubes fly up and fade out
+          const t = Math.min(1, (time - exitStartTimeRef.current) / 2.0);
+          const exitTarget: [number, number, number] = [
+            target[0] + (Math.random() - 0.5) * 2,
+            target[1] + 10 + t * 5,
+            target[2] + (Math.random() - 0.5) * 2,
+          ];
+          blockRef.position.x = target[0] * (1 - t) + exitTarget[0] * t;
+          blockRef.position.y = target[1] * (1 - t) + exitTarget[1] * t;
+          blockRef.position.z = target[2] * (1 - t) + exitTarget[2] * t;
+
+          // Scale down and fade out
+          const scale = 1 - t;
+          blockRef.scale.set(scale, scale, scale);
+
+          // Add rotation for exit effect
+          blockRef.rotation.x += 0.1;
+          blockRef.rotation.y += 0.1;
+          blockRef.rotation.z += 0.1;
+        } else {
+          const floatOffset = Math.sin(time * 2 + index) * 0.1;
+          blockRef.position.y = target[1] + floatOffset;
+        }
 
         // Gentle rotation
         blockRef.rotation.y = time * 0.5 + index;
@@ -422,17 +537,15 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         if (shouldShake) {
           const shakeIntensity = 0.1;
           blockRef.position.x =
-            memoryBlocks[index].position[0] +
-            (Math.random() - 0.5) * shakeIntensity;
+            target[0] + (Math.random() - 0.5) * shakeIntensity;
           blockRef.position.z =
-            memoryBlocks[index].position[2] +
-            (Math.random() - 0.5) * shakeIntensity;
+            target[2] + (Math.random() - 0.5) * shakeIntensity;
           blockRef.rotation.x = (Math.random() - 0.5) * 0.2;
           blockRef.rotation.z = (Math.random() - 0.5) * 0.2;
         } else {
           // Reset position when not shaking
-          blockRef.position.x = memoryBlocks[index].position[0];
-          blockRef.position.z = memoryBlocks[index].position[2];
+          blockRef.position.x = target[0];
+          blockRef.position.z = target[2];
           blockRef.rotation.x = 0;
           blockRef.rotation.z = 0;
         }
@@ -474,10 +587,16 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
       <mesh
         ref={bookRef}
         position={[0, 1, 0]}
-        onClick={startMemoryGame}
+        onClick={bookBroken ? undefined : startMemoryGame}
         onPointerOver={(e) => {
           e.stopPropagation();
-          document.body.style.cursor = gameStarted ? "not-allowed" : "pointer";
+          if (bookBroken) {
+            document.body.style.cursor = "not-allowed";
+          } else {
+            document.body.style.cursor = gameStarted
+              ? "not-allowed"
+              : "pointer";
+          }
         }}
         onPointerOut={() => {
           document.body.style.cursor = "default";
@@ -486,39 +605,43 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
       >
         <boxGeometry args={[0.8, 0.1, 0.6]} />
         <meshStandardMaterial
-          color="#8B0000"
-          emissive="#FFD700"
-          emissiveIntensity={0.3}
+          color={bookBroken ? "#4A4A4A" : "#8B0000"}
+          emissive={bookBroken ? "#000000" : "#FFD700"}
+          emissiveIntensity={bookBroken ? 0 : 0.3}
         />
       </mesh>
 
       {/* Memory Game Blocks */}
-      {memoryBlocks.map((block, index) => (
-        <mesh
-          key={block.id}
-          ref={(el) => {
-            if (el) blockRefs.current[index] = el;
-          }}
-          position={block.position}
-          onClick={() => handleBlockClick(block.id)}
-          onPointerOver={(e) => {
-            e.stopPropagation();
-            document.body.style.cursor =
-              gamePhase === "playing" ? "pointer" : "default";
-          }}
-          onPointerOut={() => {
-            document.body.style.cursor = "default";
-          }}
-          castShadow
-        >
-          <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial
-            color={redBlocks.has(block.id) ? "#FF0000" : block.color}
-            emissive={redBlocks.has(block.id) ? "#FF0000" : block.emissiveColor}
-            emissiveIntensity={redBlocks.has(block.id) ? 0.8 : 0.2}
-          />
-        </mesh>
-      ))}
+      {blocks.length > 0 &&
+        (gameStarted || isSpawning) &&
+        blocks.map((block, index) => (
+          <mesh
+            key={block.id}
+            ref={(el) => {
+              if (el) blockRefs.current[index] = el;
+            }}
+            position={block.position}
+            onClick={() => handleBlockClick(block.id)}
+            onPointerOver={(e) => {
+              e.stopPropagation();
+              document.body.style.cursor =
+                gamePhase === "playing" ? "pointer" : "default";
+            }}
+            onPointerOut={() => {
+              document.body.style.cursor = "default";
+            }}
+            castShadow
+          >
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial
+              color={redBlocks.has(block.id) ? "#FF0000" : block.color}
+              emissive={
+                redBlocks.has(block.id) ? "#FF0000" : block.emissiveColor
+              }
+              emissiveIntensity={redBlocks.has(block.id) ? 0.8 : 0.2}
+            />
+          </mesh>
+        ))}
 
       {/* Game Title */}
       <Text
@@ -543,7 +666,12 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         outlineWidth={0.03}
         outlineColor="#000000"
       >
-        {(gamePhase === "waiting" && "Click the book to start!") ||
+        {(gamePhase === "waiting" &&
+          bookBroken &&
+          "Book is broken! Cannot start game.") ||
+          (gamePhase === "waiting" &&
+            !bookBroken &&
+            "Click the book to start!") ||
           (gamePhase === "showing" &&
             "Watch the pattern... Doors are locked!") ||
           (gamePhase === "playing" &&
