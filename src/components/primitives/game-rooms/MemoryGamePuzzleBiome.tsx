@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import * as THREE from "three";
 import { Text } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
@@ -52,6 +52,19 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
   const [brokenCubes, setBrokenCubes] = useState<Set<number>>(new Set());
   const [isBreaking, setIsBreaking] = useState(false);
   const [breakCooldown, setBreakCooldown] = useState(0);
+
+  // Animated particles system
+  const [particles, setParticles] = useState<
+    Array<{
+      id: number;
+      position: [number, number, number];
+      velocity: [number, number, number];
+      color: string;
+      size: number;
+      life: number;
+      maxLife: number;
+    }>
+  >([]);
 
   // Visual feedback states
   const [shakingBlocks, setShakingBlocks] = useState<Set<number>>(new Set());
@@ -168,6 +181,29 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     // Add cube to broken set
     setBrokenCubes((prev) => new Set([...prev, blockId]));
 
+    // Create explosion particles when cube is broken
+    const explosionParticles = Array.from({ length: 8 }, () => {
+      const colors = ["#FF6B6B", "#FFD700", "#FF9800"];
+      return {
+        id: Math.random(),
+        position: [
+          (Math.random() - 0.5) * 2,
+          Math.random() * 2 + 1,
+          (Math.random() - 0.5) * 2,
+        ] as [number, number, number],
+        velocity: [
+          (Math.random() - 0.5) * 0.1,
+          Math.random() * 0.05 + 0.02,
+          (Math.random() - 0.5) * 0.1,
+        ] as [number, number, number],
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 0.1 + 0.05,
+        life: 0,
+        maxLife: 100, // Short-lived explosion particles
+      };
+    });
+    setParticles((prev) => [...prev, ...explosionParticles]);
+
     // Deal damage to player (risk/reward)
     const damage = 5; // 5 damage for breaking a cube
     loseLife();
@@ -220,6 +256,96 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
       return () => clearTimeout(timer);
     }
   }, [breakCooldown]);
+
+  // Particle system functions
+  const createParticle = () => {
+    const colors = [
+      "#FFD700",
+      "#FF6B6B",
+      "#4CAF50",
+      "#2196F3",
+      "#9C27B0",
+      "#FF9800",
+    ];
+    return {
+      id: Math.random(),
+      position: [
+        (Math.random() - 0.5) * 12,
+        Math.random() * 4 + 0.5,
+        (Math.random() - 0.5) * 12,
+      ] as [number, number, number],
+      velocity: [
+        (Math.random() - 0.5) * 0.02,
+        Math.random() * 0.01 + 0.005,
+        (Math.random() - 0.5) * 0.02,
+      ] as [number, number, number],
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 0.08 + 0.02,
+      life: 0,
+      maxLife: Math.random() * 300 + 200, // 200-500 frames
+    };
+  };
+
+  const updateParticles = useCallback(() => {
+    setParticles((prev) => {
+      return prev
+        .map((particle) => {
+          // Update position
+          const newPosition: [number, number, number] = [
+            particle.position[0] + particle.velocity[0],
+            particle.position[1] + particle.velocity[1],
+            particle.position[2] + particle.velocity[2],
+          ];
+
+          // Add some floating motion
+          const time = Date.now() * 0.001;
+          const floatX = Math.sin(time * 0.5 + particle.id) * 0.001;
+          const floatZ = Math.cos(time * 0.3 + particle.id) * 0.001;
+          const floatY = Math.sin(time * 0.8 + particle.id) * 0.002;
+
+          // Add phase-specific behavior
+          let phaseMultiplier = 1;
+          if (gamePhase === "showing") {
+            phaseMultiplier = 1.5; // More active during pattern showing
+          } else if (gamePhase === "playing") {
+            phaseMultiplier = 0.8; // Calmer during playing
+          }
+
+          return {
+            ...particle,
+            position: [
+              newPosition[0] + floatX * phaseMultiplier,
+              newPosition[1] + floatY * phaseMultiplier,
+              newPosition[2] + floatZ * phaseMultiplier,
+            ] as [number, number, number],
+            life: particle.life + 1,
+          };
+        })
+        .filter((particle) => particle.life < particle.maxLife)
+        .concat(
+          // Add new particles occasionally, more during active phases
+          Math.random() < (gamePhase === "showing" ? 0.2 : 0.1)
+            ? [createParticle()]
+            : []
+        );
+    });
+  }, [gamePhase]);
+
+  // Initialize particles when game starts
+  useEffect(() => {
+    if (gameStarted) {
+      const initialParticles = Array.from({ length: 15 }, createParticle);
+      setParticles(initialParticles);
+    }
+  }, [gameStarted]);
+
+  // Update particles animation
+  useEffect(() => {
+    if (!gameStarted) return;
+
+    const interval = setInterval(updateParticles, 16); // ~60fps
+    return () => clearInterval(interval);
+  }, [gameStarted, updateParticles]);
 
   // Memory blocks configuration
   const memoryBlocks: MemoryBlock[] = [
@@ -520,6 +646,30 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         if (level >= 5) {
           // Game completed successfully!
           setGamePhase("completed");
+
+          // Create celebration particles
+          const celebrationParticles = Array.from({ length: 20 }, () => {
+            const colors = ["#FFD700", "#4CAF50", "#2196F3", "#9C27B0"];
+            return {
+              id: Math.random(),
+              position: [
+                (Math.random() - 0.5) * 6,
+                Math.random() * 3 + 2,
+                (Math.random() - 0.5) * 6,
+              ] as [number, number, number],
+              velocity: [
+                (Math.random() - 0.5) * 0.05,
+                Math.random() * 0.03 + 0.01,
+                (Math.random() - 0.5) * 0.05,
+              ] as [number, number, number],
+              color: colors[Math.floor(Math.random() * colors.length)],
+              size: Math.random() * 0.12 + 0.08,
+              life: 0,
+              maxLife: 200, // Celebration particles last longer
+            };
+          });
+          setParticles((prev) => [...prev, ...celebrationParticles]);
+
           onRoomComplete?.();
           onDoorsUnlock?.();
 
@@ -907,27 +1057,32 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         </Text>
       )}
 
-      {/* Magical Particles */}
+      {/* Animated Magical Particles */}
       {gameStarted &&
-        Array.from({ length: 8 }).map((_, i) => (
-          <mesh
-            key={i}
-            position={[
-              (Math.random() - 0.5) * 8,
-              Math.random() * 3 + 1,
-              (Math.random() - 0.5) * 8,
-            ]}
-          >
-            <sphereGeometry args={[0.05]} />
-            <meshStandardMaterial
-              color="#FFD700"
-              emissive="#FFD700"
-              emissiveIntensity={0.8}
-              transparent
-              opacity={0.7}
-            />
-          </mesh>
-        ))}
+        particles.map((particle) => {
+          const lifeRatio = particle.life / particle.maxLife;
+          const opacity = Math.sin(lifeRatio * Math.PI) * 0.8; // Fade in and out
+          const scale = 0.5 + Math.sin(lifeRatio * Math.PI) * 0.5; // Pulse size
+
+          return (
+            <mesh
+              key={particle.id}
+              position={particle.position}
+              scale={[scale, scale, scale]}
+            >
+              <sphereGeometry args={[particle.size]} />
+              <meshStandardMaterial
+                color={particle.color}
+                emissive={particle.color}
+                emissiveIntensity={
+                  0.6 + Math.sin(lifeRatio * Math.PI * 2) * 0.3
+                }
+                transparent
+                opacity={opacity}
+              />
+            </mesh>
+          );
+        })}
 
       {/* Action Cards */}
       <RoomActionCards
