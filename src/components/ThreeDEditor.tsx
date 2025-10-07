@@ -1,16 +1,16 @@
-import React, { useState, Suspense, useEffect } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, Text, Html } from "@react-three/drei";
-import { Physics, RigidBody } from "@react-three/rapier";
-import RoomActionCards, { type ActionCard } from "./RoomActionCards";
-import {
-  useURLParams,
-  parseCameraPosition,
-  serializeCameraPosition,
-  parseBoolean,
-  parseJSON,
-  serializeJSON,
-} from "../hooks/useURLParams";
+import { OrbitControls, Html } from "@react-three/drei";
+import { Physics } from "@react-three/rapier";
+import * as THREE from "three";
+import SharedNavigation from "./SharedNavigation";
+import Door from "./Door";
+import { useURLParams, parseJSON, serializeJSON } from "../hooks/useURLParams";
+
+// Import the consolidated card system
+import { useRoomActions } from "../hooks/useRoomActions";
+import { mapToRoomType, hasActionCards } from "../utils/roomTypeMapper";
+import RoomActionCards from "./RoomActionCards";
 
 // Import configuration arrays
 import { ROOM_CONFIGS } from "../configs/roomConfigs";
@@ -19,1242 +19,834 @@ import { OBJECT_CONFIGS } from "../configs/objectConfigs";
 import { ELEMENT_CONFIGS } from "../configs/elementConfigs";
 import type { RoomConfig } from "../configs/roomConfigs";
 
-// Import room components from new structure
-import StartRoom from "./primitives/game-rooms/StartRoom";
-import CoffeeBiome from "./primitives/game-rooms/CoffeeBiome";
-import MeditationBiome from "./primitives/game-rooms/MeditationBiome";
-import LibraryUpgradeBiome from "./primitives/game-rooms/LibraryUpgradeBiome";
-import LibraryBiome from "./primitives/game-rooms/LibraryBiome";
-import ShopBiome from "./primitives/game-rooms/ShopBiome";
-import TreasureBiome from "./primitives/game-rooms/TreasureBiome";
-import PuzzleBiome from "./primitives/game-rooms/PuzzleBiome";
-import BossBiome from "./primitives/game-rooms/BossBiome";
-import ArenaBiome from "./primitives/game-rooms/ArenaBiome";
-import EndBiome from "./primitives/game-rooms/EndBiome";
-import PortalBiome from "./primitives/game-rooms/PortalBiome";
-import TrapBiome from "./primitives/game-rooms/TrapBiome";
-import CryptBiome from "./primitives/game-rooms/CryptBiome";
-import SpecialBiome from "./primitives/game-rooms/SpecialBiome";
-import ChallengeBiome from "./primitives/game-rooms/ChallengeBiome";
-import MiddleStairsRoom from "./primitives/game-rooms/MiddleStairsRoom";
-import ItemSprite from "./primitives/objects/ItemSprite";
-import DestructibleWall from "./primitives/objects/DestructibleWall";
-import ParticleSystem from "./primitives/objects/ParticleSystem";
-import MosaicCreator from "./primitives/objects/MosaicCreator";
-import Lever from "./primitives/objects/Lever";
-import Altar from "./primitives/objects/Altar";
-import Skeleton from "./primitives/objects/Skeleton";
-import PressurePlate from "./primitives/objects/PressurePlate";
-import Statue from "./primitives/objects/Statue";
-import Switch from "./primitives/objects/Switch";
-import StairsRoom from "./primitives/game-rooms/StairsRoom";
-import RoomFactory from "./primitives/game-rooms/RoomFactory";
-import ShapedShell from "./primitives/game-rooms/ShapedShell";
-import ComponentShowcaseRoom from "./primitives/demo-rooms/ComponentShowcaseRoom";
-import CleanBreakableRoom from "./primitives/demo-rooms/CleanBreakableRoom";
-import AllBreakableDemo from "./primitives/demo-rooms/AllBreakableDemo";
-import UniversalBreakableDemo from "./primitives/demo-rooms/UniversalBreakableDemo";
-// Import room elements directly
-import Tile from "./primitives/elements/Tile";
-import Wall from "./primitives/elements/Wall";
-import Ceiling from "./primitives/elements/Ceiling";
-import Plank from "./primitives/elements/Plank";
-import Stair from "./primitives/elements/Stair";
-import Handrail from "./primitives/elements/Handrail";
+const LoadingFallback: React.FC = () => (
+  <Html position={[0, 0, 0]}>
+    <div
+      style={{
+        color: "white",
+        background: "rgba(0,0,0,0.8)",
+        padding: "20px",
+        borderRadius: "8px",
+      }}
+    >
+      Loading components...
+    </div>
+  </Html>
+);
 
-// Import other 3D components
-import SharedNavigation from "./SharedNavigation";
+// Main editor component
+const ThreeDEditor: React.FC = () => {
+  const { urlParams, updateURL, getParam } = useURLParams();
 
-// Function to generate action cards for biomes
-const generateBiomeActionCards = (biomeType: string): ActionCard[] => {
-  const baseCards: ActionCard[] = [];
+  // ALL HOOKS MUST BE CALLED FIRST - NO CONDITIONAL RETURNS BEFORE THIS POINT
 
-  switch (biomeType) {
-    case "coffee":
-      return [
-        {
-          id: "brew_coffee",
-          title: "Brew Coffee",
-          description: "Brew a fresh cup of coffee for energy boost",
-          icon: "☕",
-          action: () => console.log("Brewing coffee..."),
-          cost: 0,
-        },
-        {
-          id: "coffee_break",
-          title: "Coffee Break",
-          description: "Take a relaxing coffee break to restore energy",
-          icon: "🛋️",
-          action: () => console.log("Taking coffee break..."),
-          cost: 10,
-        },
-      ];
+  // Add show action cards state
+  const [showActionCards, setShowActionCards] = useState<boolean>(true);
 
-    case "meditation":
-      return [
-        {
-          id: "meditate",
-          title: "Meditate",
-          description: "Focus your mind and gain defense boost",
-          icon: "🧘",
-          action: () => console.log("Meditating..."),
-          cost: 0,
-        },
-        {
-          id: "deep_meditation",
-          title: "Deep Meditation",
-          description: "Advanced meditation for greater benefits",
-          icon: "🕉️",
-          action: () => console.log("Deep meditation..."),
-          cost: 50,
-        },
-      ];
+  // Add consolidated card system for biomes (will be updated after getCurrentSelection is defined)
+  const [roomActionCards, setRoomActionCards] = useState<any[]>([]);
 
-    case "library":
-      return [
-        {
-          id: "read_book",
-          title: "Read Book",
-          description: "Read a book to gain knowledge and experience",
-          icon: "📚",
-          action: () => console.log("Reading book..."),
-          cost: 0,
-        },
-        {
-          id: "research",
-          title: "Research",
-          description: "Conduct research to unlock new abilities",
-          icon: "🔬",
-          action: () => console.log("Researching..."),
-          cost: 25,
-        },
-      ];
+  const [selectedCategory, setSelectedCategory] = useState<
+    "rooms" | "biomes" | "objects" | "elements"
+  >(
+    () =>
+      (getParam("category") as "rooms" | "biomes" | "objects" | "elements") ||
+      "rooms"
+  );
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(
+    () => getParam("subcategory") || "all"
+  );
+  const [selectedComponent, setSelectedComponent] = useState<RoomConfig | null>(
+    () => {
+      const componentType = getParam("componentType");
+      const category = getParam("category") as
+        | "rooms"
+        | "biomes"
+        | "objects"
+        | "elements";
+      console.log(
+        "ThreeDEditor: Initializing with componentType:",
+        componentType,
+        "category:",
+        category
+      );
+      if (componentType) {
+        let configs = ROOM_CONFIGS;
+        if (category === "biomes") configs = BIOME_CONFIGS;
+        else if (category === "objects") configs = OBJECT_CONFIGS;
+        else if (category === "elements") configs = ELEMENT_CONFIGS;
 
-    case "shop":
-      return [
-        {
-          id: "browse_items",
-          title: "Browse Items",
-          description: "Look at available items for purchase",
-          icon: "🛒",
-          action: () => console.log("Browsing items..."),
-          cost: 0,
-        },
-        {
-          id: "buy_item",
-          title: "Buy Item",
-          description: "Purchase useful items and upgrades",
-          icon: "💰",
-          action: () => console.log("Buying item..."),
-          cost: 100,
-        },
-      ];
+        console.log(
+          "ThreeDEditor: Looking in configs:",
+          configs.length,
+          "items"
+        );
+        const found = configs.find((config) => config.type === componentType);
+        console.log("ThreeDEditor: Found component:", found);
+        return found || null;
+      }
+      return null;
+    }
+  );
+  const [selectedObject, setSelectedObject] = useState<RoomConfig | null>(
+    () => {
+      const objectType = getParam("objectType");
+      if (objectType) {
+        return (
+          OBJECT_CONFIGS.find((config) => config.type === objectType) || null
+        );
+      }
+      return null;
+    }
+  );
+  const [selectedElement, setSelectedElement] = useState<RoomConfig | null>(
+    () => {
+      const elementType = getParam("elementType");
+      if (elementType) {
+        return (
+          ELEMENT_CONFIGS.find(
+            (config: RoomConfig) => config.type === elementType
+          ) || null
+        );
+      }
+      return null;
+    }
+  );
 
-    case "treasure":
-      return [
-        {
-          id: "search_treasure",
-          title: "Search Treasure",
-          description: "Search for hidden treasures and rewards",
-          icon: "💎",
-          action: () => console.log("Searching treasure..."),
-          cost: 0,
-        },
-        {
-          id: "open_chest",
-          title: "Open Chest",
-          description: "Open treasure chests for valuable loot",
-          icon: "📦",
-          action: () => console.log("Opening chest..."),
-          cost: 20,
-        },
-      ];
+  const [componentProps, setComponentProps] = useState<any>(() =>
+    parseJSON(getParam("componentProps"), {})
+  );
+  const [objectProps, setObjectProps] = useState<any>(() =>
+    parseJSON(getParam("objectProps"), {})
+  );
+  const [elementProps, setElementProps] = useState<any>(() =>
+    parseJSON(getParam("elementProps"), {})
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    case "puzzle":
-      return [
-        {
-          id: "solve_puzzle",
-          title: "Solve Puzzle",
-          description: "Attempt to solve the room's puzzle",
-          icon: "🧩",
-          action: () => console.log("Solving puzzle..."),
-          cost: 0,
-        },
-        {
-          id: "hint",
-          title: "Get Hint",
-          description: "Get a hint to help solve the puzzle",
-          icon: "💡",
-          action: () => console.log("Getting hint..."),
-          cost: 15,
-        },
-      ];
+  const loadComponents = useCallback(() => {
+    try {
+      setIsLoading(true);
 
-    case "arena":
-      return [
-        {
-          id: "enter_arena",
-          title: "Enter Arena",
-          description: "Enter the arena for combat challenges",
-          icon: "⚔️",
-          action: () => console.log("Entering arena..."),
-          cost: 0,
-        },
-        {
-          id: "challenge_fighter",
-          title: "Challenge Fighter",
-          description: "Challenge a fighter to gain experience",
-          icon: "🥊",
-          action: () => console.log("Challenging fighter..."),
-          cost: 30,
-        },
-      ];
+      // Only set default selections if no URL parameters are present
+      const componentType = getParam("componentType");
+      const objectType = getParam("objectType");
+      const elementType = getParam("elementType");
 
-    case "boss":
-      return [
-        {
-          id: "face_boss",
-          title: "Face Boss",
-          description: "Challenge the boss for ultimate rewards",
-          icon: "👹",
-          action: () => console.log("Facing boss..."),
-          cost: 0,
-        },
-        {
-          id: "prepare_battle",
-          title: "Prepare Battle",
-          description: "Prepare for the upcoming boss battle",
-          icon: "🛡️",
-          action: () => console.log("Preparing battle..."),
-          cost: 50,
-        },
-      ];
+      if (!componentType && ROOM_CONFIGS.length > 0) {
+        setSelectedComponent(ROOM_CONFIGS[0]);
+        setComponentProps(ROOM_CONFIGS[0].props || {});
+      }
+      if (!objectType && OBJECT_CONFIGS.length > 0) {
+        setSelectedObject(OBJECT_CONFIGS[0]);
+        setObjectProps(OBJECT_CONFIGS[0].props || {});
+      }
+      if (!elementType && ELEMENT_CONFIGS.length > 0) {
+        setSelectedElement(ELEMENT_CONFIGS[0]);
+        setElementProps(ELEMENT_CONFIGS[0].props || {});
+      }
 
-    case "garden":
-      return [
-        {
-          id: "tend_garden",
-          title: "Tend Garden",
-          description: "Tend to the garden for peaceful benefits",
-          icon: "🌱",
-          action: () => console.log("Tending garden..."),
-          cost: 0,
-        },
-        {
-          id: "harvest_plants",
-          title: "Harvest Plants",
-          description: "Harvest plants for useful materials",
-          icon: "🌿",
-          action: () => console.log("Harvesting plants..."),
-          cost: 10,
-        },
-      ];
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Failed to load components:", err);
+      setError(
+        "Failed to load components. Please check the console for details."
+      );
+      setIsLoading(false);
+    }
+  }, [getParam]);
 
-    case "kitchen":
-      return [
-        {
-          id: "cook_meal",
-          title: "Cook Meal",
-          description: "Cook a nutritious meal for health benefits",
-          icon: "🍳",
-          action: () => console.log("Cooking meal..."),
-          cost: 0,
-        },
-        {
-          id: "prepare_food",
-          title: "Prepare Food",
-          description: "Prepare food items for future use",
-          icon: "🥘",
-          action: () => console.log("Preparing food..."),
-          cost: 15,
-        },
-      ];
+  // Load components on mount
+  useEffect(() => {
+    loadComponents();
+  }, [loadComponents]);
 
-    case "bedroom":
-      return [
-        {
-          id: "rest",
-          title: "Rest",
-          description: "Rest to restore health and energy",
-          icon: "🛏️",
-          action: () => console.log("Resting..."),
-          cost: 0,
-        },
-        {
-          id: "deep_sleep",
-          title: "Deep Sleep",
-          description: "Get a deep sleep for maximum restoration",
-          icon: "😴",
-          action: () => console.log("Deep sleeping..."),
-          cost: 20,
-        },
-      ];
+  // Update URL when category changes
+  useEffect(() => {
+    updateURL({
+      category: selectedCategory,
+    });
+  }, [selectedCategory, updateURL]);
 
-    default:
-      return [
-        {
-          id: "explore",
-          title: "Explore",
-          description: "Explore this area for potential discoveries",
-          icon: "🔍",
-          action: () => console.log("Exploring..."),
-          cost: 0,
-        },
-      ];
-  }
-};
+  // Update URL when subcategory changes
+  useEffect(() => {
+    updateURL({
+      subcategory: selectedSubcategory,
+    });
+  }, [selectedSubcategory, updateURL]);
 
-interface PropConfig {
-  key: string;
-  label: string;
-  type: "string" | "number" | "boolean" | "color" | "select";
-  options?: string[];
-  min?: number;
-  max?: number;
-  step?: number;
-}
+  // Get current configs based on selected category and subcategory
+  const getCurrentConfigs = () => {
+    let configs = [];
+    switch (selectedCategory) {
+      case "rooms":
+        configs = ROOM_CONFIGS;
+        break;
+      case "biomes":
+        configs = BIOME_CONFIGS;
+        break;
+      case "objects":
+        configs = OBJECT_CONFIGS;
+        break;
+      case "elements":
+        configs = ELEMENT_CONFIGS;
+        break;
+      default:
+        return ROOM_CONFIGS;
+    }
 
-// Demo Room configurations
+    // Filter by subcategory if not "all"
+    if (selectedCategory === "biomes" && selectedSubcategory !== "all") {
+      return configs.filter(
+        (config: RoomConfig) => config.subcategory === selectedSubcategory
+      );
+    }
 
-// Game Room configurations
-
-// Biome configurations
-
-// Object configurations
-
-// Element configurations
-
-// Props Editor Component
-const PropsEditor: React.FC<{
-  config: RoomConfig;
-
-  onPropsChange: (props: any) => void;
-}> = ({ config, onPropsChange }) => {
-  const [localProps, setLocalProps] = useState(config.props || {});
-
-  const handlePropChange = (key: string, value: any) => {
-    const newProps = { ...localProps, [key]: value };
-    setLocalProps(newProps);
-    onPropsChange(newProps);
+    return configs;
   };
 
-  if (!config.editableProps || config.editableProps.length === 0) {
+  // Get current selection based on category
+  const getCurrentSelection = useCallback(() => {
+    switch (selectedCategory) {
+      case "rooms":
+        return selectedComponent;
+      case "biomes":
+        return selectedComponent;
+      case "objects":
+        return selectedObject;
+      case "elements":
+        return selectedElement;
+      default:
+        return selectedComponent;
+    }
+  }, [selectedCategory, selectedComponent, selectedObject, selectedElement]);
+
+  // Update room action cards when component changes
+  useEffect(() => {
+    const currentComponent = getCurrentSelection();
+    console.log("ThreeDEditor: Card effect triggered", {
+      selectedCategory,
+      currentComponent: currentComponent?.type,
+      hasComponent: !!currentComponent,
+    });
+
+    if (selectedCategory === "biomes" && currentComponent) {
+      const roomType = mapToRoomType(currentComponent.type);
+      console.log("ThreeDEditor: Mapped room type:", roomType);
+
+      if (roomType) {
+        // Simple function to get cards without hooks
+        const getRoomCardsForType = (roomType: string): any[] => {
+          switch (roomType) {
+            case "portal":
+              return [
+                {
+                  id: "activate_portal",
+                  title: "Activate Portal",
+                  description: "Activate the portal to travel",
+                  icon: "🌀",
+                  action: () => console.log("Portal activated in editor"),
+                  cost: 0,
+                },
+                {
+                  id: "study_portal",
+                  title: "Study Portal",
+                  description: "Study the portal's magical properties",
+                  icon: "🔮",
+                  action: () => console.log("Portal studied in editor"),
+                  cost: 0,
+                },
+              ];
+            case "coffee":
+              return [
+                {
+                  id: "brew_coffee",
+                  title: "Brew Coffee",
+                  description: "Brew a fresh cup of coffee for energy boost",
+                  icon: "☕",
+                  action: () => console.log("Coffee brewed in editor"),
+                  cost: 0,
+                },
+                {
+                  id: "coffee_break",
+                  title: "Coffee Break",
+                  description: "Take a relaxing coffee break to restore energy",
+                  icon: "🛋️",
+                  action: () => console.log("Coffee break taken in editor"),
+                  cost: 10,
+                },
+              ];
+            default:
+              return [];
+          }
+        };
+        const cards = getRoomCardsForType(roomType);
+        console.log("ThreeDEditor: Generated cards:", cards);
+        setRoomActionCards(cards);
+      } else {
+        console.log("ThreeDEditor: No room type found, clearing cards");
+        setRoomActionCards([]);
+      }
+    } else {
+      console.log("ThreeDEditor: Not biomes or no component, clearing cards");
+      setRoomActionCards([]);
+    }
+  }, [
+    selectedCategory,
+    selectedComponent,
+    selectedObject,
+    selectedElement,
+    getCurrentSelection,
+  ]);
+
+  // Get current props based on category
+  const getCurrentProps = () => {
+    switch (selectedCategory) {
+      case "rooms":
+        return componentProps;
+      case "biomes":
+        return componentProps;
+      case "objects":
+        return objectProps;
+      case "elements":
+        return elementProps;
+      default:
+        return componentProps;
+    }
+  };
+
+  // Event handlers
+  const handleComponentSelect = (component: RoomConfig) => {
+    setSelectedComponent(component);
+    setComponentProps(component.props || {});
+    updateURL({
+      componentType: component.type,
+      componentProps: serializeJSON(component.props || {}),
+    });
+  };
+
+  const handleObjectSelect = (object: RoomConfig) => {
+    setSelectedObject(object);
+    setObjectProps(object.props || {});
+    updateURL({
+      objectType: object.type,
+      objectProps: serializeJSON(object.props || {}),
+    });
+  };
+
+  const handleElementSelect = (element: RoomConfig) => {
+    setSelectedElement(element);
+    setElementProps(element.props || {});
+    updateURL({
+      elementType: element.type,
+      elementProps: serializeJSON(element.props || {}),
+    });
+  };
+
+  const handlePropChange = (key: string, value: any) => {
+    const newProps = { ...componentProps, [key]: value };
+    setComponentProps(newProps);
+    updateURL({
+      componentProps: serializeJSON(newProps),
+    });
+  };
+
+  const handleObjectPropChange = (key: string, value: any) => {
+    const newProps = { ...objectProps, [key]: value };
+    setObjectProps(newProps);
+    updateURL({
+      objectProps: serializeJSON(newProps),
+    });
+  };
+
+  const handleElementPropChange = (key: string, value: any) => {
+    const newProps = { ...elementProps, [key]: value };
+    setElementProps(newProps);
+    updateURL({
+      elementProps: serializeJSON(newProps),
+    });
+  };
+
+  // CONDITIONAL RENDERING - NOW SAFE TO DO AFTER ALL HOOKS
+  if (isLoading) {
     return (
-      <div style={{ color: "#888", fontStyle: "italic" }}>
-        No editable properties for this component
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "#1a1a1a",
+          color: "white",
+        }}
+      >
+        <div>
+          <h2>Loading 3D Editor...</h2>
+          <p>Please wait while components are being loaded.</p>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div>
-      <h3 style={{ margin: "0 0 15px 0", color: "#4CAF50" }}>
-        Edit Properties
-      </h3>
-      {config.editableProps.map((prop) => (
-        <div key={prop.key} style={{ marginBottom: "15px" }}>
-          <label
+  if (error) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "#1a1a1a",
+          color: "white",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <h2>Error Loading 3D Editor</h2>
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
             style={{
-              display: "block",
-              marginBottom: "5px",
-              color: "#ccc",
-              fontSize: "14px",
+              padding: "10px 20px",
+              background: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              marginTop: "20px",
             }}
           >
-            {prop.label}
-          </label>
-          {prop.type === "string" && (
-            <input
-              type="text"
-              value={localProps[prop.key] || ""}
-              onChange={(e) => handlePropChange(prop.key, e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px",
-                background: "#333",
-                color: "white",
-                border: "1px solid #555",
-                borderRadius: "4px",
-              }}
-            />
-          )}
-          {prop.type === "number" && (
-            <input
-              type="number"
-              value={localProps[prop.key] || 0}
-              min={prop.min}
-              max={prop.max}
-              step={prop.step}
-              onChange={(e) =>
-                handlePropChange(prop.key, parseFloat(e.target.value))
-              }
-              style={{
-                width: "100%",
-                padding: "8px",
-                background: "#333",
-                color: "white",
-                border: "1px solid #555",
-                borderRadius: "4px",
-              }}
-            />
-          )}
-          {prop.type === "boolean" && (
-            <input
-              type="checkbox"
-              checked={localProps[prop.key] || false}
-              onChange={(e) => handlePropChange(prop.key, e.target.checked)}
-              style={{ marginRight: "8px" }}
-            />
-          )}
-          {prop.type === "color" && (
-            <input
-              type="color"
-              value={localProps[prop.key] || "#ffffff"}
-              onChange={(e) => handlePropChange(prop.key, e.target.value)}
-              style={{
-                width: "100%",
-                height: "40px",
-                background: "#333",
-                border: "1px solid #555",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            />
-          )}
-          {prop.type === "select" && prop.options && (
-            <select
-              value={localProps[prop.key] || prop.options[0]}
-              onChange={(e) => handlePropChange(prop.key, e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px",
-                background: "#333",
-                color: "white",
-                border: "1px solid #555",
-                borderRadius: "4px",
-              }}
-            >
-              {prop.options.map((option: any) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          )}
+            Retry
+          </button>
         </div>
-      ))}
-    </div>
-  );
-};
-
-// Room Info Panel Component
-const RoomInfoPanel: React.FC<{ config: RoomConfig }> = ({ config }) => {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "20px",
-        right: "20px",
-        background: "rgba(0,0,0,0.9)",
-        color: "white",
-        padding: "20px",
-        borderRadius: "8px",
-        maxWidth: "300px",
-        zIndex: 1000,
-      }}
-    >
-      <h3 style={{ margin: "0 0 10px 0", color: "#4CAF50" }}>
-        {config.emoji} {config.title}
-      </h3>
-      <p style={{ margin: "0 0 10px 0", fontSize: "14px" }}>
-        {config.description}
-      </p>
-      <div style={{ fontSize: "12px", color: "#888" }}>Type: {config.type}</div>
-    </div>
-  );
-};
-
-// Editor Ground Component
-const EditorGround: React.FC = () => {
-  return (
-    <RigidBody type="fixed" position={[0, -0.1, 0]}>
-      <mesh receiveShadow>
-        <boxGeometry args={[50, 0.2, 50]} />
-        <meshStandardMaterial color="#2a2a2a" />
-      </mesh>
-    </RigidBody>
-  );
-};
-
-// Grid Helper Component
-const GridHelper: React.FC = () => {
-  return (
-    <gridHelper
-      args={[20, 20, "#444", "#444"]}
-      position={[0, 0, 0]}
-      rotation={[0, 0, 0]}
-    />
-  );
-};
-
-// Editor Scene Component
-const EditorScene: React.FC<{
-  selectedType: string;
-  selectedCategory: "rooms" | "biomes" | "objects" | "elements";
-  currentProps: any;
-  showActionCards: boolean;
-  activeTab: "demo" | "game";
-  configWithActions: any;
-}> = ({
-  selectedType,
-  selectedCategory,
-  currentProps,
-  showActionCards,
-  activeTab,
-  configWithActions,
-}) => {
-  if (!configWithActions) {
-    return (
-      <Html position={[0, 0, 0]}>
-        <div
-          style={{
-            color: "white",
-            background: "rgba(0,0,0,0.8)",
-            padding: "20px",
-            borderRadius: "8px",
-            textAlign: "center",
-          }}
-        >
-          <h3>Component not found</h3>
-          <p>Type: {selectedType}</p>
-          <p>Category: {selectedCategory}</p>
-        </div>
-      </Html>
+      </div>
     );
   }
 
-  const Component = configWithActions.component;
-
-  return (
-    <Suspense
-      fallback={
-        <Html position={[0, 0, 0]}>
-          <div
-            style={{
-              color: "white",
-              background: "rgba(0,0,0,0.8)",
-              padding: "20px",
-              borderRadius: "8px",
-              textAlign: "center",
-            }}
-          >
-            <h3>Loading...</h3>
-          </div>
-        </Html>
-      }
-    >
-      <Component {...currentProps} />
-      {showActionCards &&
-        configWithActions.availableActions &&
-        configWithActions.availableActions.length > 0 && (
-          <RoomActionCards
-            cards={configWithActions.availableActions}
-            isVisible={true}
-          />
-        )}
-    </Suspense>
-  );
-};
-
-// Main 3D Editor Component
-const ThreeDEditor: React.FC = () => {
-  const { urlParams, updateURL, getParam } = useURLParams();
-
-  // Initialize state from URL parameters
-  const [selectedType, setSelectedType] = useState(getParam("type") || "start");
-  const [selectedCategory, setSelectedCategory] = useState<
-    "rooms" | "biomes" | "objects" | "elements"
-  >(
-    (getParam("category") as "rooms" | "biomes" | "objects" | "elements") ||
-      "rooms"
-  );
-  const [activeTab, setActiveTab] = useState<"demo" | "game">(
-    (getParam("tab") as "demo" | "game") || "game"
-  );
-
-  const [cameraPosition, setCameraPosition] = useState<
-    [number, number, number]
-  >(() =>
-    parseCameraPosition(
-      getParam("cameraX"),
-      getParam("cameraY"),
-      getParam("cameraZ")
-    )
-  );
-
-  const [currentProps, setCurrentProps] = useState<any>(() =>
-    parseJSON(getParam("props"), {})
-  );
-  const [showPropsEditor, setShowPropsEditor] = useState<boolean>(() =>
-    parseBoolean(getParam("showPropsEditor"))
-  );
-  const [showRoomInfo, setShowRoomInfo] = useState<boolean>(() =>
-    parseBoolean(getParam("showRoomInfo"))
-  );
-  const [showActionCards, setShowActionCards] = useState<boolean>(() =>
-    parseBoolean(getParam("showActionCards"))
-  );
-
-  // Get current config and add action cards if needed
-  const getCurrentConfig = () => {
-    const configs =
-      selectedCategory === "rooms"
-        ? ROOM_CONFIGS
-        : selectedCategory === "biomes"
-        ? BIOME_CONFIGS
-        : selectedCategory === "objects"
-        ? OBJECT_CONFIGS
-        : ELEMENT_CONFIGS;
-
-    const selectedConfig = configs.find(
-      (config) => config.type === selectedType
-    );
-
-    if (!selectedConfig) return null;
-
-    return {
-      ...selectedConfig,
-      availableActions:
-        selectedConfig.availableActions ||
-        (selectedCategory === "biomes"
-          ? generateBiomeActionCards(selectedType)
-          : selectedConfig.availableActions),
-    };
+  // Handle category selection
+  const handleCategorySelect = (
+    category: "rooms" | "biomes" | "objects" | "elements"
+  ) => {
+    setSelectedCategory(category);
   };
 
-  const configWithActions = getCurrentConfig();
-
-  // Handle ESC key to return to main app
-  React.useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        window.location.href = window.location.pathname;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, []);
-
-  // Update URL when selections change
-  useEffect(() => {
-    updateURL({
-      type: selectedType,
-      category: selectedCategory,
-      tab: activeTab,
-    });
-  }, [selectedType, selectedCategory, activeTab, updateURL]);
-
-  // Update URL when camera position changes
-  useEffect(() => {
-    updateURL(serializeCameraPosition(cameraPosition));
-  }, [cameraPosition, updateURL]);
-
-  // Update URL when props change
-  useEffect(() => {
-    updateURL({
-      props: serializeJSON(currentProps),
-    });
-  }, [currentProps, updateURL]);
-
-  // Update URL when UI state changes
-  useEffect(() => {
-    updateURL({
-      showPropsEditor: showPropsEditor.toString(),
-      showRoomInfo: showRoomInfo.toString(),
-      showActionCards: showActionCards.toString(),
-    });
-  }, [showPropsEditor, showRoomInfo, showActionCards, updateURL]);
-
-  // Update props when selection changes
-  React.useEffect(() => {
-    const configs =
-      selectedCategory === "rooms"
-        ? activeTab === "demo"
-          ? ROOM_CONFIGS
-          : ROOM_CONFIGS
-        : OBJECT_CONFIGS;
-    const selectedConfig = configs.find(
-      (config) => config.type === selectedType
-    );
-    if (selectedConfig) {
-      setCurrentProps(selectedConfig.props || {});
+  // Handle component selection based on category
+  const handleItemSelect = (item: RoomConfig) => {
+    switch (selectedCategory) {
+      case "rooms":
+        handleComponentSelect(item);
+        break;
+      case "biomes":
+        handleComponentSelect(item);
+        break;
+      case "objects":
+        handleObjectSelect(item);
+        break;
+      case "elements":
+        handleElementSelect(item);
+        break;
     }
-  }, [selectedType, selectedCategory, activeTab]);
-
-  const configs =
-    selectedCategory === "rooms"
-      ? activeTab === "demo"
-        ? ROOM_CONFIGS
-        : ROOM_CONFIGS
-      : OBJECT_CONFIGS;
-  const selectedConfig = configs.find((config) => config.type === selectedType);
-
-  // State for search functionality
-  const [searchQuery, setSearchQuery] = useState(
-    () => getParam("searchQuery") || ""
-  );
-
-  // Filter configs based on search query
-  const filteredConfigs = configs.filter(
-    (config) =>
-      config.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      config.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      config.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Group configs by base type for collapsible sections
-  const groupedConfigs = filteredConfigs.reduce((groups, config) => {
-    const baseType = config.type.split("-")[0];
-    if (!groups[baseType]) {
-      groups[baseType] = [];
-    }
-    groups[baseType].push(config);
-    return groups;
-  }, {} as Record<string, typeof filteredConfigs>);
-
-  // State for collapsible groups
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
-    () => new Set(parseJSON(getParam("collapsedGroups"), []))
-  );
-
-  // Update URL when search query changes
-  useEffect(() => {
-    updateURL({
-      searchQuery: searchQuery || undefined,
-    });
-  }, [searchQuery, updateURL]);
-
-  // Update URL when collapsed groups change
-  useEffect(() => {
-    updateURL({
-      collapsedGroups: serializeJSON(Array.from(collapsedGroups)),
-    });
-  }, [collapsedGroups, updateURL]);
-
-  // Auto-collapse groups with multiple variants
-  React.useEffect(() => {
-    const multiVariantGroups = Object.keys(groupedConfigs).filter(
-      (baseType) => groupedConfigs[baseType].length > 1
-    );
-    setCollapsedGroups(new Set(multiVariantGroups));
-  }, [groupedConfigs]);
+  };
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        margin: 0,
-        padding: 0,
-        overflow: "hidden",
-      }}
-    >
-      {/* Shared Navigation */}
+    <div style={{ display: "flex", height: "100vh", background: "#1a1a1a" }}>
+      {/* Custom scrollbar styles */}
+      <style>{`
+        .category-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .category-scroll::-webkit-scrollbar-track {
+          background: #333;
+          border-radius: 3px;
+        }
+        .category-scroll::-webkit-scrollbar-thumb {
+          background: #666;
+          border-radius: 3px;
+        }
+        .category-scroll::-webkit-scrollbar-thumb:hover {
+          background: #888;
+        }
+      `}</style>
+
+      {/* Navigation */}
       <SharedNavigation currentPage="editor" />
-      {/* Enhanced Control Panel */}
+
+      {/* Sidebar */}
       <div
         style={{
-          width: "400px",
-          height: "100vh",
-          background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
-          borderRight: "2px solid #333",
-          overflowY: "auto",
+          width: "300px",
+          background: "#2a2a2a",
           padding: "20px",
-          boxSizing: "border-box",
+          overflowY: "auto",
+          borderRight: "1px solid #444",
+          display: "flex",
+          flexDirection: "column",
+          height: "100vh",
+          position: "relative",
         }}
       >
-        {/* Header */}
-        <div
-          style={{
-            marginBottom: "30px",
-            textAlign: "center",
-            borderBottom: "2px solid #444",
-            paddingBottom: "20px",
-          }}
-        >
-          <h1
-            style={{
-              margin: "0 0 10px 0",
-              fontSize: "24px",
-              color: "#4CAF50",
-              fontWeight: "bold",
-            }}
-          >
-            🎨 3D Asset Viewer
-          </h1>
-          <p
-            style={{
-              margin: 0,
-              color: "#888",
-              fontSize: "14px",
-            }}
-          >
-            Explore and configure 3D components
-          </p>
-        </div>
+        <h2 style={{ color: "white", marginBottom: "20px" }}>3D Editor</h2>
 
-        {/* Tab Navigation for Rooms */}
-        {selectedCategory === "rooms" && (
+        {/* Category Tabs */}
+        <div style={{ marginBottom: "20px" }}>
           <div
+            className="category-scroll"
             style={{
               display: "flex",
-              marginBottom: "20px",
-              background: "#222",
-              borderRadius: "8px",
-              overflow: "hidden",
+              gap: "5px",
+              marginBottom: "15px",
+              flexWrap: "wrap",
+              maxHeight: "120px",
+              overflowY: "auto",
+              paddingRight: "5px",
+              // Custom scrollbar styling
+              scrollbarWidth: "thin",
+              scrollbarColor: "#666 #333",
             }}
           >
-            <button
-              onClick={() => {
-                setActiveTab("game");
-                const firstRoom = ROOM_CONFIGS[0];
-                if (firstRoom) {
-                  setSelectedType(firstRoom.type);
-                }
-              }}
-              style={{
-                flex: 1,
-                padding: "12px 16px",
-                background: activeTab === "game" ? "#4CAF50" : "transparent",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "600",
-                transition: "all 0.2s ease",
-              }}
-            >
-              🎮 Game Rooms
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("demo");
-                const firstRoom = ROOM_CONFIGS[0];
-                if (firstRoom) {
-                  setSelectedType(firstRoom.type);
-                }
-              }}
-              style={{
-                flex: 1,
-                padding: "12px 16px",
-                background: activeTab === "demo" ? "#4CAF50" : "transparent",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "600",
-                transition: "all 0.2s ease",
-              }}
-            >
-              🎨 Demo Rooms
-            </button>
-          </div>
-        )}
-
-        {/* Category Navigation */}
-        <div
-          style={{
-            display: "flex",
-            marginBottom: "20px",
-            background: "#222",
-            borderBottom: "1px solid #333",
-          }}
-        >
-          <button
-            onClick={() => {
-              setSelectedCategory("rooms");
-              const firstRoom = (
-                activeTab === "demo" ? ROOM_CONFIGS : ROOM_CONFIGS
-              )[0];
-              if (firstRoom) {
-                setSelectedType(firstRoom.type);
-              }
-            }}
-            style={{
-              flex: 1,
-              padding: "16px",
-              background:
-                selectedCategory === "rooms" ? "#4CAF50" : "transparent",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "600",
-              transition: "all 0.2s ease",
-              borderBottom:
-                selectedCategory === "rooms"
-                  ? "3px solid #fff"
-                  : "3px solid transparent",
-            }}
-          >
-            🏠 Rooms
-          </button>
-          <button
-            onClick={() => {
-              setSelectedCategory("biomes");
-              const firstBiome = BIOME_CONFIGS[0];
-              if (firstBiome) {
-                setSelectedType(firstBiome.type);
-              }
-            }}
-            style={{
-              flex: 1,
-              padding: "16px",
-              background:
-                selectedCategory === "biomes" ? "#4CAF50" : "transparent",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "600",
-              transition: "all 0.2s ease",
-              borderBottom:
-                selectedCategory === "biomes"
-                  ? "3px solid #fff"
-                  : "3px solid transparent",
-            }}
-          >
-            🌍 Biomes
-          </button>
-          <button
-            onClick={() => {
-              setSelectedCategory("objects");
-              const firstObject = OBJECT_CONFIGS[0];
-              if (firstObject) {
-                setSelectedType(firstObject.type);
-              }
-            }}
-            style={{
-              flex: 1,
-              padding: "16px",
-              background:
-                selectedCategory === "objects" ? "#4CAF50" : "transparent",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "600",
-              transition: "all 0.2s ease",
-              borderBottom:
-                selectedCategory === "objects"
-                  ? "3px solid #fff"
-                  : "3px solid transparent",
-            }}
-          >
-            🎯 Objects
-          </button>
-          <button
-            onClick={() => {
-              setSelectedCategory("elements");
-              const firstElement = ELEMENT_CONFIGS[0];
-              if (firstElement) {
-                setSelectedType(firstElement.type);
-              }
-            }}
-            style={{
-              flex: 1,
-              padding: "16px",
-              background:
-                selectedCategory === "elements" ? "#4CAF50" : "transparent",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "600",
-              transition: "all 0.2s ease",
-              borderBottom:
-                selectedCategory === "elements"
-                  ? "3px solid #fff"
-                  : "3px solid transparent",
-            }}
-          >
-            🧱 Elements
-          </button>
-        </div>
-
-        {/* Search Bar */}
-        <div style={{ marginBottom: "20px" }}>
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
-            Search Components
-          </h3>
-          <input
-            type="text"
-            placeholder="Search rooms, biomes, objects, or elements..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "12px",
-              background: "#333",
-              color: "white",
-              border: "1px solid #555",
-              borderRadius: "6px",
-              fontSize: "14px",
-            }}
-          />
-        </div>
-
-        {/* Item Selection */}
-        <div style={{ marginBottom: "20px" }}>
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
-            {selectedCategory === "rooms"
-              ? "🏠 Rooms"
-              : selectedCategory === "biomes"
-              ? "🌍 Biomes"
-              : selectedCategory === "objects"
-              ? "🎯 Objects"
-              : "🧱 Elements"}
-          </h3>
-          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-            {Object.entries(groupedConfigs).map(([baseType, configs]) => (
-              <div key={baseType} style={{ marginBottom: "15px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "8px 12px",
-                    background: "#333",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    marginBottom: "5px",
-                  }}
-                  onClick={() => {
-                    const newCollapsed = new Set(collapsedGroups);
-                    if (newCollapsed.has(baseType)) {
-                      newCollapsed.delete(baseType);
-                    } else {
-                      newCollapsed.add(baseType);
-                    }
-                    setCollapsedGroups(newCollapsed);
-                  }}
-                >
-                  <span style={{ fontWeight: "600", color: "#4CAF50" }}>
-                    {baseType.toUpperCase()} ({configs.length})
-                  </span>
-                  <span style={{ color: "#888" }}>
-                    {collapsedGroups.has(baseType) ? "▶" : "▼"}
-                  </span>
-                </div>
-                {!collapsedGroups.has(baseType) && (
-                  <div style={{ paddingLeft: "10px" }}>
-                    {configs.map((config) => (
-                      <div
-                        key={config.type}
-                        onClick={() => setSelectedType(config.type)}
-                        style={{
-                          padding: "10px",
-                          margin: "2px 0",
-                          background:
-                            selectedType === config.type ? "#4CAF50" : "#444",
-                          color: "white",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          border: "1px solid transparent",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (selectedType !== config.type) {
-                            e.currentTarget.style.background = "#555";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (selectedType !== config.type) {
-                            e.currentTarget.style.background = "#444";
-                          }
-                        }}
-                      >
-                        <div
-                          style={{ fontWeight: "bold", marginBottom: "4px" }}
-                        >
-                          {config.emoji} {config.title}
-                        </div>
-                        <div style={{ fontSize: "12px", color: "#ccc" }}>
-                          {config.description}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Selected Item Info */}
-        {configWithActions && (
-          <div
-            style={{
-              background: "#333",
-              padding: "15px",
-              borderRadius: "8px",
-              marginBottom: "20px",
-            }}
-          >
-            <h3
-              style={{
-                margin: "0 0 10px 0",
-                fontSize: "16px",
-                color: "#4CAF50",
-              }}
-            >
-              {configWithActions.emoji} {configWithActions.title}
-            </h3>
-            <p
-              style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#ccc" }}
-            >
-              {configWithActions.description}
-            </p>
-            <div style={{ fontSize: "12px", color: "#888" }}>
-              Type: {configWithActions.type}
-            </div>
-          </div>
-        )}
-
-        {/* 3D Component Parameters */}
-        {configWithActions && (
-          <div style={{ marginBottom: "20px" }}>
-            <h3 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
-              ⚙️ Component Parameters
-            </h3>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "5px" }}
-            >
+            {[
+              {
+                key: "rooms",
+                label: "🏠 Rooms",
+                count: ROOM_CONFIGS.length,
+              },
+              {
+                key: "biomes",
+                label: "🌍 Biomes",
+                count: BIOME_CONFIGS.length,
+              },
+              {
+                key: "objects",
+                label: "🎯 Objects",
+                count: OBJECT_CONFIGS.length,
+              },
+              {
+                key: "elements",
+                label: "🧱 Elements",
+                count: ELEMENT_CONFIGS.length,
+              },
+            ].map((category) => (
               <button
-                onClick={() => setShowPropsEditor(!showPropsEditor)}
+                key={category.key}
+                onClick={() => {
+                  handleCategorySelect(
+                    category.key as "rooms" | "biomes" | "objects" | "elements"
+                  );
+                  setSelectedSubcategory("all"); // Reset subcategory when changing category
+                }}
                 style={{
-                  padding: "10px",
-                  background: showPropsEditor
-                    ? "linear-gradient(45deg, #FF6B6B, #FF8E8E)"
-                    : "linear-gradient(45deg, #4ECDC4, #44A08D)",
+                  padding: "8px 12px",
+                  background:
+                    selectedCategory === category.key ? "#4CAF50" : "#333",
                   color: "white",
                   border: "none",
                   borderRadius: "5px",
                   cursor: "pointer",
                   fontSize: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
                 }}
               >
-                {showPropsEditor ? "❌ Hide Props Editor" : "⚙️ Edit Props"}
+                {category.label}
+                <span
+                  style={{
+                    background:
+                      selectedCategory === category.key
+                        ? "rgba(255,255,255,0.3)"
+                        : "rgba(255,255,255,0.1)",
+                    padding: "2px 6px",
+                    borderRadius: "10px",
+                    fontSize: "10px",
+                  }}
+                >
+                  {category.count}
+                </span>
               </button>
+            ))}
+          </div>
 
-              {configWithActions.availableActions &&
-                configWithActions.availableActions.length > 0 && (
-                  <button
-                    onClick={() => setShowActionCards(!showActionCards)}
+          {/* Subcategory Filter for Biomes */}
+          {selectedCategory === "biomes" && (
+            <div style={{ marginBottom: "15px" }}>
+              <label
+                style={{
+                  color: "white",
+                  fontSize: "14px",
+                  marginBottom: "8px",
+                  display: "block",
+                }}
+              >
+                Subcategory:
+              </label>
+              <select
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  background: "#444",
+                  color: "white",
+                  border: "1px solid #666",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
+              >
+                <option value="all">All Biomes</option>
+                <option value="buff">💪 Buff/Healing</option>
+                <option value="resource">💰 Resource/Economy</option>
+                <option value="puzzle">🧩 Puzzle/Interaction</option>
+                <option value="transport">🚀 Transportation</option>
+                <option value="obstacle">🚧 Obstacle/Architectural</option>
+                <option value="special">✨ Special/Unique</option>
+                <option value="utility">🔧 Utility</option>
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Current Category Items */}
+        <div
+          style={{
+            marginBottom: "30px",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            className="category-scroll"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              flex: 1,
+              overflowY: "auto",
+              paddingRight: "5px",
+            }}
+          >
+            {getCurrentConfigs().map((item: RoomConfig) => (
+              <button
+                key={item.type}
+                onClick={() => handleItemSelect(item)}
+                style={{
+                  padding: "10px",
+                  background:
+                    getCurrentSelection()?.type === item.type
+                      ? "#4CAF50"
+                      : "#333",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
+              >
+                <span>{item.emoji}</span>
+                <div>
+                  <div style={{ fontWeight: "bold" }}>{item.title}</div>
+                  <div style={{ fontSize: "12px", opacity: 0.8 }}>
+                    {item.description}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Properties Panel */}
+        {getCurrentSelection() && (
+          <div style={{ marginTop: "20px", flexShrink: 0 }}>
+            <h3 style={{ color: "#4CAF50", marginBottom: "15px" }}>
+              Properties
+            </h3>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+              }}
+            >
+              {getCurrentSelection()?.editableProps?.map((prop) => (
+                <div key={prop.key}>
+                  <label
                     style={{
-                      padding: "10px",
-                      background: showActionCards
-                        ? "linear-gradient(45deg, #FF6B6B, #FF8E8E)"
-                        : "linear-gradient(45deg, #FFD700, #FFA500)",
+                      display: "block",
                       color: "white",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      fontSize: "12px",
+                      marginBottom: "5px",
+                      fontSize: "14px",
                     }}
                   >
-                    {showActionCards
-                      ? "❌ Hide Action Cards"
-                      : "🎮 Show Action Cards"}
-                  </button>
-                )}
+                    {prop.label}
+                  </label>
+                  {prop.type === "number" ? (
+                    <input
+                      type="number"
+                      value={getCurrentProps()[prop.key] || prop.min || 0}
+                      min={prop.min}
+                      max={prop.max}
+                      step={prop.step}
+                      onChange={(e) =>
+                        handlePropChange(prop.key, parseFloat(e.target.value))
+                      }
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        background: "#444",
+                        color: "white",
+                        border: "1px solid #666",
+                        borderRadius: "4px",
+                      }}
+                    />
+                  ) : prop.type === "color" ? (
+                    <input
+                      type="color"
+                      value={getCurrentProps()[prop.key] || "#ffffff"}
+                      onChange={(e) =>
+                        handlePropChange(prop.key, e.target.value)
+                      }
+                      style={{
+                        width: "100%",
+                        padding: "4px",
+                        background: "#444",
+                        border: "1px solid #666",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  ) : prop.type === "boolean" ? (
+                    <input
+                      type="checkbox"
+                      checked={getCurrentProps()[prop.key] || false}
+                      onChange={(e) =>
+                        handlePropChange(prop.key, e.target.checked)
+                      }
+                      style={{ marginRight: "8px" }}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={getCurrentProps()[prop.key] || ""}
+                      onChange={(e) =>
+                        handlePropChange(prop.key, e.target.value)
+                      }
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        background: "#444",
+                        color: "white",
+                        border: "1px solid #666",
+                        borderRadius: "4px",
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* 3D Canvas */}
-      <div
-        style={{
-          flex: 1,
-          position: "relative",
-          width: "calc(100vw - 400px)",
-          height: "100vh",
-        }}
-      >
-        <Canvas
-          camera={{
-            position: cameraPosition,
-            fov: 75,
-          }}
-          shadows
-        >
-          <Physics debug={false}>
-            <Environment preset="night" />
-            <ambientLight intensity={0.4} />
-            <directionalLight
-              position={[10, 10, 5]}
-              intensity={1}
-              castShadow
-              shadow-mapSize-width={2048}
-              shadow-mapSize-height={2048}
-            />
+      {/* Main 3D Viewport */}
+      <div style={{ flex: 1, position: "relative" }}>
+        <Canvas camera={{ position: [10, 10, 10], fov: 60 }}>
+          <ambientLight intensity={0.4} />
+          <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+          <OrbitControls
+            enablePan={true}
+            enableZoom={true}
+            enableRotate={true}
+          />
 
-            {/* Ground and Grid */}
-            <EditorGround />
-            <GridHelper />
+          <Physics>
+            <Suspense fallback={<LoadingFallback />}>
+              {getCurrentSelection() &&
+                (() => {
+                  const Component = getCurrentSelection()!.component;
+                  return <Component {...getCurrentProps()} />;
+                })()}
 
-            {/* Main Content */}
-            <EditorScene
-              selectedType={selectedType}
-              selectedCategory={selectedCategory}
-              currentProps={currentProps}
-              showActionCards={showActionCards}
-              activeTab={activeTab}
-              configWithActions={configWithActions}
-            />
-
-            {/* Controls - Always enabled for mouse */}
-            <OrbitControls
-              enablePan={true}
-              enableZoom={true}
-              enableRotate={true}
-              minPolarAngle={0}
-              maxPolarAngle={Math.PI}
-            />
+              {/* Debug info in 3D scene */}
+              {selectedCategory === "biomes" &&
+                showActionCards &&
+                roomActionCards &&
+                roomActionCards.length > 0 && (
+                  <Html position={[0, 5, 0]}>
+                    <div
+                      style={{
+                        background: "rgba(0,0,0,0.8)",
+                        color: "white",
+                        padding: "10px",
+                        borderRadius: "5px",
+                        fontSize: "12px",
+                      }}
+                    >
+                      DEBUG: {roomActionCards.length} cards available
+                    </div>
+                  </Html>
+                )}
+            </Suspense>
           </Physics>
         </Canvas>
 
-        {/* Props Editor Overlay */}
-        {showPropsEditor && selectedConfig && (
-          <div
-            style={{
-              position: "absolute",
-              top: "20px",
-              left: "20px",
-              background: "rgba(0,0,0,0.9)",
-              color: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              maxWidth: "400px",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              zIndex: 1000,
-            }}
-          >
-            <PropsEditor
-              config={selectedConfig}
-              onPropsChange={setCurrentProps}
-            />
-          </div>
-        )}
+        {/* Action Cards Toggle Button */}
+        {selectedCategory === "biomes" &&
+          roomActionCards &&
+          roomActionCards.length > 0 && (
+            <button
+              onClick={() => setShowActionCards(!showActionCards)}
+              style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                zIndex: 1001,
+                width: "40px",
+                height: "40px",
+                background: showActionCards ? "#FF6B6B" : "#4CAF50",
+                color: "white",
+                border: "none",
+                borderRadius: "50%",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "18px",
+                fontWeight: "bold",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                transition: "background 0.2s ease",
+              }}
+            >
+              {showActionCards ? "✕" : "🎮"}
+            </button>
+          )}
 
-        {/* Room Info Panel */}
-        {showRoomInfo && selectedConfig && (
-          <RoomInfoPanel config={selectedConfig} />
-        )}
+        {/* Action Cards Overlay - Outside Canvas */}
+        {selectedCategory === "biomes" &&
+          showActionCards &&
+          roomActionCards &&
+          roomActionCards.length > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "70px",
+                right: "20px",
+                zIndex: 1000,
+                maxWidth: "300px",
+              }}
+            >
+              <RoomActionCards
+                cards={roomActionCards}
+                isVisible={true}
+                onCardClick={(card) => {
+                  console.log("Card clicked in ThreeDEditor:", card.title);
+                }}
+              />
+            </div>
+          )}
       </div>
     </div>
   );

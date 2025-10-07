@@ -10,7 +10,7 @@
 - Environment detection (Electron vs Web)
 
 **URL Parameters**:
-- `?editor=true` → AutoThreeDEditor
+- `?editor=true` → ThreeDEditor
 - `?room-builder=true` → RoomBuilderPage
 - `?texture-painter=true` → TexturePainterLauncher
 - `?mosaic-creator=true` → MosaicCreatorLauncher
@@ -25,21 +25,15 @@
 
 ## 3D Editor Components
 
-### AutoThreeDEditor.tsx
+### ThreeDEditor.tsx
 **Purpose**: Main 3D scene editor
 **Features**:
 - 3D scene management
 - Object manipulation
 - Camera controls
 - Tool integration
-
-### ThreeDEditor.tsx
-**Purpose**: Core 3D editor functionality
-**Features**:
-- Scene rendering
-- Object selection
-- Transform controls
-- Material editing
+- Action cards system
+- URL parameter persistence
 
 ## Game Components
 

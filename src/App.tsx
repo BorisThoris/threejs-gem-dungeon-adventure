@@ -1,6 +1,6 @@
 import React from "react";
 import StartScreen from "./components/StartScreen";
-import AutoThreeDEditor from "./components/AutoThreeDEditor";
+import ThreeDEditor from "./components/ThreeDEditor";
 import RoomBuilderPage from "./pages/RoomBuilderPage";
 import TexturePainterLauncher from "./components/TexturePainterLauncher";
 import MosaicCreatorLauncher from "./components/MosaicCreatorLauncher";
@@ -42,7 +42,7 @@ function App() {
   if (showEditor) {
     return (
       <ThemeProvider>
-        <AutoThreeDEditor />
+        <ThreeDEditor />
       </ThemeProvider>
     );
   }

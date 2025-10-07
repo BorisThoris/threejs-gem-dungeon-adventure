@@ -1,6 +1,7 @@
 import React from "react";
 import RoomActionCards from "./RoomActionCards";
 import { useRoomActions } from "../hooks/useRoomActions";
+import { mapToRoomType } from "../utils/roomTypeMapper";
 import type { Room } from "../types/map";
 
 interface RoomInteractionProps {
@@ -16,31 +17,7 @@ const RoomInteraction: React.FC<RoomInteractionProps> = ({
 }) => {
   // Game store functions handled through card system
 
-  // Map room types to action card room types
-  const getRoomTypeForActions = (roomType: string) => {
-    switch (roomType) {
-      case "boss":
-        return "boss";
-      case "meditation":
-        return "meditation";
-      case "bench-press":
-        return "benchpress";
-      case "library":
-        return "library";
-      case "shop":
-        return "shop";
-      case "treasure":
-        return "treasure";
-      case "challenge":
-        return "challenge";
-      case "puzzle":
-        return "puzzle";
-      default:
-        return null;
-    }
-  };
-
-  const actionRoomType = getRoomTypeForActions(room.type);
+  const actionRoomType = mapToRoomType(room.type);
   const { cards, isVisible, hideCards } = useRoomActions({
     roomType: actionRoomType || "meditation", // fallback to meditation
     onPuzzleStart: () => onInteraction("puzzle", room.id),

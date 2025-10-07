@@ -3,6 +3,7 @@ import useMapStore from "../store/mapStore";
 import useGameStore from "../store/gameStore";
 import RoomActionCards from "./RoomActionCards";
 import { useRoomActions } from "../hooks/useRoomActions";
+import { mapToRoomType } from "../utils/roomTypeMapper";
 
 const GlobalActionCards: React.FC = () => {
   const { currentMap, currentRoomId } = useMapStore();
@@ -15,70 +16,10 @@ const GlobalActionCards: React.FC = () => {
     return currentMap?.rooms.find((room) => room.id === currentRoomId);
   }, [currentMap, currentRoomId]);
 
-  // Memoize room type mapping to prevent re-creation on every render
-  const getRoomTypeForActions = useCallback((roomType: string) => {
-    switch (roomType) {
-      case "boss":
-        return "boss";
-      case "meditation":
-        return "meditation";
-      case "bench-press":
-        return "benchpress";
-      case "library":
-        return "library";
-      case "shop":
-        return "shop";
-      case "treasure":
-        return "treasure";
-      case "challenge":
-        return "challenge";
-      case "puzzle":
-        return "puzzle";
-      case "arena":
-        return "arena";
-      case "start":
-        return "start";
-      case "end":
-        return "end";
-      case "normal":
-        return "normal";
-      case "enemy":
-        return "enemy";
-      case "secret":
-        return "secret";
-      case "memory-chamber":
-        return "memory-chamber";
-      case "trap":
-        return "trap";
-      case "cursed-room":
-        return "cursed-room";
-      case "devil-room":
-        return "devil-room";
-      case "angel-room":
-        return "angel-room";
-      case "coffee":
-        return "coffee";
-      case "library-upgrade":
-        return "library-upgrade";
-      case "portal":
-        return "portal";
-      case "laboratory":
-        return "laboratory";
-      case "observatory":
-        return "observatory";
-      case "vault":
-        return "vault";
-      case "shrine":
-        return "shrine";
-      default:
-        return null;
-    }
-  }, []);
-
   // Memoize action room type to prevent unnecessary recalculations
   const actionRoomType = useMemo(() => {
-    return currentRoom ? getRoomTypeForActions(currentRoom.type) : null;
-  }, [currentRoom, getRoomTypeForActions]);
+    return currentRoom ? mapToRoomType(currentRoom.type) : null;
+  }, [currentRoom]);
 
   // Memoize callbacks to prevent unnecessary re-renders
   const callbacks = useMemo(
