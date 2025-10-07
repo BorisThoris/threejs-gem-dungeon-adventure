@@ -66,6 +66,9 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     }>
   >([]);
 
+  // Debug text animation refs
+  const debugTextRefs = useRef<THREE.Group[]>([]);
+
   // Visual feedback states
   const [shakingBlocks, setShakingBlocks] = useState<Set<number>>(new Set());
   const [redBlocks, setRedBlocks] = useState<Set<number>>(new Set());
@@ -784,6 +787,22 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
       const material = bookRef.current.material as THREE.MeshStandardMaterial;
       material.emissiveIntensity = glowIntensity;
     }
+
+    // Animate debug text floating
+    debugTextRefs.current.forEach((textRef, index) => {
+      if (textRef) {
+        const floatOffset = Math.sin(time * 1.5 + index * 0.5) * 0.05;
+        const baseY = 2.2 - index * 0.35; // Base positions for each text (slightly closer together)
+        textRef.position.y = baseY + floatOffset;
+
+        // Add subtle rotation
+        textRef.rotation.y = Math.sin(time * 0.8 + index) * 0.1;
+
+        // Add gentle pulsing scale
+        const pulseScale = 1 + Math.sin(time * 2 + index) * 0.05;
+        textRef.scale.setScalar(pulseScale);
+      }
+    });
   });
 
   return (
@@ -865,6 +884,136 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         />
       </mesh>
 
+      {/* Immersive Game Text Above Book */}
+      <group
+        ref={(el) => {
+          if (el) debugTextRefs.current[0] = el;
+        }}
+      >
+        <Text
+          position={[0, 0, 0]}
+          fontSize={0.2}
+          color="#FFD700"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.02}
+          outlineColor="#000000"
+        >
+          {bookBroken
+            ? "📖 The ancient tome lies shattered..."
+            : gameStarted
+            ? `✨ The magic flows... Level ${level}`
+            : "📖 Touch the ancient tome to begin"}
+        </Text>
+      </group>
+
+      {/* Magical Pattern Display */}
+      {gameStarted && currentPattern.length > 0 && gamePhase === "showing" && (
+        <group
+          ref={(el) => {
+            if (el) debugTextRefs.current[1] = el;
+          }}
+        >
+          <Text
+            position={[0, 0, 0]}
+            fontSize={0.15}
+            color="#4CAF50"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            ✨ Watch the magical sequence... ✨
+          </Text>
+        </group>
+      )}
+
+      {/* Player Progress */}
+      {gameStarted && gamePhase === "playing" && (
+        <group
+          ref={(el) => {
+            if (el) debugTextRefs.current[2] = el;
+          }}
+        >
+          <Text
+            position={[0, 0, 0]}
+            fontSize={0.15}
+            color="#2196F3"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            {playerSequence.length === 0
+              ? "🌟 Repeat the magical pattern..."
+              : `✨ ${playerSequence.length}/${currentPattern.length} steps completed`}
+          </Text>
+        </group>
+      )}
+
+      {/* Candle Status */}
+      {gameStarted && !candlesLit.every((lit) => lit) && (
+        <group
+          ref={(el) => {
+            if (el) debugTextRefs.current[3] = el;
+          }}
+        >
+          <Text
+            position={[0, 0, 0]}
+            fontSize={0.12}
+            color="#FF6B6B"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            🔥 The candles flicker dangerously...
+          </Text>
+        </group>
+      )}
+
+      {/* Breaking Ability */}
+      {gameStarted && playerStats.strength >= 10 && breakCooldown === 0 && (
+        <group
+          ref={(el) => {
+            if (el) debugTextRefs.current[4] = el;
+          }}
+        >
+          <Text
+            position={[0, 0, 0]}
+            fontSize={0.12}
+            color="#FFD700"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            💪 Your strength can shatter the cubes...
+          </Text>
+        </group>
+      )}
+
+      {/* Victory Message */}
+      {gamePhase === "completed" && (
+        <group
+          ref={(el) => {
+            if (el) debugTextRefs.current[5] = el;
+          }}
+        >
+          <Text
+            position={[0, 0, 0]}
+            fontSize={0.18}
+            color="#4CAF50"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            🎉 The ancient magic is yours! 🎉
+          </Text>
+        </group>
+      )}
+
       {/* Memory Game Blocks */}
       {blocks.length > 0 &&
         (gameStarted || isSpawning) &&
@@ -931,131 +1080,6 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
             </BreakableMesh>
           );
         })}
-
-      {/* Game Title */}
-      <Text
-        position={[0, 4, 0]}
-        fontSize={0.8}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.05}
-        outlineColor="#000000"
-      >
-        🧠 MEMORY PUZZLE 🧠
-      </Text>
-
-      {/* Game Status */}
-      <Text
-        position={[0, 3.2, 0]}
-        fontSize={0.4}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.03}
-        outlineColor="#000000"
-      >
-        {(gamePhase === "waiting" &&
-          bookBroken &&
-          "Book is broken! Cannot start game.") ||
-          (gamePhase === "waiting" &&
-            !bookBroken &&
-            "Click the book to start!") ||
-          (gamePhase === "showing" &&
-            "Watch the pattern... Doors are locked!") ||
-          (gamePhase === "playing" &&
-            "Repeat the pattern! Doors remain locked!") ||
-          (gamePhase === "completed" && "Puzzle completed! Doors unlocked!")}
-      </Text>
-
-      {/* Score and Level */}
-      <Text
-        position={[0, 2.8, 0]}
-        fontSize={0.3}
-        color="#FFD700"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        Level: {level} | Score: {score}
-      </Text>
-
-      {/* Health Warning */}
-      {gameStarted && (
-        <Text
-          position={[0, 2.0, 0]}
-          fontSize={0.25}
-          color="#FF6B6B"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          ⚠️ Wrong pattern = -1 Life! ⚠️
-        </Text>
-      )}
-
-      {/* Breaking System UI */}
-      {gameStarted && (
-        <Text
-          position={[0, 1.6, 0]}
-          fontSize={0.2}
-          color={playerStats.strength >= 10 ? "#4CAF50" : "#FF6B6B"}
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          💪 Strength: {playerStats.strength}/10{" "}
-          {playerStats.strength >= 10 ? "✅" : "❌"}
-        </Text>
-      )}
-
-      {/* Breaking Instructions */}
-      {gameStarted && playerStats.strength >= 10 && breakCooldown === 0 && (
-        <Text
-          position={[0, 1.3, 0]}
-          fontSize={0.18}
-          color="#FFD700"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          🔨 Click cubes to break them! (Costs 5 HP)
-        </Text>
-      )}
-
-      {/* Breaking Cooldown */}
-      {breakCooldown > 0 && (
-        <Text
-          position={[0, 1.3, 0]}
-          fontSize={0.18}
-          color="#FF6B6B"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          ⏳ Breaking cooldown: {(breakCooldown / 1000).toFixed(1)}s
-        </Text>
-      )}
-
-      {/* Pattern Progress */}
-      {gamePhase === "playing" && (
-        <Text
-          position={[0, 2.4, 0]}
-          fontSize={0.25}
-          color="#00ff00"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          Progress: {playerSequence.length}/{currentPattern.length}
-        </Text>
-      )}
 
       {/* Animated Magical Particles */}
       {gameStarted &&
