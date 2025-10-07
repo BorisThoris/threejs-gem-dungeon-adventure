@@ -580,8 +580,36 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
       />
 
       {/* Candles on the table */}
-      <Candle position={[-0.8, 0.9, 0.3]} isLit={candlesLit[0]} scale={0.8} />
-      <Candle position={[0.8, 0.9, 0.3]} isLit={candlesLit[1]} scale={0.8} />
+      <Candle
+        position={[-0.8, 0.9, 0.3]}
+        isLit={candlesLit[0]}
+        scale={0.8}
+        smokeEnabled={true}
+        smokeAnimationSpeed={1.5}
+        smokeOpacity={0.7}
+        onClick={() => {
+          if (!candlesLit[0]) {
+            const newCandlesLit = [...candlesLit];
+            newCandlesLit[0] = true;
+            setCandlesLit(newCandlesLit);
+          }
+        }}
+      />
+      <Candle
+        position={[0.8, 0.9, 0.3]}
+        isLit={candlesLit[1]}
+        scale={0.8}
+        smokeEnabled={true}
+        smokeAnimationSpeed={1.5}
+        smokeOpacity={0.7}
+        onClick={() => {
+          if (!candlesLit[1]) {
+            const newCandlesLit = [...candlesLit];
+            newCandlesLit[1] = true;
+            setCandlesLit(newCandlesLit);
+          }
+        }}
+      />
 
       {/* Interactive Book */}
       <mesh

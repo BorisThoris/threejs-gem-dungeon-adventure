@@ -1,6 +1,7 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import AnimatedSmoke from "./AnimatedSmoke";
 
 export interface CandleProps {
   position?: [number, number, number];
@@ -9,6 +10,9 @@ export interface CandleProps {
   isLit?: boolean;
   flameColor?: string;
   intensity?: number;
+  smokeEnabled?: boolean;
+  smokeAnimationSpeed?: number;
+  smokeOpacity?: number;
   onClick?: () => void;
   onPointerOver?: () => void;
   onPointerOut?: () => void;
@@ -21,6 +25,9 @@ const Candle: React.FC<CandleProps> = ({
   isLit = true,
   flameColor = "#ff6b35",
   intensity = 1.5,
+  smokeEnabled = true,
+  smokeAnimationSpeed = 1.0,
+  smokeOpacity = 0.6,
   onClick,
   onPointerOver,
   onPointerOut,
@@ -29,25 +36,108 @@ const Candle: React.FC<CandleProps> = ({
   const lightRef = useRef<THREE.PointLight>(null);
   const candleRef = useRef<THREE.Group>(null);
 
-  useFrame((state) => {
-    if (isLit && flameRef.current) {
-      // Flickering flame animation
-      const flicker = Math.sin(state.clock.elapsedTime * 8) * 0.1 + 0.9;
-      flameRef.current.scale.setScalar(flicker);
+  // Fade animation state
+  const [isFadingOut, setIsFadingOut] = useState(false);
+  const [isFadingIn, setIsFadingIn] = useState(false);
+  const [fadeProgress, setFadeProgress] = useState(isLit ? 1 : 0);
+  const [showFlame, setShowFlame] = useState(isLit);
+  const [showSmoke, setShowSmoke] = useState(isLit);
 
-      // Swaying motion
-      const sway = Math.sin(state.clock.elapsedTime * 3) * 0.05;
+  // Handle fade animations when candle is turned on/off
+  useEffect(() => {
+    if (isLit) {
+      // Candle should be lit - start fade-in if not already lit
+      if (!showFlame) {
+        setShowFlame(true);
+        setShowSmoke(true);
+        setIsFadingIn(true);
+        setIsFadingOut(false);
+        setFadeProgress(0);
+
+        const fadeIn = () => {
+          setFadeProgress((prev) => {
+            const newProgress = prev + 0.02; // Fade in over ~50 frames
+            if (newProgress >= 1) {
+              setIsFadingIn(false);
+              return 1;
+            }
+            return newProgress;
+          });
+        };
+
+        const interval = setInterval(fadeIn, 16); // ~60fps
+        return () => clearInterval(interval);
+      }
+    } else {
+      // Candle should be off - start fade-out if currently lit
+      if (showFlame) {
+        setIsFadingOut(true);
+        setIsFadingIn(false);
+        setFadeProgress(1);
+
+        const fadeOut = () => {
+          setFadeProgress((prev) => {
+            const newProgress = prev - 0.02; // Fade out over ~50 frames
+            if (newProgress <= 0) {
+              setShowFlame(false);
+              setShowSmoke(false);
+              setIsFadingOut(false);
+              return 0;
+            }
+            return newProgress;
+          });
+        };
+
+        const interval = setInterval(fadeOut, 16); // ~60fps
+        return () => clearInterval(interval);
+      }
+    }
+  }, [isLit]);
+
+  useFrame((state) => {
+    if (showFlame && flameRef.current) {
+      // Flickering flame animation (only when fully lit or fading)
+      const flicker = Math.sin(state.clock.elapsedTime * 8) * 0.1 + 0.9;
+      const finalScale = flicker * fadeProgress;
+      flameRef.current.scale.setScalar(finalScale);
+
+      // Swaying motion (reduced during fade-in for more realistic effect)
+      const swayIntensity = isFadingIn ? fadeProgress : 1;
+      const sway = Math.sin(state.clock.elapsedTime * 3) * 0.05 * swayIntensity;
       flameRef.current.rotation.z = sway;
+
+      // Apply fade opacity to flame materials
+      flameRef.current.children.forEach((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach((mat) => {
+              if (mat instanceof THREE.MeshLambertMaterial) {
+                mat.opacity = fadeProgress;
+                mat.transparent = true;
+              }
+            });
+          } else if (child.material instanceof THREE.MeshLambertMaterial) {
+            child.material.opacity = fadeProgress;
+            child.material.transparent = true;
+          }
+        }
+      });
     }
 
-    if (isLit && lightRef.current) {
-      // More realistic flickering light intensity
+    if (showFlame && lightRef.current) {
+      // More realistic flickering light intensity with fade
       const flickerIntensity =
         intensity +
         Math.sin(state.clock.elapsedTime * 12) * 0.3 +
         Math.sin(state.clock.elapsedTime * 19) * 0.2 +
         Math.sin(state.clock.elapsedTime * 6) * 0.1;
-      lightRef.current.intensity = Math.max(0.1, flickerIntensity);
+
+      // During fade-in, start with minimal intensity and build up
+      const finalIntensity = isFadingIn
+        ? Math.max(0.1, flickerIntensity * fadeProgress * fadeProgress) // Quadratic fade-in for more realistic lighting
+        : Math.max(0.1, flickerIntensity * fadeProgress);
+
+      lightRef.current.intensity = finalIntensity;
     }
   });
 
@@ -72,7 +162,7 @@ const Candle: React.FC<CandleProps> = ({
       </mesh>
 
       {/* Multi-layer flame for better glow */}
-      {isLit && (
+      {showFlame && (
         <group ref={flameRef} position={[0, 0.8, 0]}>
           {/* Inner flame */}
           <mesh>
@@ -119,7 +209,7 @@ const Candle: React.FC<CandleProps> = ({
       )}
 
       {/* Point light for illumination */}
-      {isLit && (
+      {showFlame && (
         <pointLight
           ref={lightRef}
           position={[0, 0.8, 0]}
@@ -128,6 +218,17 @@ const Candle: React.FC<CandleProps> = ({
           distance={6}
           decay={2}
           castShadow
+        />
+      )}
+
+      {/* Animated smoke sprite */}
+      {showSmoke && smokeEnabled && (
+        <AnimatedSmoke
+          position={[0, 1.5, 0]}
+          scale={0.6}
+          isLit={showSmoke}
+          animationSpeed={smokeAnimationSpeed}
+          opacity={smokeOpacity * fadeProgress}
         />
       )}
 
@@ -146,4 +247,3 @@ const Candle: React.FC<CandleProps> = ({
 };
 
 export default Candle;
-
