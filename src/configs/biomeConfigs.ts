@@ -32,6 +32,7 @@ import MazeBiome from "../components/primitives/game-rooms/MazeBiome";
 import BridgeBiome from "../components/primitives/game-rooms/BridgeBiome";
 import StatueBiome from "../components/primitives/game-rooms/StatueBiome";
 import MemoryGamePuzzleBiome from "../components/primitives/game-rooms/MemoryGamePuzzleBiome";
+import PressurePlatePuzzleBiome from "../components/primitives/game-rooms/PressurePlatePuzzleBiome";
 
 export interface RoomConfig {
   type: string;
@@ -173,6 +174,26 @@ export const BIOME_CONFIGS: RoomConfig[] = [
     title: "Memory Puzzle Biome",
     emoji: "🧠",
     description: "Memory game puzzle biome with floating blocks",
+    props: { size: 10 },
+    category: "biome",
+    subcategory: "puzzle",
+    editableProps: [
+      {
+        key: "size",
+        label: "Room Size",
+        type: "number",
+        min: 5,
+        max: 20,
+        step: 1,
+      },
+    ],
+  },
+  {
+    type: "pressure-plate-puzzle",
+    component: PressurePlatePuzzleBiome,
+    title: "Pressure Plate Puzzle Biome",
+    emoji: "⚖️",
+    description: "Pressure plate puzzle with movable candles and treasure",
     props: { size: 10 },
     category: "biome",
     subcategory: "puzzle",

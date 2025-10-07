@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import * as THREE from "three";
-import { Text } from "@react-three/drei";
+import { Text, Html } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
 import { useConsolidatedGameStore } from "../../../store/consolidatedGameStore";
@@ -792,7 +792,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     debugTextRefs.current.forEach((textRef, index) => {
       if (textRef) {
         const floatOffset = Math.sin(time * 1.5 + index * 0.5) * 0.05;
-        const baseY = 2.2 - index * 0.35; // Base positions for each text (slightly closer together)
+        const baseY = 2.2 - index * 0.3; // Base positions for each text (closer together for more text)
         textRef.position.y = baseY + floatOffset;
 
         // Add subtle rotation
@@ -1109,16 +1109,18 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         })}
 
       {/* Action Cards */}
-      <RoomActionCards
-        cards={cards}
-        isVisible={isVisible}
-        onCardClick={(card) => {
-          if (card.id === "start_puzzle" && !gameStarted) {
-            startMemoryGame();
-            hideCards();
-          }
-        }}
-      />
+      <Html position={[0, 2, 0]}>
+        <RoomActionCards
+          cards={cards}
+          isVisible={isVisible}
+          onCardClick={(card) => {
+            if (card.id === "start_puzzle" && !gameStarted) {
+              startMemoryGame();
+              hideCards();
+            }
+          }}
+        />
+      </Html>
     </group>
   );
 };

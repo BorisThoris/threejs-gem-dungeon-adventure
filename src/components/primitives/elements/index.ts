@@ -38,6 +38,9 @@ export { default as DungeonGate } from './DungeonGate';
 // Furniture elements
 export { default as Table } from './Table';
 
+// Interactive elements
+export { default as MovableCandle } from './MovableCandle';
+
 // Dungeon elements
 export { default as Barrel } from './Barrel';
 export { default as Brazier } from './Brazier';

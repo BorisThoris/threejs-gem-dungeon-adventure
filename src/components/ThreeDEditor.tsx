@@ -108,6 +108,7 @@ const ThreeDEditor: React.FC = () => {
   const [showPlayerState, setShowPlayerState] = useState<boolean>(true);
   const [doorsLocked, setDoorsLocked] = useState<boolean>(false);
   const [showPatternTest, setShowPatternTest] = useState<boolean>(false);
+  const [dragMode, setDragMode] = useState<boolean>(false);
 
   // Get player stats for debugging
   const playerStats = usePlayerStats();
@@ -389,23 +390,49 @@ const ThreeDEditor: React.FC = () => {
       }
     })();
 
-    // Add debugging callbacks for memory game biome
+    // Add debugging callbacks and drag mode for biomes
     const selection = getCurrentSelection();
-    if (selection?.type === "memory-puzzle") {
-      return {
+    if (selectedCategory === "biomes") {
+      const biomeProps = {
         ...baseProps,
-        onDoorsLock: () => {
-          console.log("DEBUG: Doors locked!");
-          setDoorsLocked(true);
-        },
-        onDoorsUnlock: () => {
-          console.log("DEBUG: Doors unlocked!");
-          setDoorsLocked(false);
-        },
-        onRoomComplete: () => {
-          console.log("DEBUG: Room completed!");
-        },
+        dragMode: dragMode,
       };
+
+      if (selection?.type === "memory-puzzle") {
+        return {
+          ...biomeProps,
+          onDoorsLock: () => {
+            console.log("DEBUG: Doors locked!");
+            setDoorsLocked(true);
+          },
+          onDoorsUnlock: () => {
+            console.log("DEBUG: Doors unlocked!");
+            setDoorsLocked(false);
+          },
+          onRoomComplete: () => {
+            console.log("DEBUG: Room completed!");
+          },
+        };
+      }
+
+      if (selection?.type === "pressure-plate-puzzle") {
+        return {
+          ...biomeProps,
+          onDoorsLock: () => {
+            console.log("DEBUG: Doors locked!");
+            setDoorsLocked(true);
+          },
+          onDoorsUnlock: () => {
+            console.log("DEBUG: Doors unlocked!");
+            setDoorsLocked(false);
+          },
+          onRoomComplete: () => {
+            console.log("DEBUG: Room completed!");
+          },
+        };
+      }
+
+      return biomeProps;
     }
 
     return baseProps;
@@ -835,6 +862,26 @@ const ThreeDEditor: React.FC = () => {
                     style={{ margin: 0 }}
                   />
                   Show Pattern Test
+                </label>
+              </div>
+
+              <div style={{ marginBottom: "8px" }}>
+                <label
+                  style={{
+                    color: "white",
+                    fontSize: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={dragMode}
+                    onChange={(e) => setDragMode(e.target.checked)}
+                    style={{ margin: 0 }}
+                  />
+                  🖱️ Drag Mode
                 </label>
               </div>
 
