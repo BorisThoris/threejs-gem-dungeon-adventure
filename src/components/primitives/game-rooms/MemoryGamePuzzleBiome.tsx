@@ -9,6 +9,7 @@ import RoomActionCards from "../../RoomActionCards";
 import { useRoomActions } from "../../../hooks/useRoomActions";
 import Table from "../elements/Table";
 import Candle from "../elements/Candle";
+import BreakableMesh from "../../BreakableMesh";
 
 interface MemoryGamePuzzleBiomeProps {
   size?: number;
@@ -46,6 +47,11 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
   // Candle state management
   const [candlesLit, setCandlesLit] = useState([true, true]); // 2 candles
   const [wrongGuesses, setWrongGuesses] = useState(0);
+
+  // Cube breaking system
+  const [brokenCubes, setBrokenCubes] = useState<Set<number>>(new Set());
+  const [isBreaking, setIsBreaking] = useState(false);
+  const [breakCooldown, setBreakCooldown] = useState(0);
 
   // Visual feedback states
   const [shakingBlocks, setShakingBlocks] = useState<Set<number>>(new Set());
@@ -144,6 +150,76 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
   // Get game store for health management
   const { playerStats, loseLife, addExperience, addPoints } =
     useConsolidatedGameStore();
+
+  // Cube breaking functionality
+  const breakCube = (blockId: number, impactPoint?: THREE.Vector3) => {
+    if (isBreaking || breakCooldown > 0) return;
+
+    // Check if player has enough strength (assuming strength is in playerStats)
+    const requiredStrength = 10; // Minimum strength to break a cube
+    if (playerStats.strength < requiredStrength) {
+      console.log("Not enough strength to break cube!");
+      return;
+    }
+
+    setIsBreaking(true);
+    setBreakCooldown(1000); // 1 second cooldown
+
+    // Add cube to broken set
+    setBrokenCubes((prev) => new Set([...prev, blockId]));
+
+    // Deal damage to player (risk/reward)
+    const damage = 5; // 5 damage for breaking a cube
+    loseLife();
+
+    // Update pattern if game is active
+    if (gameStarted && gamePhase !== "completed") {
+      updatePatternForRemainingCubes();
+    }
+
+    // Check for instant win (all cubes broken)
+    const remainingCubes = memoryBlocks.length - brokenCubes.size - 1;
+    if (remainingCubes <= 0) {
+      onRoomComplete?.();
+    }
+
+    // Reset breaking state after animation
+    setTimeout(() => {
+      setIsBreaking(false);
+    }, 500);
+  };
+
+  // Update pattern when cubes are broken
+  const updatePatternForRemainingCubes = () => {
+    const remainingBlocks = memoryBlocks.filter(
+      (block) => !brokenCubes.has(block.id)
+    );
+    if (remainingBlocks.length === 0) {
+      onRoomComplete?.();
+      return;
+    }
+
+    // Generate new pattern with remaining cubes
+    const newPattern = generatePattern(remainingBlocks.length);
+    setCurrentPattern(newPattern);
+    setPlayerSequence([]);
+    setCurrentStep(0);
+
+    console.log(
+      `Pattern updated for ${remainingBlocks.length} remaining cubes:`,
+      newPattern
+    );
+  };
+
+  // Cooldown timer for break cooldown
+  useEffect(() => {
+    if (breakCooldown > 0) {
+      const timer = setTimeout(() => {
+        setBreakCooldown((prev) => Math.max(0, prev - 100));
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [breakCooldown]);
 
   // Memory blocks configuration
   const memoryBlocks: MemoryBlock[] = [
@@ -642,34 +718,69 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
       {/* Memory Game Blocks */}
       {blocks.length > 0 &&
         (gameStarted || isSpawning) &&
-        blocks.map((block, index) => (
-          <mesh
-            key={block.id}
-            ref={(el) => {
-              if (el) blockRefs.current[index] = el;
-            }}
-            position={block.position}
-            onClick={() => handleBlockClick(block.id)}
-            onPointerOver={(e) => {
-              e.stopPropagation();
-              document.body.style.cursor =
-                gamePhase === "playing" ? "pointer" : "default";
-            }}
-            onPointerOut={() => {
-              document.body.style.cursor = "default";
-            }}
-            castShadow
-          >
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial
-              color={redBlocks.has(block.id) ? "#FF0000" : block.color}
-              emissive={
-                redBlocks.has(block.id) ? "#FF0000" : block.emissiveColor
-              }
-              emissiveIntensity={redBlocks.has(block.id) ? 0.8 : 0.2}
-            />
-          </mesh>
-        ))}
+        blocks.map((block, index) => {
+          const isBroken = brokenCubes.has(block.id);
+          const canBreak =
+            !isBroken && playerStats.strength >= 10 && breakCooldown === 0;
+
+          return (
+            <BreakableMesh
+              key={block.id}
+              breakingOptions={{
+                fragmentCount: 6,
+                fractureImpulse: 2.0,
+                minSizeForFracture: 0.1,
+                maxSizeForFracture: 0.3,
+              }}
+              onBreak={(impactPoint) => {
+                if (canBreak) {
+                  breakCube(block.id, impactPoint);
+                }
+              }}
+              onFragmentClick={(fragmentId) => {
+                console.log("Fragment clicked:", fragmentId);
+              }}
+              disabled={!canBreak}
+            >
+              <mesh
+                ref={(el) => {
+                  if (el) blockRefs.current[index] = el;
+                }}
+                position={block.position}
+                onClick={() => {
+                  if (!canBreak) {
+                    handleBlockClick(block.id);
+                  }
+                }}
+                onPointerOver={(e) => {
+                  e.stopPropagation();
+                  if (isBroken) {
+                    document.body.style.cursor = "not-allowed";
+                  } else if (canBreak) {
+                    document.body.style.cursor = "crosshair";
+                  } else {
+                    document.body.style.cursor =
+                      gamePhase === "playing" ? "pointer" : "default";
+                  }
+                }}
+                onPointerOut={() => {
+                  document.body.style.cursor = "default";
+                }}
+                castShadow
+                visible={!isBroken}
+              >
+                <boxGeometry args={[1, 1, 1]} />
+                <meshStandardMaterial
+                  color={redBlocks.has(block.id) ? "#FF0000" : block.color}
+                  emissive={
+                    redBlocks.has(block.id) ? "#FF0000" : block.emissiveColor
+                  }
+                  emissiveIntensity={redBlocks.has(block.id) ? 0.8 : 0.2}
+                />
+              </mesh>
+            </BreakableMesh>
+          );
+        })}
 
       {/* Game Title */}
       <Text
@@ -732,6 +843,52 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
           outlineColor="#000000"
         >
           ⚠️ Wrong pattern = -1 Life! ⚠️
+        </Text>
+      )}
+
+      {/* Breaking System UI */}
+      {gameStarted && (
+        <Text
+          position={[0, 1.6, 0]}
+          fontSize={0.2}
+          color={playerStats.strength >= 10 ? "#4CAF50" : "#FF6B6B"}
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.02}
+          outlineColor="#000000"
+        >
+          💪 Strength: {playerStats.strength}/10{" "}
+          {playerStats.strength >= 10 ? "✅" : "❌"}
+        </Text>
+      )}
+
+      {/* Breaking Instructions */}
+      {gameStarted && playerStats.strength >= 10 && breakCooldown === 0 && (
+        <Text
+          position={[0, 1.3, 0]}
+          fontSize={0.18}
+          color="#FFD700"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.02}
+          outlineColor="#000000"
+        >
+          🔨 Click cubes to break them! (Costs 5 HP)
+        </Text>
+      )}
+
+      {/* Breaking Cooldown */}
+      {breakCooldown > 0 && (
+        <Text
+          position={[0, 1.3, 0]}
+          fontSize={0.18}
+          color="#FF6B6B"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.02}
+          outlineColor="#000000"
+        >
+          ⏳ Breaking cooldown: {(breakCooldown / 1000).toFixed(1)}s
         </Text>
       )}
 
