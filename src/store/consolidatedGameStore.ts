@@ -115,6 +115,16 @@ export interface GameActions {
   addBomb: () => void;
   useBomb: () => boolean;
   updateStreak: (increment: boolean) => void;
+  // Individual stat setters for editor
+  setHealth: (health: number) => void;
+  setLives: (lives: number) => void;
+  setExperience: (experience: number) => void;
+  setPoints: (points: number) => void;
+  setStrength: (strength: number) => void;
+  setSpeed: (speed: number) => void;
+  setDefense: (defense: number) => void;
+  setBombs: (bombs: number) => void;
+  resetPlayerStats: () => void;
   
   // Character upgrades
   upgradeSize: (amount: number) => void;
@@ -519,6 +529,114 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
           }
         };
       });
+    },
+
+    // Individual stat setters for editor
+    setHealth: (health) => {
+      set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          health: Math.max(0, Math.min(100, health))
+        }
+      }));
+    },
+
+    setLives: (lives) => {
+      set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          lives: Math.max(0, Math.min(state.playerStats.maxLives, lives))
+        }
+      }));
+    },
+
+    setExperience: (experience) => {
+      set((state) => {
+        const newLevel = Math.floor(experience / 100) + 1;
+        return {
+          playerStats: {
+            ...state.playerStats,
+            experience: Math.max(0, experience),
+            level: newLevel
+          }
+        };
+      });
+    },
+
+    setPoints: (points) => {
+      set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          points: Math.max(0, points)
+        }
+      }));
+    },
+
+    setStrength: (strength) => {
+      set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          strength: Math.max(0, Math.min(100, strength))
+        }
+      }));
+    },
+
+    setSpeed: (speed) => {
+      set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          speed: Math.max(0, Math.min(100, speed))
+        }
+      }));
+    },
+
+    setDefense: (defense) => {
+      set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          defense: Math.max(0, Math.min(100, defense))
+        }
+      }));
+    },
+
+    setBombs: (bombs) => {
+      set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          bombs: Math.max(0, Math.min(50, bombs))
+        }
+      }));
+    },
+
+    resetPlayerStats: () => {
+      set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          lives: 3,
+          maxLives: 3,
+          level: 1,
+          experience: 0,
+          points: 0,
+          keys: 0,
+          bombs: 0,
+          streak: 0,
+          maxStreak: 10,
+          currentFloor: 1,
+          roomsCompleted: 0,
+          size: 1,
+          speed: 1,
+          strength: 1,
+          defense: 1,
+          luck: 1,
+          health: 100,
+          buffs: {
+            speed: 0,
+            strength: 0,
+            defense: 0,
+            luck: 0,
+          }
+        }
+      }));
     },
 
     // Character upgrades

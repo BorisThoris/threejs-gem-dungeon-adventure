@@ -13,7 +13,10 @@ import { mapToRoomType, hasActionCards } from "../utils/roomTypeMapper";
 import RoomActionCards from "./RoomActionCards";
 
 // Import player state for debugging
-import { usePlayerStats } from "../store/consolidatedGameStore";
+import {
+  usePlayerStats,
+  useConsolidatedGameStore,
+} from "../store/consolidatedGameStore";
 import PatternValidationTest from "./PatternValidationTest";
 
 // Import configuration arrays
@@ -38,6 +41,56 @@ const LoadingFallback: React.FC = () => (
   </Html>
 );
 
+// StatInput component for the stats editor
+interface StatInputProps {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  min?: number;
+  max?: number;
+}
+
+const StatInput: React.FC<StatInputProps> = ({
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 100,
+}) => {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <label style={{ minWidth: "80px", fontSize: "12px" }}>{label}:</label>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+        min={min}
+        max={max}
+        style={{
+          flex: 1,
+          padding: "4px 8px",
+          borderRadius: "4px",
+          border: "1px solid #555",
+          background: "rgba(255,255,255,0.1)",
+          color: "white",
+          fontSize: "12px",
+        }}
+      />
+      <input
+        type="range"
+        value={value}
+        onChange={(e) => onChange(parseInt(e.target.value))}
+        min={min}
+        max={max}
+        style={{
+          flex: 1,
+          accentColor: "#9C27B0",
+        }}
+      />
+    </div>
+  );
+};
+
 // Main editor component
 const ThreeDEditor: React.FC = () => {
   const { urlParams, updateURL, getParam } = useURLParams();
@@ -47,6 +100,9 @@ const ThreeDEditor: React.FC = () => {
   // Add show action cards state
   const [showActionCards, setShowActionCards] = useState<boolean>(true);
 
+  // Add player stats editor state
+  const [showStatsEditor, setShowStatsEditor] = useState<boolean>(false);
+
   // Add debugging states
   const [showDoors, setShowDoors] = useState<boolean>(true);
   const [showPlayerState, setShowPlayerState] = useState<boolean>(true);
@@ -55,6 +111,9 @@ const ThreeDEditor: React.FC = () => {
 
   // Get player stats for debugging
   const playerStats = usePlayerStats();
+
+  // Get full game store for stats editor
+  const gameStore = useConsolidatedGameStore();
 
   // Add consolidated card system for biomes (will be updated after getCurrentSelection is defined)
   const [roomActionCards, setRoomActionCards] = useState<any[]>([]);
@@ -1080,6 +1139,39 @@ const ThreeDEditor: React.FC = () => {
             </button>
           )}
 
+        {/* Player Stats Editor Toggle Button */}
+        <button
+          onClick={() => setShowStatsEditor(!showStatsEditor)}
+          style={{
+            position: "absolute",
+            top: "20px",
+            right:
+              showActionCards &&
+              selectedCategory === "biomes" &&
+              roomActionCards &&
+              roomActionCards.length > 0
+                ? "70px"
+                : "20px",
+            zIndex: 1001,
+            width: "40px",
+            height: "40px",
+            background: showStatsEditor ? "#FF6B6B" : "#9C27B0",
+            color: "white",
+            border: "none",
+            borderRadius: "50%",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "18px",
+            fontWeight: "bold",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            transition: "background 0.2s ease",
+          }}
+        >
+          {showStatsEditor ? "✕" : "📊"}
+        </button>
+
         {/* Action Cards Overlay - Outside Canvas */}
         {selectedCategory === "biomes" &&
           showActionCards &&
@@ -1103,6 +1195,165 @@ const ThreeDEditor: React.FC = () => {
               />
             </div>
           )}
+
+        {/* Player Stats Editor Overlay */}
+        {showStatsEditor && (
+          <div
+            style={{
+              position: "absolute",
+              top: "70px",
+              right: "20px",
+              zIndex: 1002,
+              background: "rgba(0,0,0,0.95)",
+              color: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              maxHeight: "80vh",
+              overflow: "auto",
+              border: "2px solid #9C27B0",
+            }}
+          >
+            <h3 style={{ margin: "0 0 15px 0", color: "#9C27B0" }}>
+              📊 Player Stats Editor
+            </h3>
+
+            {/* Player Stats */}
+            <div style={{ marginBottom: "20px" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "#FFD700" }}>
+                Player Stats
+              </h4>
+              <div style={{ display: "grid", gap: "8px" }}>
+                <StatInput
+                  label="Health"
+                  value={gameStore.playerStats.health}
+                  onChange={(value) => gameStore.setHealth(value)}
+                  min={0}
+                  max={100}
+                />
+                <StatInput
+                  label="Lives"
+                  value={gameStore.playerStats.lives}
+                  onChange={(value) => gameStore.setLives(value)}
+                  min={0}
+                  max={10}
+                />
+                <StatInput
+                  label="Experience"
+                  value={gameStore.playerStats.experience}
+                  onChange={(value) => gameStore.setExperience(value)}
+                  min={0}
+                  max={1000}
+                />
+                <StatInput
+                  label="Points"
+                  value={gameStore.playerStats.points}
+                  onChange={(value) => gameStore.setPoints(value)}
+                  min={0}
+                  max={10000}
+                />
+                <StatInput
+                  label="Strength"
+                  value={gameStore.playerStats.strength}
+                  onChange={(value) => gameStore.setStrength(value)}
+                  min={0}
+                  max={100}
+                />
+                <StatInput
+                  label="Speed"
+                  value={gameStore.playerStats.speed}
+                  onChange={(value) => gameStore.setSpeed(value)}
+                  min={0}
+                  max={100}
+                />
+                <StatInput
+                  label="Defense"
+                  value={gameStore.playerStats.defense}
+                  onChange={(value) => gameStore.setDefense(value)}
+                  min={0}
+                  max={100}
+                />
+                <StatInput
+                  label="Bombs"
+                  value={gameStore.playerStats.bombs}
+                  onChange={(value) => gameStore.setBombs(value)}
+                  min={0}
+                  max={50}
+                />
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div style={{ marginBottom: "20px" }}>
+              <h4 style={{ margin: "0 0 10px 0", color: "#FFD700" }}>
+                Quick Actions
+              </h4>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => gameStore.resetPlayerStats()}
+                  style={{
+                    background: "#FF6B6B",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
+                >
+                  Reset All
+                </button>
+                <button
+                  onClick={() => gameStore.setHealth(100)}
+                  style={{
+                    background: "#4CAF50",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
+                >
+                  Full Health
+                </button>
+                <button
+                  onClick={() => gameStore.setLives(3)}
+                  style={{
+                    background: "#2196F3",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
+                >
+                  Full Lives
+                </button>
+              </div>
+            </div>
+
+            {/* Current Values Display */}
+            <div>
+              <h4 style={{ margin: "0 0 10px 0", color: "#FFD700" }}>
+                Current Values
+              </h4>
+              <pre
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "10px",
+                  borderRadius: "4px",
+                  fontSize: "11px",
+                  overflow: "auto",
+                  maxHeight: "200px",
+                }}
+              >
+                {JSON.stringify(gameStore.playerStats, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
 
         {/* Pattern Test Overlay */}
         {showPatternTest && (
