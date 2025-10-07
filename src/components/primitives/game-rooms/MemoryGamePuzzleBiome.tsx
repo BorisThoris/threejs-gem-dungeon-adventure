@@ -177,9 +177,6 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
   const handleWrongGuess = (blockId: number) => {
     console.log("DEBUG: Handling wrong guess for block", blockId);
 
-    // Immediately set game phase to prevent further interaction
-    setGamePhase("completed");
-
     // Add to shaking and red blocks
     setShakingBlocks((prev) => new Set(prev).add(blockId));
     setRedBlocks((prev) => new Set(prev).add(blockId));
@@ -209,8 +206,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         newSet.delete(blockId);
         return newSet;
       });
-      setIsInteractionPaused(false);
-    }, 1000);
+    }, 600);
 
     // If all candles are out, trigger failure effect
     if (newWrongGuesses >= candlesLit.length) {
@@ -226,7 +222,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
           console.log("DEBUG: Applying damage and unlocking doors");
           loseLife();
           onDoorsUnlock?.();
-
+          setIsInteractionPaused(false);
           // Reset everything
           setTimeout(() => {
             console.log("DEBUG: Resetting game state");
@@ -244,27 +240,15 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         }, 1500);
       }, 500);
     } else {
-      // Single wrong guess - just apply damage and reset after delay
-      console.log("DEBUG: Single wrong guess - applying damage");
+      // Not all candles out: replay the current pattern after a brief pause
       setTimeout(() => {
-        loseLife();
-        onDoorsUnlock?.();
-
-        // Reset after delay
+        setIsInteractionPaused(false);
+        setPlayerSequence([]);
+        setGamePhase("showing");
         setTimeout(() => {
-          console.log("DEBUG: Resetting after single wrong guess");
-          setGameStarted(false);
-          setLevel(1);
-          setScore(0);
-          setGamePhase("waiting");
-          setCandlesLit([true, true]);
-          setWrongGuesses(0);
-          setFailureEffect(false);
-          setRedBlocks(new Set());
-          setShakingBlocks(new Set());
-          setIsInteractionPaused(false);
-        }, 2000);
-      }, 1000);
+          showPattern(patternRef.current);
+        }, 400);
+      }, 700);
     }
   };
 
