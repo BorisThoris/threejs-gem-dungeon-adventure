@@ -10,15 +10,20 @@ import { refBasedGameState } from "../utils/refBasedGameState";
 import { useSimpleSafeSpawn } from "../hooks/useSimpleSafeSpawn";
 import { Text } from "@react-three/drei";
 import { useConsolidatedGameStore } from "../store/consolidatedGameStore";
+import PlayerHand from "./PlayerHand";
 
 interface PlayerProps {
   initialSpawnPosition?: [number, number, number];
   showDebugInfo?: boolean;
+  showHand?: boolean;
+  handGesture?: "idle" | "pointing" | "grabbing" | "waving";
 }
 
 export function Player({
   initialSpawnPosition = [0, 1.5, 0],
   showDebugInfo = false,
+  showHand = true,
+  handGesture = "idle",
 }: PlayerProps) {
   const ref = useRef<RapierRigidBody>(null);
   const keys = usePhysicalKeyboard();
@@ -49,6 +54,10 @@ export function Player({
   // Camera refs to avoid stutters
   const cameraPositionRef = useRef(new Vector3());
   const lastUpdateTime = useRef(0);
+
+  // Hand position tracking
+  const handPositionRef = useRef(new Vector3());
+  const handRotationRef = useRef(new Vector3());
 
   // Find safe spawn position on mount
   useEffect(() => {
@@ -163,6 +172,34 @@ export function Player({
       cameraPositionRef.current.set(x, y + 1.6, z);
       camera.position.copy(cameraPositionRef.current);
       camera.updateMatrixWorld(true);
+
+      // Update hand position relative to camera
+      if (showHand && camera.right && camera.direction) {
+        // Position hand slightly in front and to the right of the camera
+        handPositionRef.current.set(
+          x + camera.right.x * 0.3 + camera.direction.x * 0.5,
+          y + 1.2, // Slightly lower than camera
+          z + camera.right.z * 0.3 + camera.direction.z * 0.5
+        );
+
+        // Match hand rotation to camera rotation
+        handRotationRef.current.set(
+          camera.rotation.x,
+          camera.rotation.y,
+          camera.rotation.z
+        );
+      } else if (showHand) {
+        // Fallback position if camera vectors aren't ready yet
+        handPositionRef.current.set(
+          x + 0.3, // Simple offset to the right
+          y + 1.2, // Slightly lower than camera
+          z + 0.5 // Simple offset forward
+        );
+
+        // Use default rotation
+        handRotationRef.current.set(0, 0, 0);
+      }
+
       lastUpdateTime.current = now;
     }
 
@@ -209,6 +246,20 @@ export function Player({
       >
         <CapsuleCollider args={[0.8, 0.3]} />
       </RigidBody>
+
+      {/* Floating Hand - Mouse Driven */}
+      {showHand && isSpawned && (
+        <PlayerHand
+          position={[0, 0, 0]} // Position is now handled by mouse following
+          rotation={[0, 0, 0]} // Rotation is now handled by mouse following
+          scale={[0.8, 0.8, 0.8]}
+          visible={true}
+          gesture={handGesture}
+          animationSpeed={1.0}
+          followMouse={true}
+          followDistance={3}
+        />
+      )}
 
       {/* Debug information - shows initial spawn status only */}
       {showDebugInfo && spawnInfo && (

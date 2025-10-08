@@ -50,6 +50,17 @@ export const MODELS: ModelDefinition[] = [
     filename: 'cylinder.gltf',
     format: 'gltf',
     size: '1x1x1'
+  },
+  {
+    id: 'player-hand',
+    name: 'Player Hand',
+    category: 'Player',
+    description: '3D floating hand for player interactions',
+    filename: 'player-hand.tsx',
+    format: 'tsx',
+    size: '0.6x0.4x0.2',
+    vertices: 120,
+    materials: ['skin-tone']
   }
 ];
 

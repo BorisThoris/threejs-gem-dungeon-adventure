@@ -7,6 +7,7 @@ import MosaicCreatorLauncher from "./components/MosaicCreatorLauncher";
 import TexturePainterExample from "./components/TexturePainterExample";
 import URLParamTest from "./components/URLParamTest";
 import URLDebugTest from "./components/URLDebugTest";
+import HandDemo from "./components/HandDemo";
 import { ThemeProvider } from "./themes";
 import "./App.css";
 
@@ -21,6 +22,7 @@ function App() {
     urlParams.get("texture-painter-example") === "true";
   const showURLParamTest = urlParams.get("url-test") === "true";
   const showURLDebugTest = urlParams.get("url-debug") === "true";
+  const showHandDemo = urlParams.get("hand-demo") === "true";
 
   // Add CSS class to root element for editor mode
   React.useEffect(() => {
@@ -91,6 +93,14 @@ function App() {
     return (
       <ThemeProvider>
         <URLDebugTest />
+      </ThemeProvider>
+    );
+  }
+
+  if (showHandDemo) {
+    return (
+      <ThemeProvider>
+        <HandDemo />
       </ThemeProvider>
     );
   }
