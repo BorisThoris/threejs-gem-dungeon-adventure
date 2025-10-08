@@ -42,16 +42,28 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     if (!followMouse) return;
 
     const handleMouseMove = (event: MouseEvent) => {
-      const x = (event.clientX / size.width) * 2 - 1;
-      const y = -(event.clientY / size.height) * 2 + 1;
+      // Get the canvas element to calculate relative coordinates
+      const canvas = document.querySelector("canvas");
+      if (!canvas) return;
+
+      const canvasRect = canvas.getBoundingClientRect();
+
+      // Calculate mouse position relative to the canvas
+      const canvasX = event.clientX - canvasRect.left;
+      const canvasY = event.clientY - canvasRect.top;
+
+      // Convert to normalized device coordinates (-1 to 1)
+      const x = (canvasX / canvasRect.width) * 2 - 1;
+      const y = -(canvasY / canvasRect.height) * 2 + 1;
+
       setMousePosition({ x, y });
 
-      // Check if cursor is on screen
+      // Check if cursor is on the canvas
       const isOnScreen =
-        event.clientX >= 0 &&
-        event.clientX <= size.width &&
-        event.clientY >= 0 &&
-        event.clientY <= size.height;
+        canvasX >= 0 &&
+        canvasX <= canvasRect.width &&
+        canvasY >= 0 &&
+        canvasY <= canvasRect.height;
       setIsCursorOnScreen(isOnScreen);
     };
 
@@ -119,11 +131,8 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
         targetPosition.current.copy(intersectionPoint);
       }
 
-      // In editor mode, offset the hand relative to the player position
-      if (editorMode) {
-        const playerPos = new THREE.Vector3(...playerPosition);
-        targetPosition.current.add(playerPos);
-      }
+      // In editor mode, the hand should follow the mouse directly without player offset
+      // The mouse positioning already works correctly in world space
 
       // Smooth interpolation to target position with dynamic speed based on distance
       const distance = currentPosition.current.distanceTo(
