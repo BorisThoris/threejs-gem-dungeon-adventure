@@ -1,10 +1,18 @@
-import React, { useState, useEffect, useCallback, Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  Suspense,
+  useRef,
+} from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
 import * as THREE from "three";
 import SharedNavigation from "./SharedNavigation";
 import Door from "./Door";
+import PlayerHand from "./PlayerHand";
+import { Player } from "./Player";
 import { useURLParams, parseJSON, serializeJSON } from "../hooks/useURLParams";
 
 // Import the consolidated card system
@@ -40,6 +48,103 @@ const LoadingFallback: React.FC = () => (
     </div>
   </Html>
 );
+
+// Spawn Preview Component
+const SpawnPreview: React.FC<{
+  position: [number, number, number];
+  isSpawning: boolean;
+}> = ({ position, isSpawning }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const { camera } = useThree();
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      // Make the preview face the camera
+      meshRef.current.lookAt(camera.position);
+      // Gentle floating animation
+      meshRef.current.position.y =
+        position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.1;
+    }
+  });
+
+  if (!isSpawning) return null;
+
+  return (
+    <group position={position}>
+      {/* Ground indicator circle */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <ringGeometry args={[0.5, 1, 32]} />
+        <meshBasicMaterial color="#00ff00" transparent opacity={0.3} />
+      </mesh>
+
+      {/* Player preview capsule */}
+      <mesh ref={meshRef}>
+        <capsuleGeometry args={[0.4, 1.6, 4, 8]} />
+        <meshBasicMaterial
+          color="#00ff00"
+          transparent
+          opacity={0.6}
+          wireframe
+        />
+      </mesh>
+
+      {/* Spawn indicator text */}
+      <Html position={[0, 2, 0]} center>
+        <div
+          style={{
+            background: "rgba(0,0,0,0.8)",
+            color: "#00ff00",
+            padding: "8px 12px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "bold",
+            border: "1px solid #00ff00",
+          }}
+        >
+          SPAWN HERE
+        </div>
+      </Html>
+    </group>
+  );
+};
+
+// Click Handler Component for spawn positioning
+const SpawnClickHandler: React.FC<{
+  onSpawnPositionChange: (position: [number, number, number]) => void;
+  spawnMode: boolean;
+}> = ({ onSpawnPositionChange, spawnMode }) => {
+  const { camera, raycaster, mouse, scene } = useThree();
+
+  const handleClick = useCallback(
+    (event: MouseEvent) => {
+      if (!spawnMode) return;
+
+      // Update mouse position
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      // Raycast from camera through mouse position
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      if (intersects.length > 0) {
+        const point = intersects[0].point;
+        // Set spawn position slightly above the hit point
+        onSpawnPositionChange([point.x, point.y + 1.5, point.z]);
+      }
+    },
+    [spawnMode, camera, raycaster, mouse, scene, onSpawnPositionChange]
+  );
+
+  useEffect(() => {
+    if (spawnMode) {
+      window.addEventListener("click", handleClick);
+      return () => window.removeEventListener("click", handleClick);
+    }
+  }, [spawnMode, handleClick]);
+
+  return null;
+};
 
 // StatInput component for the stats editor
 interface StatInputProps {
@@ -109,6 +214,12 @@ const ThreeDEditor: React.FC = () => {
   const [doorsLocked, setDoorsLocked] = useState<boolean>(false);
   const [showPatternTest, setShowPatternTest] = useState<boolean>(false);
   const [dragMode, setDragMode] = useState<boolean>(false);
+  const [showHand, setShowHand] = useState<boolean>(false);
+  const [spawnMode, setSpawnMode] = useState<boolean>(false);
+  const [spawnPosition, setSpawnPosition] = useState<[number, number, number]>([
+    0, 1.5, 0,
+  ]);
+  const [isSpawning, setIsSpawning] = useState<boolean>(false);
 
   // Get player stats for debugging
   const playerStats = usePlayerStats();
@@ -796,36 +907,6 @@ const ThreeDEditor: React.FC = () => {
                 borderRadius: "5px",
               }}
             >
-              <h4
-                style={{
-                  color: "#FFD700",
-                  marginBottom: "10px",
-                  fontSize: "14px",
-                }}
-              >
-                🐛 Debug Controls
-              </h4>
-
-              <div style={{ marginBottom: "8px" }}>
-                <label
-                  style={{
-                    color: "white",
-                    fontSize: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "5px",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={showDoors}
-                    onChange={(e) => setShowDoors(e.target.checked)}
-                    style={{ margin: 0 }}
-                  />
-                  Show Doors
-                </label>
-              </div>
-
               <div style={{ marginBottom: "8px" }}>
                 <label
                   style={{
@@ -991,11 +1072,14 @@ const ThreeDEditor: React.FC = () => {
         <Canvas camera={{ position: [10, 10, 10], fov: 60 }}>
           <ambientLight intensity={0.4} />
           <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-          <OrbitControls
-            enablePan={true}
-            enableZoom={true}
-            enableRotate={true}
-          />
+          {/* Disable OrbitControls when player is spawned */}
+          {!isSpawning && (
+            <OrbitControls
+              enablePan={true}
+              enableZoom={true}
+              enableRotate={true}
+            />
+          )}
 
           <Physics>
             <Suspense fallback={<LoadingFallback />}>
@@ -1154,6 +1238,40 @@ const ThreeDEditor: React.FC = () => {
                 </Html>
               )}
             </Suspense>
+
+            {/* Debug Hand */}
+            {showHand && (
+              <PlayerHand
+                position={[0, 0, 0]}
+                rotation={[0, 0, 0]}
+                scale={[1, 1, 1]}
+                visible={true}
+                gesture="idle"
+                animationSpeed={1.0}
+                followMouse={true}
+                followDistance={3}
+              />
+            )}
+
+            {/* Spawn Click Handler */}
+            <SpawnClickHandler
+              onSpawnPositionChange={setSpawnPosition}
+              spawnMode={spawnMode}
+            />
+
+            {/* Spawn Preview */}
+            <SpawnPreview position={spawnPosition} isSpawning={spawnMode} />
+
+            {/* Spawned Player */}
+            {isSpawning && (
+              <Player
+                initialSpawnPosition={spawnPosition}
+                showDebugInfo={false}
+                showHand={showHand}
+                handGesture="idle"
+                editorMode={false} // Full player control
+              />
+            )}
           </Physics>
         </Canvas>
 
@@ -1221,6 +1339,168 @@ const ThreeDEditor: React.FC = () => {
         >
           {showStatsEditor ? "✕" : "📊"}
         </button>
+
+        {/* Debug Controls - Floating Buttons */}
+        <button
+          onClick={() => setShowDoors(!showDoors)}
+          style={{
+            position: "absolute",
+            top: "20px",
+            left: "20px",
+            zIndex: 1001,
+            width: "40px",
+            height: "40px",
+            background: showDoors ? "#4CAF50" : "#666",
+            color: "white",
+            border: "none",
+            borderRadius: "50%",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "18px",
+            fontWeight: "bold",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            transition: "background 0.2s ease",
+          }}
+          title="Toggle Doors"
+        >
+          🚪
+        </button>
+
+        <button
+          onClick={() => setShowHand(!showHand)}
+          style={{
+            position: "absolute",
+            top: "70px",
+            left: "20px",
+            zIndex: 1001,
+            width: "40px",
+            height: "40px",
+            background: showHand ? "#FF9800" : "#666",
+            color: "white",
+            border: "none",
+            borderRadius: "50%",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "18px",
+            fontWeight: "bold",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            transition: "background 0.2s ease",
+          }}
+          title="Toggle Hand"
+        >
+          🖐️
+        </button>
+
+        <button
+          onClick={() => setSpawnMode(!spawnMode)}
+          style={{
+            position: "absolute",
+            top: "120px",
+            left: "20px",
+            zIndex: 1001,
+            width: "40px",
+            height: "40px",
+            background: spawnMode ? "#2196F3" : "#666",
+            color: "white",
+            border: "none",
+            borderRadius: "50%",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "18px",
+            fontWeight: "bold",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            transition: "background 0.2s ease",
+          }}
+          title="Spawn Player"
+        >
+          👤
+        </button>
+
+        {/* Spawn Instructions */}
+        {spawnMode && (
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1002,
+              background: "rgba(0,0,0,0.9)",
+              color: "#00ff00",
+              padding: "12px 20px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "bold",
+              border: "2px solid #00ff00",
+              textAlign: "center",
+            }}
+          >
+            Click anywhere to position player spawn point
+          </div>
+        )}
+
+        {/* Spawn Button */}
+        {spawnMode && (
+          <button
+            onClick={() => {
+              setIsSpawning(true);
+              setSpawnMode(false);
+            }}
+            style={{
+              position: "absolute",
+              top: "70px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1002,
+              background: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "25px",
+              padding: "10px 20px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "bold",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+              transition: "background 0.2s ease",
+            }}
+          >
+            SPAWN PLAYER
+          </button>
+        )}
+
+        {/* Remove Player Button */}
+        {isSpawning && (
+          <button
+            onClick={() => {
+              setIsSpawning(false);
+            }}
+            style={{
+              position: "absolute",
+              top: "20px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1002,
+              background: "#f44336",
+              color: "white",
+              border: "none",
+              borderRadius: "25px",
+              padding: "10px 20px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "bold",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+              transition: "background 0.2s ease",
+            }}
+          >
+            REMOVE PLAYER
+          </button>
+        )}
 
         {/* Action Cards Overlay - DISABLED */}
         {false &&

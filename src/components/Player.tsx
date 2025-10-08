@@ -17,6 +17,7 @@ interface PlayerProps {
   showDebugInfo?: boolean;
   showHand?: boolean;
   handGesture?: "idle" | "pointing" | "grabbing" | "waving";
+  editorMode?: boolean;
 }
 
 export function Player({
@@ -24,6 +25,7 @@ export function Player({
   showDebugInfo = false,
   showHand = true,
   handGesture = "idle",
+  editorMode = false,
 }: PlayerProps) {
   const ref = useRef<RapierRigidBody>(null);
   const keys = usePhysicalKeyboard();
@@ -48,7 +50,6 @@ export function Player({
     position: [number, number, number];
   } | null>(null);
 
-  // Enable mouse look
   useMouseLook();
 
   // Camera refs to avoid stutters
@@ -88,12 +89,22 @@ export function Player({
     }
   }, [initialSpawnPosition, showDebugInfo]);
 
-  // Initialize camera position once spawned (do not set rotation here)
+  // Initialize camera position and rotation once spawned
+  // Skip camera updates in editor mode to avoid conflicts with OrbitControls
   useEffect(() => {
-    if (isSpawned && spawnPosition) {
-      camera.position.set(...spawnPosition);
+    if (isSpawned && spawnPosition && !editorMode) {
+      // Set camera position to spawn position with eye level offset
+      camera.position.set(
+        spawnPosition[0],
+        spawnPosition[1] + 1.6,
+        spawnPosition[2]
+      );
+
+      // Set camera rotation to look forward (reset from editor angle)
+      camera.rotation.set(0, 0, 0);
+      camera.updateMatrixWorld(true);
     }
-  }, [camera, spawnPosition, isSpawned]);
+  }, [camera, spawnPosition, isSpawned, editorMode]);
 
   // No periodic safety checks - safe spawn only works during initial spawn
 
@@ -166,41 +177,44 @@ export function Player({
     const { x, y, z } = ref.current.translation();
 
     // Update camera position using refs (throttled to prevent stutters); do not write rotation
-    const now = performance.now();
-    if (now - lastUpdateTime.current > 16) {
-      // ~60fps max
-      cameraPositionRef.current.set(x, y + 1.6, z);
-      camera.position.copy(cameraPositionRef.current);
-      camera.updateMatrixWorld(true);
+    // Skip camera updates in editor mode to avoid conflicts with OrbitControls
+    if (!editorMode) {
+      const now = performance.now();
+      if (now - lastUpdateTime.current > 16) {
+        // ~60fps max
+        cameraPositionRef.current.set(x, y + 1.6, z);
+        camera.position.copy(cameraPositionRef.current);
+        camera.updateMatrixWorld(true);
 
-      // Update hand position relative to camera
-      if (showHand && camera.right && camera.direction) {
-        // Position hand slightly in front and to the right of the camera
-        handPositionRef.current.set(
-          x + camera.right.x * 0.3 + camera.direction.x * 0.5,
-          y + 1.2, // Slightly lower than camera
-          z + camera.right.z * 0.3 + camera.direction.z * 0.5
-        );
+        // Update hand position relative to camera
+        if (showHand && camera.right && camera.direction) {
+          // Position hand slightly in front and to the right of the camera
+          handPositionRef.current.set(
+            x + camera.right.x * 0.3 + camera.direction.x * 0.5,
+            y + 1.2, // Slightly lower than camera
+            z + camera.right.z * 0.3 + camera.direction.z * 0.5
+          );
 
-        // Match hand rotation to camera rotation
-        handRotationRef.current.set(
-          camera.rotation.x,
-          camera.rotation.y,
-          camera.rotation.z
-        );
-      } else if (showHand) {
-        // Fallback position if camera vectors aren't ready yet
-        handPositionRef.current.set(
-          x + 0.3, // Simple offset to the right
-          y + 1.2, // Slightly lower than camera
-          z + 0.5 // Simple offset forward
-        );
+          // Match hand rotation to camera rotation
+          handRotationRef.current.set(
+            camera.rotation.x,
+            camera.rotation.y,
+            camera.rotation.z
+          );
+        } else if (showHand) {
+          // Fallback position if camera vectors aren't ready yet
+          handPositionRef.current.set(
+            x + 0.3, // Simple offset to the right
+            y + 1.2, // Slightly lower than camera
+            z + 0.5 // Simple offset forward
+          );
 
-        // Use default rotation
-        handRotationRef.current.set(0, 0, 0);
+          // Use default rotation
+          handRotationRef.current.set(0, 0, 0);
+        }
+
+        lastUpdateTime.current = now;
       }
-
-      lastUpdateTime.current = now;
     }
 
     // Calculate movement (slower speeds) - reuse vectors
