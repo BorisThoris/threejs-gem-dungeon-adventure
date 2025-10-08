@@ -5,7 +5,7 @@ import { uiEvents, UI_EVENTS } from "../utils/uiEvents";
 import { gameEvents, GAME_EVENTS } from "../utils/gameEvents";
 import { cameraRotationRefs } from "../utils/cameraRotationRef";
 
-export const useMouseLook = () => {
+export const useMouseLook = (editorMode: boolean = false) => {
   const { camera } = useThree();
   const isPointerLocked = useRef(false);
   const euler = useRef({ x: 0, y: 0 });
@@ -20,6 +20,9 @@ export const useMouseLook = () => {
     window.navigator.userAgent.toLowerCase().includes("electron");
 
   useEffect(() => {
+    // Skip mouse look setup in editor mode
+    if (editorMode) return;
+
     // Set FOV to 95 degrees
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.fov = 95;
