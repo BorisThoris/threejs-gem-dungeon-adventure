@@ -11,6 +11,8 @@ interface PlayerHandProps {
   gesture?: "idle" | "pointing" | "grabbing" | "waving";
   followMouse?: boolean;
   followDistance?: number;
+  playerPosition?: [number, number, number];
+  editorMode?: boolean;
 }
 
 const PlayerHand: React.FC<PlayerHandProps> = ({
@@ -22,6 +24,8 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
   gesture = "idle",
   followMouse = true,
   followDistance = 3,
+  playerPosition = [0, 0, 0],
+  editorMode = false,
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const timeRef = useRef(0);
@@ -29,6 +33,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
 
   // Mouse position tracking
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isCursorOnScreen, setIsCursorOnScreen] = useState(true);
   const targetPosition = useRef(new THREE.Vector3());
   const currentPosition = useRef(new THREE.Vector3());
 
@@ -40,10 +45,28 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       const x = (event.clientX / size.width) * 2 - 1;
       const y = -(event.clientY / size.height) * 2 + 1;
       setMousePosition({ x, y });
+
+      // Check if cursor is on screen
+      const isOnScreen =
+        event.clientX >= 0 &&
+        event.clientX <= size.width &&
+        event.clientY >= 0 &&
+        event.clientY <= size.height;
+      setIsCursorOnScreen(isOnScreen);
     };
 
+    const handleMouseEnter = () => setIsCursorOnScreen(true);
+    const handleMouseLeave = () => setIsCursorOnScreen(false);
+
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseenter", handleMouseEnter);
+    window.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseenter", handleMouseEnter);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+    };
   }, [followMouse, size.width, size.height]);
 
   // Animation based on gesture and mouse position
@@ -53,24 +76,61 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     timeRef.current += 0.016 * animationSpeed;
 
     if (followMouse) {
-      // Convert mouse position to 3D world position
-      const mouseVector = new THREE.Vector3(
-        mousePosition.x,
-        mousePosition.y,
-        0.5
+      // Create a raycaster from camera through mouse position
+      const raycaster = new THREE.Raycaster();
+      const mouseVector = new THREE.Vector2(mousePosition.x, mousePosition.y);
+
+      // Set up raycaster from camera through mouse position
+      raycaster.setFromCamera(mouseVector, camera);
+
+      // Calculate the point where the ray intersects a plane at followDistance from camera
+      const cameraDirection = new THREE.Vector3();
+      camera.getWorldDirection(cameraDirection);
+
+      // Create a plane perpendicular to camera direction at followDistance
+      const plane = new THREE.Plane();
+      plane.setFromNormalAndCoplanarPoint(
+        cameraDirection,
+        camera.position
+          .clone()
+          .add(cameraDirection.multiplyScalar(followDistance))
       );
-      mouseVector.unproject(camera);
 
-      // Calculate direction from camera to mouse position
-      const direction = mouseVector.sub(camera.position).normalize();
+      // Find intersection point
+      const intersectionPoint = new THREE.Vector3();
+      const hasIntersection = raycaster.ray.intersectPlane(
+        plane,
+        intersectionPoint
+      );
 
-      // Set target position at followDistance from camera
-      targetPosition.current
-        .copy(camera.position)
-        .add(direction.multiplyScalar(followDistance));
+      // If no intersection, fallback to the old method
+      if (!hasIntersection) {
+        const fallbackVector = new THREE.Vector3(
+          mousePosition.x,
+          mousePosition.y,
+          0.5
+        );
+        fallbackVector.unproject(camera);
+        const direction = fallbackVector.sub(camera.position).normalize();
+        targetPosition.current
+          .copy(camera.position)
+          .add(direction.multiplyScalar(followDistance));
+      } else {
+        targetPosition.current.copy(intersectionPoint);
+      }
 
-      // Smooth interpolation to target position
-      currentPosition.current.lerp(targetPosition.current, 0.1);
+      // In editor mode, offset the hand relative to the player position
+      if (editorMode) {
+        const playerPos = new THREE.Vector3(...playerPosition);
+        targetPosition.current.add(playerPos);
+      }
+
+      // Smooth interpolation to target position with dynamic speed based on distance
+      const distance = currentPosition.current.distanceTo(
+        targetPosition.current
+      );
+      const lerpSpeed = Math.min(0.2, Math.max(0.05, distance * 0.1));
+      currentPosition.current.lerp(targetPosition.current, lerpSpeed);
       groupRef.current.position.copy(currentPosition.current);
 
       // Make hand look at the camera
@@ -144,7 +204,7 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     }
   });
 
-  if (!visible) return null;
+  if (!visible || (followMouse && !isCursorOnScreen)) return null;
 
   return (
     <group ref={groupRef} position={position} rotation={rotation} scale={scale}>

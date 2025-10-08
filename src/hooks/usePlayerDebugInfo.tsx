@@ -10,10 +10,10 @@ interface UsePlayerDebugInfoProps {
   spawnPosition: [number, number, number];
 }
 
-export const usePlayerDebugInfo = ({ 
-  showDebugInfo, 
-  spawnInfo, 
-  spawnPosition 
+export const usePlayerDebugInfo = ({
+  showDebugInfo,
+  spawnInfo,
+  spawnPosition,
 }: UsePlayerDebugInfoProps) => {
   if (!showDebugInfo || !spawnInfo) return null;
 
@@ -66,3 +66,4 @@ export const usePlayerDebugInfo = ({
     </group>
   );
 };
+

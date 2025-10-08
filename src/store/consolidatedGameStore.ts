@@ -81,6 +81,9 @@ export interface GameState {
   // UI State (from breakingStore + wallToggleStore)
   globalBreakingEnabled: boolean;
   wallsEnabled: boolean;
+  
+  // Hand State
+  handsOut: boolean;
 }
 
 export interface GameActions {
@@ -146,6 +149,10 @@ export interface GameActions {
   toggleWalls: () => void;
   setWallsEnabled: (enabled: boolean) => void;
   
+  // Hand Controls
+  toggleHands: () => void;
+  setHandsOut: (handsOut: boolean) => void;
+  
   // Cleanup
   cleanup: () => void;
   resetGame: () => void;
@@ -202,6 +209,7 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
     gamePhase: 'exploration',
     globalBreakingEnabled: true,
     wallsEnabled: true,
+    handsOut: true,
 
     // Room Management Actions
     loadRoom: async (roomId: string) => {
@@ -741,6 +749,15 @@ export const useConsolidatedGameStore = create<GameState & GameActions>()(
     setWallsEnabled: (enabled: boolean) => {
       set({ wallsEnabled: enabled });
     },
+    
+    // Hand Controls
+    toggleHands: () => {
+      set((state) => ({ handsOut: !state.handsOut }));
+    },
+    
+    setHandsOut: (handsOut: boolean) => {
+      set({ handsOut });
+    },
 
     // Cleanup
     cleanup: () => {
@@ -780,6 +797,7 @@ export const usePlayerStats = () => useConsolidatedGameStore((state) => state.pl
 export const useGamePhase = () => useConsolidatedGameStore((state) => state.gamePhase);
 export const useBreakingEnabled = () => useConsolidatedGameStore((state) => state.globalBreakingEnabled);
 export const useWallsEnabled = () => useConsolidatedGameStore((state) => state.wallsEnabled);
+export const useHandsOut = () => useConsolidatedGameStore((state) => state.handsOut);
 
 // Room completion tracking selectors
 export const useVisitedRooms = () => useConsolidatedGameStore((state) => state.visitedRooms);

@@ -11,6 +11,7 @@ import { usePlayerMovement } from "../hooks/usePlayerMovement";
 import { usePlayerSpawn } from "../hooks/usePlayerSpawn";
 import { usePlayerTeleportation } from "../hooks/usePlayerTeleportation";
 import { usePlayerDebugInfo } from "../hooks/usePlayerDebugInfo";
+import { useHandsOut } from "../store/consolidatedGameStore";
 
 interface PlayerProps {
   initialSpawnPosition?: [number, number, number];
@@ -53,12 +54,18 @@ export function Player({
 
   usePlayerTeleportation({ rigidBodyRef: ref });
 
+  // Get hands out state from store
+  const handsOut = useHandsOut();
+
   // Always call hooks, but conditionally execute logic
   const debugInfo = usePlayerDebugInfo({
     showDebugInfo,
     spawnInfo,
     spawnPosition,
   });
+
+  // Player position ref for hand positioning
+  const playerPositionRef = useRef<[number, number, number]>([0, 0, 0]);
 
   // Main game loop
   useFrame((state, delta) => {
@@ -70,6 +77,7 @@ export function Player({
     // Get player position
     const { x, y, z } = ref.current.translation();
     const playerPosition = new THREE.Vector3(x, y, z);
+    playerPositionRef.current = [x, y, z];
 
     // Update camera position
     updateCameraPosition(playerPosition);
@@ -103,7 +111,7 @@ export function Player({
       </RigidBody>
 
       {/* Floating Hand - Mouse Driven */}
-      {showHand && isSpawned && (
+      {handsOut && isSpawned && (
         <PlayerHand
           position={[0, 0, 0]} // Position is now handled by mouse following
           rotation={[0, 0, 0]} // Rotation is now handled by mouse following
@@ -113,6 +121,8 @@ export function Player({
           animationSpeed={1.0}
           followMouse={true}
           followDistance={3}
+          playerPosition={playerPositionRef.current}
+          editorMode={editorMode}
         />
       )}
 

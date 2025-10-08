@@ -24,6 +24,7 @@ import RoomActionCards from "./RoomActionCards";
 import {
   usePlayerStats,
   useConsolidatedGameStore,
+  useHandsOut,
 } from "../store/consolidatedGameStore";
 import PatternValidationTest from "./PatternValidationTest";
 
@@ -214,7 +215,7 @@ const ThreeDEditor: React.FC = () => {
   const [doorsLocked, setDoorsLocked] = useState<boolean>(false);
   const [showPatternTest, setShowPatternTest] = useState<boolean>(false);
   const [dragMode, setDragMode] = useState<boolean>(false);
-  const [showHand, setShowHand] = useState<boolean>(false);
+  // Remove local showHand state - use global handsOut state instead
   const [spawnMode, setSpawnMode] = useState<boolean>(false);
   const [spawnPosition, setSpawnPosition] = useState<[number, number, number]>([
     0, 1.5, 0,
@@ -226,6 +227,9 @@ const ThreeDEditor: React.FC = () => {
 
   // Get full game store for stats editor
   const gameStore = useConsolidatedGameStore();
+
+  // Get hands out state
+  const handsOut = useHandsOut();
 
   // Add consolidated card system for biomes - DISABLED (but keep logic)
   const [roomActionCards, setRoomActionCards] = useState<any[]>([]);
@@ -1239,20 +1243,6 @@ const ThreeDEditor: React.FC = () => {
               )}
             </Suspense>
 
-            {/* Debug Hand */}
-            {showHand && (
-              <PlayerHand
-                position={[0, 0, 0]}
-                rotation={[0, 0, 0]}
-                scale={[1, 1, 1]}
-                visible={true}
-                gesture="idle"
-                animationSpeed={1.0}
-                followMouse={true}
-                followDistance={3}
-              />
-            )}
-
             {/* Spawn Click Handler */}
             <SpawnClickHandler
               onSpawnPositionChange={setSpawnPosition}
@@ -1267,7 +1257,7 @@ const ThreeDEditor: React.FC = () => {
               <Player
                 initialSpawnPosition={spawnPosition}
                 showDebugInfo={false}
-                showHand={showHand}
+                showHand={false} // Hand visibility now controlled by handsOut state
                 handGesture="idle"
                 editorMode={false} // Full player control
               />
@@ -1369,7 +1359,7 @@ const ThreeDEditor: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setShowHand(!showHand)}
+          onClick={() => gameStore.toggleHands()}
           style={{
             position: "absolute",
             top: "70px",
@@ -1377,7 +1367,7 @@ const ThreeDEditor: React.FC = () => {
             zIndex: 1001,
             width: "40px",
             height: "40px",
-            background: showHand ? "#FF9800" : "#666",
+            background: handsOut ? "#FF9800" : "#666",
             color: "white",
             border: "none",
             borderRadius: "50%",
