@@ -3,6 +3,7 @@ import { RigidBody } from "@react-three/rapier";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { MovableTreasure } from "../elements";
 
 export interface EnhancedPressurePlateProps {
   position?: [number, number, number];
@@ -41,80 +42,11 @@ const EnhancedPressurePlate: React.FC<EnhancedPressurePlateProps> = ({
   const [isGrabbing, setIsGrabbing] = useState(false);
   const [plateHeight, setPlateHeight] = useState(0); // 0 = fully down, 1 = fully up
   const [hasTriggeredFullyRaised, setHasTriggeredFullyRaised] = useState(false);
-  const awardRef = useRef<THREE.Group>(null);
   const plateRef = useRef<THREE.Group>(null);
-  const treasureRef = useRef<any>(null); // RigidBody ref
-  const treasureVisualRef = useRef<THREE.Group>(null); // Visual group ref
-
-  // Generate award bag texture
-  const awardTexture = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d")!;
-
-    // Background - dark leather bag color
-    ctx.fillStyle = "#2D1810";
-    ctx.fillRect(0, 0, 64, 64);
-
-    // Add leather texture pattern
-    ctx.fillStyle = "#3D2415";
-    for (let i = 0; i < 10; i++) {
-      const x = Math.random() * 64;
-      const y = Math.random() * 64;
-      const size = Math.random() * 4 + 1;
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Add stitching lines
-    ctx.strokeStyle = "#8B4513";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(5, 10);
-    ctx.lineTo(59, 10);
-    ctx.moveTo(5, 54);
-    ctx.lineTo(59, 54);
-    ctx.moveTo(10, 5);
-    ctx.lineTo(10, 59);
-    ctx.moveTo(54, 5);
-    ctx.lineTo(54, 59);
-    ctx.stroke();
-
-    // Add magical glow effect
-    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gradient.addColorStop(0, "rgba(255, 215, 0, 0.3)");
-    gradient.addColorStop(0.7, "rgba(255, 215, 0, 0.1)");
-    gradient.addColorStop(1, "rgba(255, 215, 0, 0)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 64, 64);
-
-    // Add magical sparkles
-    ctx.fillStyle = "#FFD700";
-    for (let i = 0; i < 8; i++) {
-      const x = Math.random() * 64;
-      const y = Math.random() * 64;
-      const size = Math.random() * 1.5 + 0.5;
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Add bag opening
-    ctx.fillStyle = "#1A0F08";
-    ctx.beginPath();
-    ctx.ellipse(32, 15, 20, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    return texture;
-  }, []);
 
   const handleCollision = (other: any) => {
-    if (other.rigidBodyObject?.userData?.weight >= weight) {
+    // Any object triggers the pressure plate, regardless of weight
+    if (other.rigidBodyObject) {
       if (!isPressed && onPress) {
         onPress();
       }
@@ -142,7 +74,7 @@ const EnhancedPressurePlate: React.FC<EnhancedPressurePlateProps> = ({
     }
   };
 
-  const handleAwardClick = () => {
+  const handleTreasureGrabbed = () => {
     if (!canGrabAward || !hasAward) return;
 
     setIsGrabbing(true);
@@ -154,139 +86,15 @@ const EnhancedPressurePlate: React.FC<EnhancedPressurePlateProps> = ({
     }, 1000);
   };
 
-  // Animate plate movement and treasure
+  // Animate plate movement
   useFrame((state) => {
-    const time = state.clock.getElapsedTime();
-
     // Update plate position based on height
     if (plateRef.current) {
       const maxPlateHeight = 0.15; // Maximum height the plate can raise
       const currentPlateY = plateHeight * maxPlateHeight;
       plateRef.current.position.y = currentPlateY;
     }
-
-    // Animate treasure floating and rotation (visual only)
-    if (treasureVisualRef.current && hasAward && showAward) {
-      const floatOffset = Math.sin(time * 2) * 0.05;
-      const baseY = 0.2 + plateHeight * 0.15; // Treasure follows plate height
-
-      treasureVisualRef.current.position.y = baseY + floatOffset;
-      treasureVisualRef.current.rotation.y = time * 0.5;
-    }
   });
-
-  const renderAward = () => {
-    if (!hasAward || !showAward) return null;
-
-    switch (awardType) {
-      case "bag":
-        return (
-          <RigidBody
-            ref={treasureRef}
-            position={[0, 0.2, 0]}
-            type="dynamic"
-            colliders="hull"
-            userData={{ weight: 0.5, isTreasure: true }}
-          >
-            <group
-              ref={treasureVisualRef}
-              onClick={handleAwardClick}
-              onPointerOver={() => setIsHovered(true)}
-              onPointerOut={() => setIsHovered(false)}
-            >
-              <mesh>
-                <boxGeometry args={[0.4, 0.3, 0.2]} />
-                <meshStandardMaterial map={awardTexture} />
-              </mesh>
-              {/* Magical glow around bag */}
-              <mesh>
-                <boxGeometry args={[0.5, 0.4, 0.3]} />
-                <meshStandardMaterial
-                  color="#FFD700"
-                  transparent
-                  opacity={0.2}
-                  emissive="#FFD700"
-                  emissiveIntensity={0.3}
-                />
-              </mesh>
-            </group>
-          </RigidBody>
-        );
-      case "coin":
-        return (
-          <RigidBody
-            ref={treasureRef}
-            position={[0, 0.2, 0]}
-            type="dynamic"
-            colliders="hull"
-            userData={{ weight: 0.3, isTreasure: true }}
-          >
-            <group
-              ref={treasureVisualRef}
-              onPointerOver={() => setIsHovered(true)}
-              onPointerOut={() => setIsHovered(false)}
-            >
-              <mesh>
-                <cylinderGeometry args={[0.2, 0.2, 0.05, 12]} />
-                <meshStandardMaterial
-                  color="#FFD700"
-                  emissive="#FFD700"
-                  emissiveIntensity={0.5}
-                />
-              </mesh>
-            </group>
-          </RigidBody>
-        );
-      case "gem":
-        return (
-          <RigidBody
-            ref={treasureRef}
-            position={[0, 0.2, 0]}
-            type="dynamic"
-            colliders="hull"
-            userData={{ weight: 0.2, isTreasure: true }}
-          >
-            <group
-              ref={treasureVisualRef}
-              onPointerOver={() => setIsHovered(true)}
-              onPointerOut={() => setIsHovered(false)}
-            >
-              <mesh>
-                <octahedronGeometry args={[0.2]} />
-                <meshStandardMaterial
-                  color="#FF6B6B"
-                  emissive="#FF6B6B"
-                  emissiveIntensity={0.4}
-                />
-              </mesh>
-            </group>
-          </RigidBody>
-        );
-      case "scroll":
-        return (
-          <RigidBody
-            ref={treasureRef}
-            position={[0, 0.2, 0]}
-            type="dynamic"
-            colliders="hull"
-            userData={{ weight: 0.1, isTreasure: true }}
-          >
-            <group
-              ref={treasureVisualRef}
-              onPointerOver={() => setIsHovered(true)}
-              onPointerOut={() => setIsHovered(false)}
-            >
-              <mesh>
-                <boxGeometry args={[0.3, 0.4, 0.05]} />
-                <meshStandardMaterial color="#F5F5DC" />
-              </mesh>
-            </group>
-          </RigidBody>
-        );
-      default:
-        return null;
-    }
-  };
 
   return (
     <group position={position} scale={scale}>
@@ -335,7 +143,16 @@ const EnhancedPressurePlate: React.FC<EnhancedPressurePlateProps> = ({
       </group>
 
       {/* Physical Treasure */}
-      {renderAward()}
+      {hasAward && showAward && (
+        <MovableTreasure
+          position={[0, 0.2 + plateHeight * 0.15, 0]}
+          awardType={awardType}
+          weight={1.5}
+          canGrab={canGrabAward}
+          showTreasure={showAward}
+          onGrabbed={handleTreasureGrabbed}
+        />
+      )}
 
       {/* Hover text */}
       {isHovered && (
@@ -348,11 +165,7 @@ const EnhancedPressurePlate: React.FC<EnhancedPressurePlateProps> = ({
           outlineWidth={0.02}
           outlineColor="#000000"
         >
-          {hasAward && showAward
-            ? `${label} - Plate: ${Math.round(
-                plateHeight * 100
-              )}% - Click to grab!`
-            : `${label} - Plate: ${Math.round(plateHeight * 100)}%`}
+          {`${label} - Plate: ${Math.round(plateHeight * 100)}%`}
         </Text>
       )}
 

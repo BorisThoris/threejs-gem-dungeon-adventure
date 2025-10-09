@@ -57,6 +57,9 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
   >("idle");
   const lastHandPosition = useRef(new THREE.Vector3());
   const grabStartTime = useRef(0);
+  const handVelocity = useRef(new THREE.Vector3());
+  const isHandMoving = useRef(false);
+  const movementFrameCount = useRef(0);
   const { world } = useRapier();
 
   // Black & White style grab system
@@ -202,18 +205,66 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       return;
     }
 
-    // Simple release: object is already at hand position, just enable physics
-    // Ensure matrix world is updated before getting world position
+    // Calculate velocity based on hand movement
     groupRef.current?.updateMatrixWorld(true);
-
     const currentHandPosition = new THREE.Vector3();
     groupRef.current?.getWorldPosition(currentHandPosition);
 
+    // Use the velocity already calculated in useFrame
+    const releaseVelocity = handVelocity.current.clone();
+
+    // Only apply momentum if hand is actually moving
+    if (!isHandMoving.current) {
+      // Hand is stationary - release without momentum
+      releaseVelocity.set(0, 0, 0);
+      console.log("🖐️ Hand stationary, releasing without momentum");
+    } else {
+      // Apply very subtle momentum multiplier (Black & White style)
+      const momentumMultiplier = 0.1; // Much more subtle, barely noticeable momentum
+      releaseVelocity.multiplyScalar(momentumMultiplier);
+
+      // Only apply momentum if hand was moving fast enough
+      const minVelocityThreshold = 0.02; // Scaled down threshold (was 2.0)
+      const velocityMagnitude = releaseVelocity.length();
+
+      if (velocityMagnitude < minVelocityThreshold) {
+        // If moving too slowly, just release without momentum
+        releaseVelocity.set(0, 0, 0);
+        console.log("🖐️ Hand moving too slowly, releasing without momentum");
+      }
+    }
+
+    // Scale velocity based on object weight (heavier objects get less velocity)
+    const objectWeight = grabbedObject.userData?.weight || 1;
+    const velocityScale = Math.max(0.1, 1 / objectWeight); // Heavier = less velocity
+    releaseVelocity.multiplyScalar(velocityScale);
+
+    console.log("🖐️ Hand moving:", isHandMoving.current ? "YES" : "NO");
+    console.log(
+      "🖐️ Hand velocity:",
+      handVelocity.current.length().toFixed(3),
+      "units/sec"
+    );
+    console.log(
+      "🖐️ Object weight:",
+      objectWeight,
+      "Velocity scale:",
+      velocityScale.toFixed(2)
+    );
+    console.log(
+      "🖐️ Final release velocity:",
+      releaseVelocity.length().toFixed(3),
+      "units/sec"
+    );
+
     const draggableRef = grabbedObject.userData?.draggableRef;
     if (draggableRef?.current) {
-      // Object is already at hand position, just enable physics
-      draggableRef.current.releaseWithPhysics(currentHandPosition);
-      console.log("🖐️ Object released at hand position:", currentHandPosition);
+      // Release with calculated velocity for momentum
+      draggableRef.current.releaseWithVelocity(
+        currentHandPosition,
+        releaseVelocity
+      );
+      console.log("🖐️ Object released with velocity:", releaseVelocity);
     }
 
     // Call the object's release handler
@@ -360,6 +411,62 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       const lerpSpeed = Math.min(0.2, Math.max(0.05, distance * 0.1));
       currentPosition.current.lerp(targetPosition.current, lerpSpeed);
       groupRef.current.position.copy(currentPosition.current);
+
+      // Track hand velocity for momentum when releasing objects
+      const currentHandPosition = new THREE.Vector3();
+      groupRef.current.getWorldPosition(currentHandPosition);
+      const deltaTime = state.clock.getDelta();
+
+      if (deltaTime > 0) {
+        // Calculate velocity as distance moved per second (scaled down for realistic units)
+        const distanceMoved = currentHandPosition.distanceTo(
+          lastHandPosition.current
+        );
+        const velocityMagnitude = (distanceMoved / deltaTime) * 0.01; // Scale down by 100x
+
+        // Determine if hand is actually moving (require sustained movement)
+        const movementThreshold = 0.003; // Scaled down threshold (was 0.3)
+        const isCurrentlyMoving = velocityMagnitude > movementThreshold;
+
+        if (isCurrentlyMoving) {
+          movementFrameCount.current++;
+          // Require at least 2 frames of movement to consider "moving"
+          isHandMoving.current = movementFrameCount.current >= 2;
+        } else {
+          movementFrameCount.current = 0;
+          isHandMoving.current = false;
+        }
+
+        if (isHandMoving.current) {
+          // Calculate direction of movement
+          const direction = new THREE.Vector3();
+          direction
+            .subVectors(currentHandPosition, lastHandPosition.current)
+            .normalize();
+
+          // Set velocity with proper magnitude and direction
+          handVelocity.current
+            .copy(direction)
+            .multiplyScalar(velocityMagnitude);
+
+          // Debug velocity tracking (subtle, like Black & White)
+          if (velocityMagnitude > 0.005) {
+            // Scaled down threshold
+            // Only log when moving significantly
+            console.log(
+              "🖐️ Hand moving:",
+              velocityMagnitude.toFixed(3),
+              "units/sec"
+            );
+          }
+        } else {
+          // Hand is stationary - clear velocity immediately
+          handVelocity.current.set(0, 0, 0);
+        }
+
+        // Update last position for next frame
+        lastHandPosition.current.copy(currentHandPosition);
+      }
 
       // Make hand look at the camera
       if (groupRef.current) {

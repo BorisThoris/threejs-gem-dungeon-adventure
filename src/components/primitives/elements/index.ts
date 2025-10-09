@@ -40,6 +40,7 @@ export { default as Table } from './Table';
 
 // Interactive elements
 export { default as MovableCandle } from './MovableCandle';
+export { default as MovableTreasure } from './MovableTreasure';
 
 // Dungeon elements
 export { default as Barrel } from './Barrel';

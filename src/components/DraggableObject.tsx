@@ -11,6 +11,7 @@ import {
   CuboidCollider,
   type RigidBodyTypeString,
 } from "@react-three/rapier";
+import { useFrame } from "@react-three/fiber";
 
 export interface DraggableObjectRef {
   getObject: () => THREE.Object3D | null;
@@ -19,6 +20,11 @@ export interface DraggableObjectRef {
   setEnabled: (enabled: boolean) => void;
   isEnabled: () => boolean;
   releaseWithPhysics: (position: THREE.Vector3) => void;
+  releaseWithVelocity: (
+    position: THREE.Vector3,
+    velocity: THREE.Vector3
+  ) => void;
+  getVelocity: () => THREE.Vector3;
 }
 
 export interface DraggableObjectProps {
@@ -53,6 +59,9 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
     const groupRef = useRef<THREE.Group>(null);
     const rigidBodyRef = useRef<any>(null);
     const isGrabbedRef = useRef(false);
+    const lastPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
+    const velocityRef = useRef<THREE.Vector3>(new THREE.Vector3());
+    const dragResistanceRef = useRef<number>(1); // Higher = harder to drag
     const [currentPosition, setCurrentPosition] = useState<
       [number, number, number]
     >([
@@ -71,6 +80,35 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
       setCurrentPosition(validPosition);
       console.log("🎯 DraggableObject: Position updated to:", validPosition);
     }, [position]);
+
+    // Calculate drag resistance based on weight
+    useEffect(() => {
+      const weight = userData?.weight || 1;
+      // Higher weight = more resistance (harder to drag)
+      dragResistanceRef.current = Math.max(0.1, weight * 0.8);
+      console.log(
+        "🎯 DraggableObject: Weight:",
+        weight,
+        "Drag resistance:",
+        dragResistanceRef.current
+      );
+    }, [userData?.weight]);
+
+    // Track velocity for momentum
+    useFrame(() => {
+      if (groupRef.current && isGrabbedRef.current) {
+        const currentPos = groupRef.current.position.clone();
+        const deltaTime = 1 / 60; // Assuming 60fps
+
+        // Calculate velocity
+        velocityRef.current
+          .subVectors(currentPos, lastPositionRef.current)
+          .divideScalar(deltaTime);
+
+        // Store current position for next frame
+        lastPositionRef.current.copy(currentPos);
+      }
+    });
 
     // Debug when component mounts
     useEffect(() => {
@@ -138,6 +176,36 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
           }
         }
       },
+      releaseWithVelocity: (
+        worldPosition: THREE.Vector3,
+        velocity: THREE.Vector3
+      ) => {
+        if (groupRef.current) {
+          // Convert world position to local position relative to current parent
+          const localPosition = new THREE.Vector3();
+          groupRef.current.parent?.worldToLocal(
+            localPosition.copy(worldPosition)
+          );
+
+          // Set group position to local coordinates
+          groupRef.current.position.copy(localPosition);
+
+          // Sync physics body with world position, velocity, and enable physics
+          if (rigidBodyRef?.current) {
+            rigidBodyRef.current.setTranslation(worldPosition, true);
+            rigidBodyRef.current.setLinvel(velocity, true);
+            rigidBodyRef.current.setEnabled(true);
+          }
+
+          // Notify parent of new position
+          if (onMove) {
+            onMove([localPosition.x, localPosition.y, localPosition.z]);
+          }
+        }
+      },
+      getVelocity: () => {
+        return velocityRef.current.clone();
+      },
     }));
 
     // Create a ref object that we can pass to userData
@@ -200,6 +268,39 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
             }
           }
         },
+        releaseWithVelocity: (
+          worldPosition: THREE.Vector3,
+          velocity: THREE.Vector3
+        ) => {
+          if (groupRef.current) {
+            // Convert world position to local position relative to current parent
+            const localPosition = new THREE.Vector3();
+            groupRef.current.parent?.worldToLocal(
+              localPosition.copy(worldPosition)
+            );
+
+            // Set group position to local coordinates
+            groupRef.current.position.copy(localPosition);
+
+            // Sync physics body with world position, velocity, and enable physics
+            if (rigidBodyRef?.current) {
+              rigidBodyRef.current.setTranslation(worldPosition, true);
+              rigidBodyRef.current.setLinvel(velocity, true);
+              rigidBodyRef.current.setEnabled(true);
+            }
+
+            // Notify parent of new position
+            if (onMove) {
+              onMove([localPosition.x, localPosition.y, localPosition.z]);
+            }
+          }
+        },
+        getVelocity: () => {
+          return velocityRef.current.clone();
+        },
+        getDragResistance: () => {
+          return dragResistanceRef.current;
+        },
       },
     };
 
@@ -253,6 +354,8 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
             onGrab: handleGrab,
             onRelease: handleRelease,
             physicsBodyRef: rigidBodyRef,
+            dragResistance: dragResistanceRef.current,
+            weight: userData?.weight || 1,
           }}
         >
           {children}
