@@ -246,25 +246,45 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
             : true;
         },
         releaseWithPhysics: (worldPosition: THREE.Vector3) => {
-          if (groupRef.current) {
-            // Convert world position to local position relative to current parent
-            const localPosition = new THREE.Vector3();
-            groupRef.current.parent?.worldToLocal(
-              localPosition.copy(worldPosition)
-            );
+          if (groupRef.current && rigidBodyRef?.current) {
+            try {
+              // Convert world position to local position relative to current parent
+              const localPosition = new THREE.Vector3();
+              groupRef.current.parent?.worldToLocal(
+                localPosition.copy(worldPosition)
+              );
 
-            // Set group position to local coordinates
-            groupRef.current.position.copy(localPosition);
+              // Set group position to local coordinates
+              groupRef.current.position.copy(localPosition);
 
-            // Sync physics body with world position and enable physics
-            if (rigidBodyRef?.current) {
-              rigidBodyRef.current.setTranslation(worldPosition, true);
-              rigidBodyRef.current.setEnabled(true);
-            }
+              // Defer physics operations to next frame to avoid recursion during physics update
+              requestAnimationFrame(() => {
+                try {
+                  if (
+                    rigidBodyRef?.current &&
+                    !rigidBodyRef.current.isEnabled()
+                  ) {
+                    // Sync physics body with world position and enable physics
+                    rigidBodyRef.current.setTranslation(worldPosition, true);
+                    rigidBodyRef.current.setEnabled(true);
+                  }
+                } catch (error) {
+                  console.error(
+                    "🎯 DraggableObject: Error in deferred releaseWithPhysics:",
+                    error
+                  );
+                }
+              });
 
-            // Notify parent of new position
-            if (onMove) {
-              onMove([localPosition.x, localPosition.y, localPosition.z]);
+              // Notify parent of new position
+              if (onMove) {
+                onMove([localPosition.x, localPosition.y, localPosition.z]);
+              }
+            } catch (error) {
+              console.error(
+                "🎯 DraggableObject: Error in releaseWithPhysics:",
+                error
+              );
             }
           }
         },
@@ -272,26 +292,58 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
           worldPosition: THREE.Vector3,
           velocity: THREE.Vector3
         ) => {
-          if (groupRef.current) {
-            // Convert world position to local position relative to current parent
-            const localPosition = new THREE.Vector3();
-            groupRef.current.parent?.worldToLocal(
-              localPosition.copy(worldPosition)
-            );
+          if (groupRef.current && rigidBodyRef?.current) {
+            try {
+              // Convert world position to local position relative to current parent
+              const localPosition = new THREE.Vector3();
+              groupRef.current.parent?.worldToLocal(
+                localPosition.copy(worldPosition)
+              );
 
-            // Set group position to local coordinates
-            groupRef.current.position.copy(localPosition);
+              // Set group position to local coordinates
+              groupRef.current.position.copy(localPosition);
 
-            // Sync physics body with world position, velocity, and enable physics
-            if (rigidBodyRef?.current) {
-              rigidBodyRef.current.setTranslation(worldPosition, true);
-              rigidBodyRef.current.setLinvel(velocity, true);
-              rigidBodyRef.current.setEnabled(true);
-            }
+              // Defer physics operations to next frame to avoid recursion during physics update
+              requestAnimationFrame(() => {
+                try {
+                  if (
+                    rigidBodyRef?.current &&
+                    !rigidBodyRef.current.isEnabled()
+                  ) {
+                    // Sync physics body with world position, velocity, and enable physics
+                    rigidBodyRef.current.setTranslation(worldPosition, true);
+                    rigidBodyRef.current.setLinvel(velocity, true);
+                    rigidBodyRef.current.setEnabled(true);
+                  }
+                } catch (error) {
+                  console.error(
+                    "🎯 DraggableObject: Error in deferred releaseWithVelocity:",
+                    error
+                  );
+                  // Fallback to simple release without velocity
+                  try {
+                    if (rigidBodyRef?.current) {
+                      rigidBodyRef.current.setTranslation(worldPosition, true);
+                      rigidBodyRef.current.setEnabled(true);
+                    }
+                  } catch (fallbackError) {
+                    console.error(
+                      "🎯 DraggableObject: Fallback release also failed:",
+                      fallbackError
+                    );
+                  }
+                }
+              });
 
-            // Notify parent of new position
-            if (onMove) {
-              onMove([localPosition.x, localPosition.y, localPosition.z]);
+              // Notify parent of new position
+              if (onMove) {
+                onMove([localPosition.x, localPosition.y, localPosition.z]);
+              }
+            } catch (error) {
+              console.error(
+                "🎯 DraggableObject: Error in releaseWithVelocity:",
+                error
+              );
             }
           }
         },
@@ -317,6 +369,13 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
         console.log("🎯 DraggableObject: Grab blocked - not enabled");
         return;
       }
+
+      // Prevent multiple grabs
+      if (isGrabbedRef.current) {
+        console.log("🎯 DraggableObject: Already grabbed, ignoring");
+        return;
+      }
+
       isGrabbedRef.current = true;
 
       // Disable physics for smooth manipulation
@@ -333,6 +392,13 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
       if (!enabled) {
         return;
       }
+
+      // Prevent multiple releases
+      if (!isGrabbedRef.current) {
+        console.log("🎯 DraggableObject: Not grabbed, ignoring release");
+        return;
+      }
+
       isGrabbedRef.current = false;
       onRelease?.();
     };

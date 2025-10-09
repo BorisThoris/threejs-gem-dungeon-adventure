@@ -259,12 +259,20 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
 
     const draggableRef = grabbedObject.userData?.draggableRef;
     if (draggableRef?.current) {
-      // Release with calculated velocity for momentum
-      draggableRef.current.releaseWithVelocity(
-        currentHandPosition,
-        releaseVelocity
-      );
-      console.log("🖐️ Object released with velocity:", releaseVelocity);
+      // Check if object is still grabbed before releasing
+      const isStillGrabbed =
+        grabbedObject.userData?.physicsBodyRef?.current?.isEnabled() === false;
+
+      if (isStillGrabbed) {
+        // Release with calculated velocity for momentum
+        draggableRef.current.releaseWithVelocity(
+          currentHandPosition,
+          releaseVelocity
+        );
+        console.log("🖐️ Object released with velocity:", releaseVelocity);
+      } else {
+        console.log("🖐️ Object already released, skipping velocity release");
+      }
     }
 
     // Call the object's release handler
