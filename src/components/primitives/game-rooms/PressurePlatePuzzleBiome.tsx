@@ -8,7 +8,7 @@ import { getBiomeScale } from "../../../utils/biomeScaling";
 // Removed action cards imports
 import Table from "../elements/Table";
 import EnhancedPressurePlate from "../objects/EnhancedPressurePlate";
-import { MovableCandle } from "../elements";
+import { Candle } from "../elements";
 
 interface PressurePlatePuzzleBiomeProps {
   size?: number;
@@ -149,7 +149,7 @@ const PressurePlatePuzzleBiome: React.FC<PressurePlatePuzzleBiomeProps> = ({
 
       {/* Movable Candles around the table */}
       {initialCandlePositions.map((position, index) => (
-        <MovableCandle
+        <Candle
           key={index}
           position={position}
           isLit={candlesLit[index]}

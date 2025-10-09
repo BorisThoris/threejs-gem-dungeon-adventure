@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import AnimatedSmoke from "./AnimatedSmoke";
+import DraggableObject from "../../DraggableObject";
 
 export interface CandleProps {
   position?: [number, number, number];
@@ -16,6 +17,12 @@ export interface CandleProps {
   onClick?: () => void;
   onPointerOver?: () => void;
   onPointerOut?: () => void;
+  // Draggable functionality
+  draggable?: boolean;
+  weight?: number;
+  onMove?: (newPosition: [number, number, number]) => void;
+  onLight?: () => void;
+  onExtinguish?: () => void;
 }
 
 const Candle: React.FC<CandleProps> = ({
@@ -31,10 +38,27 @@ const Candle: React.FC<CandleProps> = ({
   onClick,
   onPointerOver,
   onPointerOut,
+  // Draggable functionality
+  draggable = true,
+  weight = 0.5,
+  onMove,
+  onLight,
+  onExtinguish,
 }) => {
   const flameRef = useRef<THREE.Group>(null);
   const lightRef = useRef<THREE.PointLight>(null);
   const candleRef = useRef<THREE.Group>(null);
+
+  // Handle candle lighting/extinguishing
+  const handleCandleClick = (event: any) => {
+    event.stopPropagation();
+    if (isLit) {
+      onExtinguish?.();
+    } else {
+      onLight?.();
+    }
+    onClick?.();
+  };
 
   // Fade animation state
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -134,8 +158,13 @@ const Candle: React.FC<CandleProps> = ({
     }
   });
 
-  return (
-    <group ref={candleRef} position={position} scale={scale}>
+  // Render candle content
+  const renderCandleContent = () => (
+    <group
+      ref={candleRef}
+      position={draggable ? [0, 0, 0] : position}
+      scale={scale}
+    >
       {/* Candle base */}
       <mesh position={[0, 0.2, 0]}>
         <cylinderGeometry args={[0.15, 0.15, 0.4, 12]} />
@@ -228,7 +257,7 @@ const Candle: React.FC<CandleProps> = ({
       {/* Clickable area */}
       <mesh
         position={[0, 0.5, 0]}
-        onClick={onClick}
+        onClick={handleCandleClick}
         onPointerOver={onPointerOver}
         onPointerOut={onPointerOut}
       >
@@ -237,6 +266,37 @@ const Candle: React.FC<CandleProps> = ({
       </mesh>
     </group>
   );
+
+  // Return draggable or static candle
+  if (draggable) {
+    return (
+      <DraggableObject
+        position={position}
+        type="dynamic"
+        colliders={true}
+        colliderArgs={[0.1, 0.3, 0.1]}
+        userData={{ weight }}
+        onMove={onMove}
+      >
+        <group
+          onClick={handleCandleClick}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            document.body.style.cursor = "grab";
+            onPointerOver?.();
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default";
+            onPointerOut?.();
+          }}
+        >
+          {renderCandleContent()}
+        </group>
+      </DraggableObject>
+    );
+  }
+
+  return renderCandleContent();
 };
 
 export default Candle;

@@ -39,7 +39,7 @@ export { default as DungeonGate } from './DungeonGate';
 export { default as Table } from './Table';
 
 // Interactive elements
-export { default as MovableCandle } from './MovableCandle';
+export { default as Candle } from './Candle';
 export { default as MovableTreasure } from './MovableTreasure';
 
 // Dungeon elements
