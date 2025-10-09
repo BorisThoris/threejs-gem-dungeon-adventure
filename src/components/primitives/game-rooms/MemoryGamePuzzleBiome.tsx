@@ -342,13 +342,7 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
     }
   }, [gameStarted]);
 
-  // Update particles animation
-  useEffect(() => {
-    if (!gameStarted) return;
-
-    const interval = setInterval(updateParticles, 16); // ~60fps
-    return () => clearInterval(interval);
-  }, [gameStarted, updateParticles]);
+  // Particle animation is now handled in useFrame below
 
   // Memory blocks configuration
   const memoryBlocks: MemoryBlock[] = [
@@ -803,6 +797,11 @@ const MemoryGamePuzzleBiome: React.FC<MemoryGamePuzzleBiomeProps> = ({
         textRef.scale.setScalar(pulseScale);
       }
     });
+
+    // Update particles animation
+    if (gameStarted) {
+      updateParticles();
+    }
   });
 
   return (

@@ -62,6 +62,11 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
     const lastPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
     const velocityRef = useRef<THREE.Vector3>(new THREE.Vector3());
     const dragResistanceRef = useRef<number>(1); // Higher = harder to drag
+    const pendingPhysicsOps = useRef<{
+      type: "release" | "releaseWithVelocity";
+      position: THREE.Vector3;
+      velocity?: THREE.Vector3;
+    } | null>(null);
     const [currentPosition, setCurrentPosition] = useState<
       [number, number, number]
     >([
@@ -94,8 +99,30 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
       );
     }, [userData?.weight]);
 
-    // Track velocity for momentum
+    // Track velocity for momentum and process pending physics operations
     useFrame(() => {
+      // Process pending physics operations
+      if (pendingPhysicsOps.current && rigidBodyRef?.current) {
+        const op = pendingPhysicsOps.current;
+        try {
+          if (op.type === "release") {
+            rigidBodyRef.current.setTranslation(op.position, true);
+            rigidBodyRef.current.setEnabled(true);
+          } else if (op.type === "releaseWithVelocity" && op.velocity) {
+            rigidBodyRef.current.setTranslation(op.position, true);
+            rigidBodyRef.current.setLinvel(op.velocity, true);
+            rigidBodyRef.current.setEnabled(true);
+          }
+        } catch (error) {
+          console.error(
+            "🎯 DraggableObject: Error processing pending physics op:",
+            error
+          );
+        }
+        pendingPhysicsOps.current = null;
+      }
+
+      // Track velocity for momentum
       if (groupRef.current && isGrabbedRef.current) {
         const currentPos = groupRef.current.position.clone();
         const deltaTime = 1 / 60; // Assuming 60fps
@@ -257,24 +284,11 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
               // Set group position to local coordinates
               groupRef.current.position.copy(localPosition);
 
-              // Defer physics operations to next frame to avoid recursion during physics update
-              requestAnimationFrame(() => {
-                try {
-                  if (
-                    rigidBodyRef?.current &&
-                    !rigidBodyRef.current.isEnabled()
-                  ) {
-                    // Sync physics body with world position and enable physics
-                    rigidBodyRef.current.setTranslation(worldPosition, true);
-                    rigidBodyRef.current.setEnabled(true);
-                  }
-                } catch (error) {
-                  console.error(
-                    "🎯 DraggableObject: Error in deferred releaseWithPhysics:",
-                    error
-                  );
-                }
-              });
+              // Queue physics operation for next frame
+              pendingPhysicsOps.current = {
+                type: "release",
+                position: worldPosition.clone(),
+              };
 
               // Notify parent of new position
               if (onMove) {
@@ -303,37 +317,12 @@ const DraggableObject = forwardRef<DraggableObjectRef, DraggableObjectProps>(
               // Set group position to local coordinates
               groupRef.current.position.copy(localPosition);
 
-              // Defer physics operations to next frame to avoid recursion during physics update
-              requestAnimationFrame(() => {
-                try {
-                  if (
-                    rigidBodyRef?.current &&
-                    !rigidBodyRef.current.isEnabled()
-                  ) {
-                    // Sync physics body with world position, velocity, and enable physics
-                    rigidBodyRef.current.setTranslation(worldPosition, true);
-                    rigidBodyRef.current.setLinvel(velocity, true);
-                    rigidBodyRef.current.setEnabled(true);
-                  }
-                } catch (error) {
-                  console.error(
-                    "🎯 DraggableObject: Error in deferred releaseWithVelocity:",
-                    error
-                  );
-                  // Fallback to simple release without velocity
-                  try {
-                    if (rigidBodyRef?.current) {
-                      rigidBodyRef.current.setTranslation(worldPosition, true);
-                      rigidBodyRef.current.setEnabled(true);
-                    }
-                  } catch (fallbackError) {
-                    console.error(
-                      "🎯 DraggableObject: Fallback release also failed:",
-                      fallbackError
-                    );
-                  }
-                }
-              });
+              // Queue physics operation for next frame
+              pendingPhysicsOps.current = {
+                type: "releaseWithVelocity",
+                position: worldPosition.clone(),
+                velocity: velocity.clone(),
+              };
 
               // Notify parent of new position
               if (onMove) {

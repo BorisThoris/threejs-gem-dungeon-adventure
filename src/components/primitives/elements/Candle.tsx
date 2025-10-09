@@ -53,20 +53,6 @@ const Candle: React.FC<CandleProps> = ({
         setIsFadingIn(true);
         setIsFadingOut(false);
         setFadeProgress(0);
-
-        const fadeIn = () => {
-          setFadeProgress((prev) => {
-            const newProgress = prev + 0.02; // Fade in over ~50 frames
-            if (newProgress >= 1) {
-              setIsFadingIn(false);
-              return 1;
-            }
-            return newProgress;
-          });
-        };
-
-        const interval = setInterval(fadeIn, 16); // ~60fps
-        return () => clearInterval(interval);
       }
     } else {
       // Candle should be off - start fade-out if currently lit
@@ -74,25 +60,9 @@ const Candle: React.FC<CandleProps> = ({
         setIsFadingOut(true);
         setIsFadingIn(false);
         setFadeProgress(1);
-
-        const fadeOut = () => {
-          setFadeProgress((prev) => {
-            const newProgress = prev - 0.02; // Fade out over ~50 frames
-            if (newProgress <= 0) {
-              setShowFlame(false);
-              setShowSmoke(false);
-              setIsFadingOut(false);
-              return 0;
-            }
-            return newProgress;
-          });
-        };
-
-        const interval = setInterval(fadeOut, 16); // ~60fps
-        return () => clearInterval(interval);
       }
     }
-  }, [isLit]);
+  }, [isLit, showFlame]);
 
   useFrame((state) => {
     if (showFlame && flameRef.current) {
@@ -138,6 +108,29 @@ const Candle: React.FC<CandleProps> = ({
         : Math.max(0.1, flickerIntensity * fadeProgress);
 
       lightRef.current.intensity = finalIntensity;
+    }
+
+    // Handle fade animations
+    if (isFadingIn) {
+      setFadeProgress((prev) => {
+        const newProgress = prev + 0.02; // Fade in over ~50 frames
+        if (newProgress >= 1) {
+          setIsFadingIn(false);
+          return 1;
+        }
+        return newProgress;
+      });
+    } else if (isFadingOut) {
+      setFadeProgress((prev) => {
+        const newProgress = prev - 0.02; // Fade out over ~50 frames
+        if (newProgress <= 0) {
+          setShowFlame(false);
+          setShowSmoke(false);
+          setIsFadingOut(false);
+          return 0;
+        }
+        return newProgress;
+      });
     }
   });
 
