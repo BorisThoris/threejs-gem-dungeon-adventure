@@ -38,26 +38,15 @@ const PressurePlatePuzzleBiome: React.FC<PressurePlatePuzzleBiomeProps> = ({
   const [hasAward, setHasAward] = useState(true);
   // Use dragMode prop instead of local state
   const interactionMode = dragMode;
-  const [candlePositions, setCandlePositions] = useState<
-    [number, number, number][]
-  >([
+
+  // Initial candle positions - no longer managed as state
+  const initialCandlePositions: [number, number, number][] = [
     [-1.2, 0.5, -0.8], // Left candle
     [1.2, 0.5, -0.8], // Right candle
     [-1.2, 0.5, 0.8], // Back left candle
     [1.2, 0.5, 0.8], // Back right candle
-  ]);
+  ];
 
-  // Validate candle positions to prevent NaN values
-  const validateCandlePositions = (positions: [number, number, number][]) => {
-    return positions.map(
-      (pos) =>
-        [
-          isNaN(pos[0]) ? 0 : pos[0],
-          isNaN(pos[1]) ? 0 : pos[1],
-          isNaN(pos[2]) ? 0 : pos[2],
-        ] as [number, number, number]
-    );
-  };
   const [candlesLit, setCandlesLit] = useState([true, true, true, true]);
 
   // Debug text animation refs
@@ -95,17 +84,6 @@ const PressurePlatePuzzleBiome: React.FC<PressurePlatePuzzleBiomeProps> = ({
     // Plate reached 100% - damage the player!
     console.log("Plate fully raised - player takes damage!");
     loseLife();
-  };
-
-  const handleCandleMove = (
-    candleIndex: number,
-    newPosition: [number, number, number]
-  ) => {
-    setCandlePositions((prev) => {
-      const newPositions = [...prev];
-      newPositions[candleIndex] = validateCandlePositions([newPosition])[0];
-      return newPositions;
-    });
   };
 
   // Interaction mode is now controlled by the global dragMode prop
@@ -170,13 +148,11 @@ const PressurePlatePuzzleBiome: React.FC<PressurePlatePuzzleBiomeProps> = ({
       />
 
       {/* Movable Candles around the table */}
-      {candlePositions.map((position, index) => (
+      {initialCandlePositions.map((position, index) => (
         <MovableCandle
           key={index}
           position={position}
           isLit={candlesLit[index]}
-          isMovable={interactionMode}
-          onMove={(newPos) => handleCandleMove(index, newPos)}
           onLight={() => {
             const newCandlesLit = [...candlesLit];
             newCandlesLit[index] = true;
@@ -250,9 +226,7 @@ const PressurePlatePuzzleBiome: React.FC<PressurePlatePuzzleBiomeProps> = ({
           outlineWidth={0.02}
           outlineColor="#000000"
         >
-          {interactionMode
-            ? "🖱️ Drag Mode: ON - Move candles!"
-            : "🖱️ Enable Drag Mode in 3D Editor to move candles"}
+          🖱️ Use your hand to grab and move candles!
         </Text>
       </group>
 

@@ -1,6 +1,13 @@
-import React, { useRef, useMemo, useState, useEffect } from "react";
+import React, {
+  useRef,
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { useRapier } from "@react-three/rapier";
 
 interface PlayerHandProps {
   position?: [number, number, number];
@@ -29,13 +36,200 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const timeRef = useRef(0);
-  const { camera, size } = useThree();
+  const { camera, size, scene } = useThree();
 
   // Mouse position tracking
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isCursorOnScreen, setIsCursorOnScreen] = useState(true);
   const targetPosition = useRef(new THREE.Vector3());
   const currentPosition = useRef(new THREE.Vector3());
+
+  // Black & White style hand system state
+  const [isGrabbing, setIsGrabbing] = useState(false);
+  const [grabbedObject, setGrabbedObject] = useState<THREE.Object3D | null>(
+    null
+  );
+  const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(
+    null
+  );
+  const [handGesture, setHandGesture] = useState<
+    "idle" | "hovering" | "grabbing" | "releasing"
+  >("idle");
+  const lastHandPosition = useRef(new THREE.Vector3());
+  const grabStartTime = useRef(0);
+  const { world } = useRapier();
+
+  // Black & White style grab system
+  const handleGrab = useCallback(() => {
+    console.log("🖐️ PlayerHand: Grab attempt started");
+    console.log("🖐️ PlayerHand: isGrabbing:", isGrabbing);
+    console.log("🖐️ PlayerHand: groupRef.current:", groupRef.current);
+
+    if (isGrabbing || !groupRef.current) {
+      console.log(
+        "🖐️ PlayerHand: Grab blocked - already grabbing or no group ref"
+      );
+      return;
+    }
+
+    // Create a raycaster from camera through mouse position
+    const raycaster = new THREE.Raycaster();
+    const mouseVector = new THREE.Vector2(mousePosition.x, mousePosition.y);
+    raycaster.setFromCamera(mouseVector, camera);
+
+    console.log("🖐️ PlayerHand: Mouse position:", mousePosition);
+    console.log("🖐️ PlayerHand: Mouse vector:", mouseVector);
+
+    // Find objects that intersect with the ray
+    if (!scene) {
+      console.log("🖐️ PlayerHand: No scene found");
+      return;
+    }
+
+    console.log("🖐️ PlayerHand: Scene found:", scene);
+
+    const intersectableObjects: THREE.Object3D[] = [];
+    scene.traverse((child) => {
+      // Look for draggable objects
+      if (
+        child.userData?.draggable === true &&
+        child !== groupRef.current &&
+        child !== groupRef.current?.parent
+      ) {
+        console.log("🖐️ PlayerHand: Found draggable object:", child);
+        intersectableObjects.push(child);
+      }
+    });
+
+    console.log(
+      "🖐️ PlayerHand: Total draggable objects found:",
+      intersectableObjects.length
+    );
+
+    const intersects = raycaster.intersectObjects(intersectableObjects);
+    console.log("🖐️ PlayerHand: Ray intersections:", intersects.length);
+
+    if (intersects.length > 0) {
+      const grabbedObj = intersects[0].object;
+      console.log("🖐️ PlayerHand: Grabbing object:", grabbedObj);
+      console.log(
+        "🖐️ PlayerHand: Grabbed object userData:",
+        grabbedObj.userData
+      );
+
+      // Find the draggable ref by traversing up the hierarchy
+      let draggableRef = grabbedObj.userData?.draggableRef;
+      let draggableParent = grabbedObj;
+
+      console.log("🖐️ PlayerHand: Initial draggable ref:", draggableRef);
+
+      // If the grabbed object doesn't have a draggable ref, look up the hierarchy
+      if (!draggableRef) {
+        console.log(
+          "🖐️ PlayerHand: No draggable ref on object, traversing hierarchy"
+        );
+        let currentParent = grabbedObj.parent;
+        while (currentParent && !draggableRef) {
+          console.log("🖐️ PlayerHand: Checking parent:", currentParent);
+          console.log(
+            "🖐️ PlayerHand: Parent userData:",
+            currentParent.userData
+          );
+          if (currentParent.userData?.draggableRef) {
+            draggableRef = currentParent.userData.draggableRef;
+            draggableParent = currentParent;
+            console.log(
+              "🖐️ PlayerHand: Found draggable ref in parent:",
+              draggableRef
+            );
+            break;
+          }
+          currentParent = currentParent.parent;
+        }
+      }
+
+      console.log("🖐️ PlayerHand: Final draggable ref:", draggableRef);
+      console.log("🖐️ PlayerHand: Final draggable parent:", draggableParent);
+
+      if (draggableRef?.current) {
+        console.log("🖐️ PlayerHand: Draggable ref found, proceeding with grab");
+
+        // Black & White style grab: smooth and responsive
+        grabStartTime.current = Date.now();
+
+        // Call the object's grab handler
+        console.log("🖐️ PlayerHand: Calling onGrab handler");
+        draggableParent.userData?.onGrab?.();
+
+        // Disable physics for smooth manipulation
+        const physicsBodyRef = draggableParent.userData?.physicsBodyRef;
+        console.log("🖐️ PlayerHand: Physics body ref:", physicsBodyRef);
+        if (physicsBodyRef?.current) {
+          console.log("🖐️ PlayerHand: Disabling physics body");
+          physicsBodyRef.current.setEnabled(false);
+        }
+
+        // Store initial positions for smooth following
+        const originalPosition = draggableParent.position.clone();
+        const originalWorldPosition = new THREE.Vector3();
+        draggableParent.getWorldPosition(originalWorldPosition);
+
+        // Store restoration data
+        draggableParent.userData.originalPosition = originalPosition;
+        draggableParent.userData.originalWorldPosition = originalWorldPosition;
+
+        // Store initial hand position for smooth following
+        const currentHandPosition = new THREE.Vector3();
+        groupRef.current.getWorldPosition(currentHandPosition);
+        lastHandPosition.current.copy(currentHandPosition);
+
+        console.log("🖐️ PlayerHand: Setting grabbed object and states");
+        setGrabbedObject(draggableParent);
+        setHandGesture("grabbing");
+        setIsGrabbing(true);
+
+        console.log("🖐️ PlayerHand: Grab successful!");
+      } else {
+        console.log("🖐️ PlayerHand: No draggable ref found on object");
+      }
+    } else {
+      console.log("🖐️ PlayerHand: No objects intersected with ray");
+    }
+  }, [isGrabbing, mousePosition, camera, scene]);
+
+  const handleRelease = useCallback(() => {
+    if (!isGrabbing || !grabbedObject) {
+      return;
+    }
+
+    // Simple release: object is already at hand position, just enable physics
+    // Ensure matrix world is updated before getting world position
+    groupRef.current?.updateMatrixWorld(true);
+
+    const currentHandPosition = new THREE.Vector3();
+    groupRef.current?.getWorldPosition(currentHandPosition);
+
+    const draggableRef = grabbedObject.userData?.draggableRef;
+    if (draggableRef?.current) {
+      // Object is already at hand position, just enable physics
+      draggableRef.current.releaseWithPhysics(currentHandPosition);
+      console.log("🖐️ Object released at hand position:", currentHandPosition);
+    }
+
+    // Call the object's release handler
+    grabbedObject.userData?.onRelease?.();
+
+    // Clean up stored data
+    if (grabbedObject.userData?.originalPosition) {
+      delete grabbedObject.userData.originalPosition;
+      delete grabbedObject.userData.originalWorldPosition;
+    }
+
+    // Reset hand state
+    setGrabbedObject(null);
+    setHandGesture("idle");
+    setIsGrabbing(false);
+  }, [isGrabbing, grabbedObject]);
 
   // Mouse tracking effect
   useEffect(() => {
@@ -70,16 +264,41 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     const handleMouseEnter = () => setIsCursorOnScreen(true);
     const handleMouseLeave = () => setIsCursorOnScreen(false);
 
+    // Mouse click handlers for grabbing
+    const handleMouseDown = (event: MouseEvent) => {
+      console.log("🖐️ PlayerHand: Mouse down event", event.button, event);
+      if (event.button === 0) {
+        // Left click
+        console.log("🖐️ PlayerHand: Left click detected, calling handleGrab");
+        handleGrab();
+      }
+    };
+
+    const handleMouseUp = (event: MouseEvent) => {
+      console.log("🖐️ PlayerHand: Mouse up event", event.button, event);
+      if (event.button === 0) {
+        // Left click release
+        console.log(
+          "🖐️ PlayerHand: Left click release detected, calling handleRelease"
+        );
+        handleRelease();
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseenter", handleMouseEnter);
     window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseenter", handleMouseEnter);
       window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [followMouse, size.width, size.height]);
+  }, [followMouse, size.width, size.height, handleGrab, handleRelease]);
 
   // Animation based on gesture and mouse position
   useFrame((state) => {
@@ -147,11 +366,65 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
         groupRef.current.lookAt(camera.position);
       }
 
+      // Black & White style object interaction
+      if (isGrabbing && grabbedObject) {
+        // Ensure matrix world is updated before getting world position
+        groupRef.current.updateMatrixWorld(true);
+
+        // Get the actual world position of the hand using Three.js best practices
+        const currentHandPosition = new THREE.Vector3();
+        groupRef.current.getWorldPosition(currentHandPosition);
+
+        // Move object to hand position
+        const draggableRef = grabbedObject.userData?.draggableRef;
+        if (draggableRef?.current) {
+          draggableRef.current.setPosition(currentHandPosition);
+        }
+      } else if (!isGrabbing) {
+        // Hover detection: check for objects near the hand
+        const raycaster = new THREE.Raycaster();
+        const mouseVector = new THREE.Vector2(mousePosition.x, mousePosition.y);
+        raycaster.setFromCamera(mouseVector, camera);
+
+        const intersectableObjects: THREE.Object3D[] = [];
+        scene.traverse((child) => {
+          if (
+            child.userData?.draggable === true &&
+            child !== groupRef.current &&
+            child !== groupRef.current?.parent
+          ) {
+            intersectableObjects.push(child);
+          }
+        });
+
+        const intersects = raycaster.intersectObjects(intersectableObjects);
+
+        if (intersects.length > 0) {
+          if (!hoveredObject || hoveredObject !== intersects[0].object) {
+            setHoveredObject(intersects[0].object);
+            setHandGesture("hovering");
+          }
+        } else {
+          if (hoveredObject) {
+            setHoveredObject(null);
+            setHandGesture("idle");
+          }
+        }
+      }
+
       // Add gesture-based animations on top of mouse following
       const baseFloat = Math.sin(timeRef.current) * 0.05;
       const baseSway = Math.sin(timeRef.current * 0.3) * 0.1;
 
-      switch (gesture) {
+      // Black & White style hand gestures
+      const currentGesture =
+        handGesture === "grabbing"
+          ? "grabbing"
+          : handGesture === "hovering"
+          ? "pointing"
+          : gesture;
+
+      switch (currentGesture) {
         case "idle":
           groupRef.current.position.y += baseFloat;
           groupRef.current.rotation.z += baseSway;
@@ -220,7 +493,15 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
       {/* Palm */}
       <mesh castShadow receiveShadow>
         <boxGeometry args={[0.6, 0.4, 0.2]} />
-        <meshLambertMaterial color={0xffdbac} />
+        <meshLambertMaterial
+          color={
+            handGesture === "grabbing"
+              ? 0xff6b6b
+              : handGesture === "hovering"
+              ? 0xffd93d
+              : 0xffdbac
+          }
+        />
       </mesh>
 
       {/* Thumb */}
