@@ -62,6 +62,10 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
   const movementFrameCount = useRef(0);
   const { world } = useRapier();
 
+  // Camera raycast for hand positioning (like CS weapon collision)
+  const cameraRaycastRef = useRef(new THREE.Raycaster());
+  const handDistance = useRef(3.0); // Fixed distance from camera
+
   // Black & White style grab system
   const handleGrab = useCallback(() => {
     console.log("🖐️ PlayerHand: Grab attempt started");
@@ -206,7 +210,6 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     }
 
     // Calculate velocity based on hand movement
-    groupRef.current?.updateMatrixWorld(true);
     const currentHandPosition = new THREE.Vector3();
     groupRef.current?.getWorldPosition(currentHandPosition);
 
@@ -366,58 +369,85 @@ const PlayerHand: React.FC<PlayerHandProps> = ({
     timeRef.current += 0.016 * animationSpeed;
 
     if (followMouse) {
-      // Create a raycaster from camera through mouse position
-      const raycaster = new THREE.Raycaster();
+      // Camera raycast for hand positioning (like CS weapon collision)
       const mouseVector = new THREE.Vector2(mousePosition.x, mousePosition.y);
+      cameraRaycastRef.current.setFromCamera(mouseVector, camera);
 
-      // Set up raycaster from camera through mouse position
-      raycaster.setFromCamera(mouseVector, camera);
+      // Get camera position and direction
+      const cameraPosition = new THREE.Vector3();
+      camera.getWorldPosition(cameraPosition);
+      const rayDirection = cameraRaycastRef.current.ray.direction.clone();
 
-      // Calculate the point where the ray intersects a plane at followDistance from camera
-      const cameraDirection = new THREE.Vector3();
-      camera.getWorldDirection(cameraDirection);
+      // Cast ray to find collision point with world geometry
+      // Exclude grabbed/held objects to prevent them from interfering with hand movement
+      const collisionObjects: THREE.Object3D[] = [];
+      scene.traverse((child) => {
+        // Include all meshes except the hand itself, UI elements, and grabbed objects
+        if (child instanceof THREE.Mesh && !child.userData?.isUI) {
+          // Skip if this mesh is part of the hand
+          let isHandMesh = false;
+          if (groupRef.current) {
+            groupRef.current.traverse((handChild) => {
+              if (handChild === child) {
+                isHandMesh = true;
+              }
+            });
+          }
 
-      // Create a plane perpendicular to camera direction at followDistance
-      const plane = new THREE.Plane();
-      plane.setFromNormalAndCoplanarPoint(
-        cameraDirection,
-        camera.position
-          .clone()
-          .add(cameraDirection.multiplyScalar(followDistance))
-      );
+          // Skip if this mesh is currently being grabbed/held
+          let isGrabbedObject = false;
+          if (grabbedObject) {
+            grabbedObject.traverse((grabbedChild) => {
+              if (grabbedChild === child) {
+                isGrabbedObject = true;
+              }
+            });
+          }
 
-      // Find intersection point
-      const intersectionPoint = new THREE.Vector3();
-      const hasIntersection = raycaster.ray.intersectPlane(
-        plane,
-        intersectionPoint
-      );
+          // Also check if this mesh has draggable userData and is currently disabled (being held)
+          const isCurrentlyHeld =
+            child.userData?.physicsBodyRef?.current?.isEnabled() === false;
 
-      // If no intersection, fallback to the old method
-      if (!hasIntersection) {
-        const fallbackVector = new THREE.Vector3(
-          mousePosition.x,
-          mousePosition.y,
-          0.5
+          if (!isHandMesh && !isGrabbedObject && !isCurrentlyHeld) {
+            collisionObjects.push(child);
+          }
+        }
+      });
+
+      const intersects =
+        cameraRaycastRef.current.intersectObjects(collisionObjects);
+
+      let targetPos: THREE.Vector3;
+
+      if (
+        intersects.length > 0 &&
+        intersects[0].distance < handDistance.current
+      ) {
+        // Hand stops at collision point (like CS weapon collision)
+        targetPos = intersects[0].point.clone();
+        console.log(
+          "🖐️ PlayerHand: Camera raycast hit at distance:",
+          intersects[0].distance.toFixed(2)
         );
-        fallbackVector.unproject(camera);
-        const direction = fallbackVector.sub(camera.position).normalize();
-        targetPosition.current
-          .copy(camera.position)
-          .add(direction.multiplyScalar(followDistance));
       } else {
-        targetPosition.current.copy(intersectionPoint);
+        // Hand extends to fixed distance if no collision
+        targetPos = cameraPosition
+          .clone()
+          .add(rayDirection.multiplyScalar(handDistance.current));
+
+        // Debug: Log when grabbed objects are being ignored
+        if (grabbedObject) {
+          console.log(
+            "🖐️ PlayerHand: Ignoring grabbed object in raycast:",
+            grabbedObject.name || "unnamed"
+          );
+        }
       }
 
-      // In editor mode, the hand should follow the mouse directly without player offset
-      // The mouse positioning already works correctly in world space
-
-      // Smooth interpolation to target position with dynamic speed based on distance
-      const distance = currentPosition.current.distanceTo(
-        targetPosition.current
-      );
+      // Smooth movement towards target
+      const distance = currentPosition.current.distanceTo(targetPos);
       const lerpSpeed = Math.min(0.2, Math.max(0.05, distance * 0.1));
-      currentPosition.current.lerp(targetPosition.current, lerpSpeed);
+      currentPosition.current.lerp(targetPos, lerpSpeed);
       groupRef.current.position.copy(currentPosition.current);
 
       // Track hand velocity for momentum when releasing objects
