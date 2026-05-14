@@ -1,10 +1,10 @@
 {
-    "name": "threejs-gem-game",
+    "name": "threejs-gem-dungeon-editor",
     "private": true,
     "version": "1.0.0",
     "type": "module",
-    "description": "A 3D dungeon exploration game built with Three.js and React",
-    "author": "ThreeJS Gem Game Developer",
+    "description": "React Three Fiber dungeon exploration/editor project with Three.js, TypeScript, Zustand, physics, tooling, and Electron packaging.",
+    "author": "Boris Bostandzhiev",
     "main": "electron/main.js",
     "homepage": "./",
     "scripts": {

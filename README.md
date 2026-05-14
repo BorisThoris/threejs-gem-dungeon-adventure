@@ -1,109 +1,82 @@
-# ThreeJS Gem Game
+# ThreeJS Gem Dungeon Editor
 
-A 3D dungeon exploration game built with Three.js and React, featuring advanced texture creation tools and interactive 3D environments.
+**ThreeJS Gem** is a React Three Fiber / Three.js first-person dungeon exploration and editor project packaged with Electron. It combines a playable 3D dungeon prototype with room generation, puzzle interactions, breakable objects, texture tooling, mosaic creation, and editor-style utility modes.
 
-## 🎮 Game Features
+This repository is a portfolio-ready 3D application project rather than a small Three.js demo. It shows modern React, TypeScript, Three.js rendering, physics integration, state management, procedural room/content systems, asset tooling, and desktop packaging.
 
-- **3D Dungeon Exploration** - Navigate through immersive 3D environments
-- **Interactive Puzzles** - Solve various types of puzzles and challenges
-- **Breakable Objects** - Destructible walls, doors, and items
-- **First-Person Controls** - Smooth movement and camera controls
-- **Room System** - Dynamic room loading and management
+## What It Demonstrates
 
-## 🛠️ Creative Tools
+- React 19 application structure with TypeScript and Vite.
+- Three.js rendering through `@react-three/fiber` and `@react-three/drei`.
+- Physics integration through `@react-three/rapier`.
+- First-person movement, camera control, cursor handling, minimap, pause UI, and HUD overlays.
+- Room/biome system with generated dungeon spaces, doors, transitions, puzzles, and interactive objects.
+- Breakable/destructible object components and reusable primitive room elements.
+- Zustand stores for game, map, room, door progression, and initialization state.
+- Texture generation, preset texture libraries, texture painting, and mosaic creation tools.
+- URL-parameter driven modes for editor, room builder, texture painter, mosaic creator, and debug screens.
+- Electron desktop shell and installer configuration.
 
-### 🎨 Texture Painter
-A professional-grade texture painting tool with advanced features:
-- **Layer System** - Multiple layers with blend modes and opacity controls
-- **Advanced Brushes** - Round, square, soft, and hard brushes with customizable settings
-- **Filter Effects** - Blur, sharpen, grayscale, sepia, and more
-- **Real-time 3D Preview** - See your textures in 3D as you paint
-- **High-resolution Export** - Export textures as PNG files
+## Tech Stack
 
-### 🧩 3D Mosaic Creator
-A creative mosaic design tool for pattern creation:
-- **Shape Tools** - Square, circle, triangle, diamond, and hexagon shapes
-- **Color Palette** - 30+ vibrant colors to choose from
-- **Grid System** - Configurable grid dimensions and cell spacing
-- **3D Visualization** - Real-time 3D preview of your mosaic patterns
+- React 19
+- TypeScript
+- Three.js
+- React Three Fiber
+- Drei
+- Rapier physics
+- Zustand
+- Vite
+- Electron / Electron Builder
+- ESLint
 
-## 🚀 Getting Started
+## Main Modes
 
-### Prerequisites
-- Node.js (v16 or higher)
-- Yarn or npm
+- Main game: default route.
+- 3D editor: `?editor=true`
+- Room builder: `?room-builder=true`
+- Texture painter: `?texture-painter=true`
+- Mosaic creator: `?mosaic-creator=true`
+- Texture painter example: `?texture-painter-example=true`
+- URL/debug screens: `?url-test=true`, `?url-debug=true`
+- Hand demo: `?hand-demo=true`
 
-### Installation
+## Main Code Areas
+
+- `src/App.tsx` - mode routing based on URL parameters.
+- `src/components/StartScreen.tsx` - primary game canvas, physics world, player, room manager, minimap, HUD, and pause flow.
+- `src/components/ThreeDEditor.tsx` - editor surface.
+- `src/pages/RoomBuilderPage.tsx` - room builder workflow.
+- `src/components/TexturePainter.tsx` and related launchers - texture authoring tools.
+- `src/components/primitives/` - reusable 3D elements, objects, demo rooms, and game-room biomes.
+- `src/store/` - Zustand state stores.
+- `src/utils/` - room, texture, camera, event, connectivity, and generation helpers.
+- `electron/` - desktop app shell.
+
+## Run Locally
+
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd threejs-gem-game
-
-# Install dependencies
 yarn install
-
-# Start development server
 yarn dev
 ```
 
-### Available Scripts
-- `yarn dev` - Start development server
-- `yarn build` - Build for production
-- `yarn electron` - Run as Electron app
-- `yarn electron-dev` - Run in development mode with Electron
+Useful scripts:
 
-## 📁 Project Structure
-
-```
-src/
-├── components/          # React components
-│   ├── TexturePainter.tsx    # Advanced texture painting tool
-│   ├── MosaicCreator.tsx     # 3D mosaic creation tool
-│   ├── ThreeDEditor.tsx      # 3D scene editor
-│   └── ...                   # Other game components
-├── hooks/              # Custom React hooks
-├── types/              # TypeScript type definitions
-├── utils/              # Utility functions
-└── store/              # State management
+```bash
+yarn build
+yarn lint
+yarn electron
+yarn electron-dev
+yarn electron-pack
+yarn electron-dist
+yarn generate-assets
+yarn generate-textures
 ```
 
-## 🎯 Usage
+## Desktop Packaging
 
-### Texture Painter
-1. Navigate to `?texture-painter=true` or use the main menu
-2. Select brush tools and adjust settings
-3. Paint on the canvas with multiple layers
-4. Apply filters and blend modes
-5. Export your texture as PNG
+The project is configured for Electron Builder with `ThreeJS Gem Game` as the desktop product name and `dist-electron` as the package output directory.
 
-### 3D Mosaic Creator
-1. Navigate to `?mosaic-creator=true` or use the main menu
-2. Choose shape tools and colors
-3. Paint on the grid to create mosaic patterns
-4. Adjust brush size and grid settings
-5. Export your mosaic as PNG
+## Status
 
-### 3D Editor
-1. Navigate to `?editor=true` or use the main menu
-2. Add objects from the component library
-3. Position and configure objects in 3D space
-4. Use the texture tools to create materials
-5. Save and load your scenes
-
-## 🛠️ Development
-
-This project uses:
-- **React 19** - UI framework
-- **Three.js** - 3D graphics
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Zustand** - State management
-- **Electron** - Desktop app support
-
-## 📚 Documentation
-
-- [Texture Painter Guide](TEXTURE_PAINTER_README.md)
-- [3D Mosaic Creator Guide](MOSAIC_CREATOR_README.md)
-- [3D Editor Guide](3D_EDITOR_README.md)
-- [Component System](COMPONENT_SYSTEM.md)
-- [Prototype System](PROTOTYPE_SYSTEM_README.md)
+Archived/active portfolio project. The repository contains both runtime game code and editor/tooling experiments, so it is intentionally broad. The current README focuses on the project identity and implementation surface for GitHub/LinkedIn presentation.
