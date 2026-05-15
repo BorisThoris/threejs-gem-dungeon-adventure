@@ -80,3 +80,16 @@ The project is configured for Electron Builder with `ThreeJS Gem Game` as the de
 ## Status
 
 Archived/active portfolio project. The repository contains both runtime game code and editor/tooling experiments, so it is intentionally broad. The current README focuses on the project identity and implementation surface for GitHub/LinkedIn presentation.
+
+## Cloudflare Pages
+
+- Pages project name: `threejs-gem-dungeon-editor-git`
+- GitHub repository: `BorisThoris/threejs-gem-dungeon-editor-live`
+- Production branch: `main`
+- Root directory: `.`
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Environment variable: `NODE_VERSION=22.16.0`
+- Public URL target: `https://threejs-gem-dungeon-editor-git.pages.dev/`
+
+Do not enable Cloudflare Access for the demo deployment. Leave frame-blocking headers unset so the portfolio can iframe the public build.
