@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ThreeJS Gem Dungeon Editor">
+  <rect width="64" height="64" rx="12" fill="#111827"/>
+  <path d="M16 18h32l8 12-24 26L8 30l8-12Z" fill="#22d3ee"/>
+  <path d="M16 18h32l-8 12H24l-8-12Z" fill="#67e8f9"/>
+  <path d="M8 30h16l8 26L8 30Z" fill="#0891b2"/>
+  <path d="M56 30H40l-8 26 24-26Z" fill="#06b6d4"/>
+  <path d="M24 30h16l-8 26-8-26Z" fill="#a5f3fc"/>
+  <path d="M14 46h36v6H14v-6Z" fill="#374151"/>
+  <path d="M20 40h6v6h-6v-6Zm18 0h6v6h-6v-6Z" fill="#4b5563"/>
+</svg>

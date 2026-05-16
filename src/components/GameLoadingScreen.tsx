@@ -61,7 +61,7 @@ const GameLoadingScreen: React.FC<GameLoadingScreenProps> = ({
           letterSpacing: "0.2em",
         }}
       >
-        GHOST DUNGEON
+        THREEJS GEM DUNGEON EDITOR
       </div>
 
       {/* Loading Animation */}

@@ -1,6 +1,6 @@
 # ThreeJS Gem Dungeon Editor
 
-**ThreeJS Gem** is a React Three Fiber / Three.js first-person dungeon exploration and editor project packaged with Electron. It combines a playable 3D dungeon prototype with room generation, puzzle interactions, breakable objects, texture tooling, mosaic creation, and editor-style utility modes.
+**ThreeJS Gem Dungeon Editor** is a React Three Fiber / Three.js first-person dungeon exploration and editor project packaged with Electron. It combines a playable 3D dungeon prototype with room generation, puzzle interactions, breakable objects, texture tooling, mosaic creation, and editor-style utility modes.
 
 This repository is a portfolio-ready 3D application project rather than a small Three.js demo. It shows modern React, TypeScript, Three.js rendering, physics integration, state management, procedural room/content systems, asset tooling, and desktop packaging.
 
@@ -75,7 +75,7 @@ yarn generate-textures
 
 ## Desktop Packaging
 
-The project is configured for Electron Builder with `ThreeJS Gem Game` as the desktop product name and `dist-electron` as the package output directory.
+The project is configured for Electron Builder with `ThreeJS Gem Dungeon Editor` as the desktop product name and `dist-electron` as the package output directory.
 
 ## Status
 
