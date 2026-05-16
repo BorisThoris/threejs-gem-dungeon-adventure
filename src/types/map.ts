@@ -197,7 +197,7 @@ export interface MapState {
 }
 
 export interface MapActions {
-  generateMap: (config?: Partial<MapConfig>) => void;
+  generateMap: (config?: Partial<MapConfig>, enabledBiomeCategories?: string[]) => void;
   setCurrentRoom: (roomId: string) => void;
   markRoomVisited: (roomId: string) => void;
   clearMap: () => void;

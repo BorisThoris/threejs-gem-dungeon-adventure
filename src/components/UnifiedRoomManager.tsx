@@ -160,7 +160,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
       toRoomId,
     } = consolidatedStore;
     const { isDoorUnlocked, getDoorState, getDoorType, unlockDoor } = doorStore;
-    const { currentMap, generateMap } = mapStore;
+    const { currentMap } = mapStore;
     const { updateRoom, updateGamePhase } = gameState;
 
     // Refs for room detection
@@ -186,7 +186,6 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
     useEffect(() => {
       const initializeGame = async () => {
         if (!currentMap) {
-          generateMap();
           return;
         }
 
@@ -199,7 +198,7 @@ const UnifiedRoomManager: React.FC<UnifiedRoomManagerProps> = memo(
       };
 
       initializeGame();
-    }, [currentMap, activeRoomId, generateMap, loadRoom, setActiveRoom]);
+    }, [currentMap, activeRoomId, loadRoom, setActiveRoom]);
 
     // Initialize room bounds for player detection
     useEffect(() => {

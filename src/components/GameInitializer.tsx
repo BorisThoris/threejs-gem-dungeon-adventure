@@ -1,25 +1,24 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { Canvas } from "@react-three/fiber";
-import { Physics } from "@react-three/rapier";
-import { Environment } from "@react-three/drei";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import GameLoadingScreen from "./GameLoadingScreen";
 import useInitializationStore from "../store/initializationStore";
 import useMapStore from "../store/mapStore";
 import useRoomManagerStore from "../store/roomManagerStore";
 import useGameStore from "../store/gameStore";
 import { texturePreloader } from "../utils/texturePreloader";
-import * as THREE from "three";
+import { BIOME_CATEGORIES } from "../types/biomeCategories";
+import type { GameMap } from "../types/map";
 
 interface GameInitializerProps {
   children: React.ReactNode;
 }
+
+let startupInitializationPromise: Promise<void> | null = null;
 
 const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
   const {
     isInitializing,
     progress,
     status,
-    isComplete,
     setInitializing,
     setProgress,
     setStatus,
@@ -28,11 +27,14 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
     setStepComplete,
   } = useInitializationStore();
 
-  const { generateMap, currentMap } = useMapStore();
+  const { generateMap } = useMapStore();
   const { loadRoom } = useRoomManagerStore();
   const { resetGame } = useGameStore();
 
   const [showGame, setShowGame] = useState(false);
+  const defaultBiomeCategories = useRef(
+    BIOME_CATEGORIES.map((category) => category.id)
+  );
 
   // Pre-load textures
   const preloadTextures = useCallback(async () => {
@@ -50,28 +52,28 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
   }, [setStatus, setProgress, setStepComplete]);
 
   // Pre-load room assets
-  const preloadRoomAssets = useCallback(async () => {
-    if (!currentMap) return;
+  const preloadRoomAssets = useCallback(async (map: GameMap | null) => {
+    if (!map) return;
 
     setStatus("Pre-loading rooms...");
 
     try {
       // Pre-load start room
-      if (currentMap.startRoomId) {
-        await loadRoom(currentMap.startRoomId);
+      if (map.startRoomId) {
+        await loadRoom(map.startRoomId);
         setProgress(0.4);
       }
 
       // Pre-load connected rooms (first level)
-      const startRoom = currentMap.rooms.find(
-        (r) => r.id === currentMap.startRoomId
+      const startRoom = map.rooms.find(
+        (r) => r.id === map.startRoomId
       );
       if (startRoom && startRoom.connections) {
         const connectedRoomIds = startRoom.connections.slice(0, 3);
         for (let i = 0; i < connectedRoomIds.length; i++) {
           try {
             // Check if room exists in map before trying to load
-            const roomExists = currentMap.rooms.some(
+            const roomExists = map.rooms.some(
               (r) => r.id === connectedRoomIds[i]
             );
             if (!roomExists) {
@@ -91,14 +93,15 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
       // Failed to preload some rooms
       setStepComplete("rooms", true);
     }
-  }, [currentMap, loadRoom, setStatus, setProgress, setStepComplete]);
+  }, [loadRoom, setStatus, setProgress, setStepComplete]);
 
   // Initialize game systems
-  const initializeGameSystems = useCallback(async () => {
+  const initializeGameSystems = useCallback(async (resetForNewRun: boolean) => {
     setStatus("Initializing game systems...");
 
-    // Reset game store to initial state
-    resetGame();
+    if (resetForNewRun) {
+      resetGame();
+    }
     setProgress(0.05);
 
     // Initialize physics world (simulated)
@@ -109,12 +112,12 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
   }, [resetGame, setStatus, setProgress, setStepComplete]);
 
   // Cache game data
-  const cacheGameData = useCallback(async () => {
+  const cacheGameData = useCallback(async (map: GameMap | null) => {
     setStatus("Caching game data...");
 
     // Cache room configurations
     const roomConfigs =
-      currentMap?.rooms.map((room) => ({
+      map?.rooms.map((room) => ({
         id: room.id,
         type: room.type,
         position: room.position,
@@ -126,57 +129,65 @@ const GameInitializer: React.FC<GameInitializerProps> = ({ children }) => {
 
     setProgress(0.8);
     setStepComplete("cache", true);
-  }, [currentMap, setStatus, setProgress, setStepComplete]);
+  }, [setStatus, setProgress, setStepComplete]);
 
   // Main initialization
   useEffect(() => {
     const initialize = async () => {
-      try {
-        setInitializing(true);
-        setProgress(0);
-        setStatus("Starting initialization...");
+      if (!startupInitializationPromise) {
+        startupInitializationPromise = (async () => {
+          try {
+            setInitializing(true);
+            setProgress(0);
+            setStatus("Starting initialization...");
 
-        // Step 1: Initialize game systems
-        await initializeGameSystems();
+            const existingMap = useMapStore.getState().currentMap;
+            const shouldGenerateMap = !existingMap;
 
-        // Step 2: Generate map
-        setStatus("Generating world map...");
-        if (!currentMap) {
-          generateMap();
-          await new Promise((resolve) => setTimeout(resolve, 300));
-        }
-        setProgress(0.2);
-        setStepComplete("map", true);
+            // Step 1: Initialize game systems
+            await initializeGameSystems(shouldGenerateMap);
 
-        // Step 3: Pre-load textures
-        await preloadTextures();
+            // Step 2: Generate map
+            setStatus("Generating world map...");
+            if (shouldGenerateMap) {
+              generateMap({}, defaultBiomeCategories.current);
+              await new Promise((resolve) => setTimeout(resolve, 300));
+            }
+            const initializedMap = useMapStore.getState().currentMap;
+            setProgress(0.2);
+            setStepComplete("map", true);
 
-        // Step 4: Pre-load room assets
-        await preloadRoomAssets();
+            // Step 3: Pre-load textures
+            await preloadTextures();
 
-        // Step 5: Cache game data
-        await cacheGameData();
+            // Step 4: Pre-load room assets
+            await preloadRoomAssets(initializedMap);
 
-        // Final step
-        setStatus("Finalizing...");
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        setProgress(1.0);
-        setStatus("Ready to play!");
-        setComplete(true);
-        setInitializing(false); // Mark initialization as complete
-      } catch (error) {
-        // Initialization failed
-        setError(error instanceof Error ? error.message : "Unknown error");
-        setInitializing(false); // Mark initialization as complete even on error
+            // Step 5: Cache game data
+            await cacheGameData(initializedMap);
+
+            // Final step
+            setStatus("Finalizing...");
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            setProgress(1.0);
+            setStatus("Ready to play!");
+            setComplete(true);
+            setInitializing(false); // Mark initialization as complete
+          } catch (error) {
+            // Initialization failed
+            setError(error instanceof Error ? error.message : "Unknown error");
+            setInitializing(false); // Mark initialization as complete even on error
+            startupInitializationPromise = null;
+          }
+        })();
       }
+
+      await startupInitializationPromise;
     };
 
     initialize();
   }, [
-    currentMap,
     generateMap,
-    resetGame,
-    loadRoom,
     setInitializing,
     setProgress,
     setStatus,

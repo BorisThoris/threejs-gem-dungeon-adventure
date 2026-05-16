@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Environment } from "@react-three/drei";
@@ -14,7 +14,6 @@ import EventDrivenActionCards from "./EventDrivenActionCards";
 import SharedNavigation from "./SharedNavigation";
 // WallToggleProvider removed - now using Zustand store
 import useGameStore from "../store/gameStore";
-import useMapStore from "../store/mapStore";
 import { domUIManager } from "../utils/domUIManager";
 import { uiEvents, UI_EVENTS } from "../utils/uiEvents";
 import GameInitializer from "./GameInitializer";
@@ -102,21 +101,7 @@ const GhostScene: React.FC = () => {
 
 const StartScreenContent: React.FC = () => {
   const { inventory, useItem: consumeItem } = useGameStore();
-  const { generateMap, currentMap } = useMapStore();
   const [isPaused, setIsPaused] = React.useState(false);
-  const [enabledBiomeCategories, setEnabledBiomeCategories] = useState<
-    string[]
-  >([
-    "buff",
-    "resource",
-    "puzzle",
-    "transport",
-    "obstacle",
-    "special",
-    "religious",
-    "social",
-    "geometric",
-  ]);
 
   // Initialize DOM UI manager
   React.useEffect(() => {
@@ -134,13 +119,6 @@ const StartScreenContent: React.FC = () => {
       domUIManager.destroy();
     };
   }, [consumeItem]);
-
-  // Generate map on component mount
-  React.useEffect(() => {
-    if (!currentMap) {
-      generateMap({}, enabledBiomeCategories);
-    }
-  }, [currentMap, generateMap, enabledBiomeCategories]);
 
   // Update UI when inventory changes (throttled)
   React.useEffect(() => {
