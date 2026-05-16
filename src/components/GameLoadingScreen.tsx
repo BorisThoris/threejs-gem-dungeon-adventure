@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import * as THREE from "three";
 
 interface GameLoadingScreenProps {
   progress: number;
@@ -28,14 +27,7 @@ const GameLoadingScreen: React.FC<GameLoadingScreenProps> = ({
 
   // Complete loading when progress reaches 100%
   useEffect(() => {
-    console.log(
-      "GameLoadingScreen progress:",
-      progress,
-      "onComplete:",
-      !!onComplete
-    );
     if (progress >= 1.0 && onComplete) {
-      console.log("GameLoadingScreen triggering onComplete in 500ms");
       setTimeout(onComplete, 500); // Small delay for smooth transition
     }
   }, [progress, onComplete]);

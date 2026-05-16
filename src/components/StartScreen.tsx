@@ -221,10 +221,7 @@ const StartScreenContent: React.FC = () => {
               }}
               dpr={[1, 2]}
               performance={{ min: 0.5 }}
-              frameloop="demand"
-              onCreated={({ gl, scene, camera }) => {
-                // Canvas created successfully
-              }}
+              frameloop="always"
             >
               <GhostScene />
             </Canvas>
